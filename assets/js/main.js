@@ -1,4 +1,4 @@
-// Anngan: drawer, search, browse, tools, plot finder, back to top. No framework.
+// Anngan: drawer, search, browse, tools, finder, back to top. No framework.
 (function(){
 var drawer=document.getElementById('drawer'),overlay=document.getElementById('drawerOverlay'),btn=document.getElementById('menuBtn');
 function closeDrawer(){if(!drawer)return;drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');if(overlay)overlay.classList.remove('show');document.body.classList.remove('locked');if(btn)btn.setAttribute('aria-expanded','false')}

@@ -2,10 +2,10 @@
 :root{--red:#DD3333;--red-dark:#B82828;--navy:#004274;--navy-dark:#003257;--tab-on:#005F90;--tab-off:#2F96CD;--sky:#4FC9FF;--gold:#DDB78B;--white:#fff;--ink:#1d2733;--ink-2:#4a5866;--line:#e2e8ee;--soft:#f4f7fa;--black:#000;--wa:#1faa55;--r:8px;color-scheme:light}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 html,body{max-width:100%;overflow-x:hidden}
-body{margin:0;font-family:"Public Sans",system-ui,sans-serif;color:var(--ink);background:var(--white);line-height:1.45}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--white);line-height:1.45}
 .grid>*,.srow>*,.facts>*,footer .cols>*{min-width:0}
 .facts b,.card h3,.card p{overflow-wrap:break-word}
-h1,h2,h3,h4{font-family:"Archivo","Public Sans",sans-serif;line-height:1.12;margin:0}
+h1,h2,h3,h4{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.12;margin:0}
 img{display:block;max-width:100%}
 button,select,input,textarea,summary{font-family:inherit;min-height:2.4rem}
 .wrap{max-width:1240px;margin:0 auto;padding:0 .9rem}
@@ -124,7 +124,7 @@ footer .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:1.2rem;pad
 footer h4{color:#fff;font-size:.95rem;margin-bottom:.5rem}
 footer a{display:block;color:#ffd9d9;text-decoration:none;font-size:.87rem;padding:.16rem 0}
 footer a:hover{color:#fff;text-decoration:underline}
-footer .flogo{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.5rem;color:#fff}
+footer .flogo{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-weight:800;font-size:1.5rem;color:#fff}
 .copy{background:var(--black);color:#bbb;font-size:.78rem;text-align:center;padding:.6rem}
 details.faq{border:1px solid var(--line);border-radius:6px;margin-bottom:.5rem;background:#fff}
 details.faq summary{cursor:pointer;font-weight:700;color:var(--navy);padding:.65rem .8rem}
