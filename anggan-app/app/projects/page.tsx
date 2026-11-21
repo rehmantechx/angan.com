@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { getProjects } from "../../lib/db";
 import { Project, GRAIN_MARKET } from "../../lib/seed";
 
@@ -27,10 +28,15 @@ export default function ProjectsPage() {
               </div>
             )}
             <div className="p-4">
-              <h3 className="font-semibold text-lg">{p.name}</h3>
+              <h3 className="font-semibold text-lg">
+                <Link href={`/projects/${p.id}`} className="text-navy hover:text-anngan">
+                  {p.name}
+                </Link>
+              </h3>
               <p className="text-gray-600 text-sm">{p.loc}</p>
               <p className="text-sm mt-1">{p.note}</p>
-              <div className="flex gap-2 mt-3">
+              <div className="flex gap-2 mt-3 flex-wrap">
+                <Link href={`/projects/${p.id}`} className="border border-navy text-navy text-sm px-3 py-1.5 rounded font-semibold">View project</Link>
                 <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-3 py-1.5 rounded">Call</a>
                 <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="bg-green-600 text-white text-sm px-3 py-1.5 rounded">WhatsApp</a>
               </div>
