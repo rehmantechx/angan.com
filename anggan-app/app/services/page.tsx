@@ -11,7 +11,7 @@ export default function ServicesPage() {
       </p>
       <figure className="mt-5 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
         <img
-          src="/img/alghani-hero.jpeg"
+          src="/img/alghani-site.jpeg"
           alt="Al Ghani Phase 7 site, Lahore"
           className="w-full h-48 sm:h-56 object-cover"
         />
