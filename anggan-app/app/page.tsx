@@ -72,9 +72,14 @@ export default function Home() {
                 </div>
               )}
               <div className="p-4">
-                <h3 className="font-semibold">{p.name}</h3>
+                <h3 className="font-semibold">
+                  <Link href={`/projects/${p.id}`} className="text-navy hover:text-anngan">{p.name}</Link>
+                </h3>
                 <p className="text-gray-600 text-sm">{p.loc}</p>
                 <p className="text-sm mt-1">{p.note}</p>
+                <p className="mt-2">
+                  <Link href={`/projects/${p.id}`} className="text-anngan font-semibold text-sm">View project</Link>
+                </p>
               </div>
             </article>
           ))}
@@ -90,11 +95,16 @@ export default function Home() {
           </div>
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-navy">Angan Tech services</h2>
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-2xl font-bold text-navy">Angan Tech services</h2>
+            <Link href="/services" className="text-anngan font-semibold text-sm">See all 9 services</Link>
+          </div>
           <ul className="mt-3 space-y-2">
             {services.map((s) => (
               <li key={s.id} className="border border-gray-200 rounded p-3">
-                <p className="font-semibold">{s.name}</p>
+                <p className="font-semibold">
+                  <Link href={`/services/${s.id}`} className="text-navy hover:text-anngan">{s.name}</Link>
+                </p>
                 <p className="text-sm text-gray-600">{s.note}</p>
               </li>
             ))}
@@ -103,7 +113,10 @@ export default function Home() {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-2xl font-bold text-navy">Our partners</h2>
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-2xl font-bold text-navy">Our partners</h2>
+          <Link href="/agencies" className="text-anngan font-semibold text-sm">See all 13 partners</Link>
+        </div>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 mt-4">
           {agencies.map((a) => (
             <div key={a.id} className="border border-gray-200 rounded p-2 flex items-center justify-center bg-white">
