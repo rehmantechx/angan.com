@@ -212,7 +212,7 @@ var ANNGAN_DATA = {
     "loc": "Lahore",
     "city": "Lahore",
     "page": "project-global.html",
-    "img": "global-zamzam-location.jpg",
+    "img": "global-zamzam-2.jpg",
     "note": "Zam Zam City, Lahore. LDA approved."
   },
   {
@@ -220,7 +220,7 @@ var ANNGAN_DATA = {
     "loc": "Lahore",
     "city": "Lahore",
     "page": "project-alghani.html",
-    "img": "alghani-hero.jpeg",
+    "img": "alghani-site.jpeg",
     "note": "Bhaini Road, Lahore."
   },
   {
@@ -288,14 +288,14 @@ var ANNGAN_DATA = {
     "url": "https://anngan.com/2023/02/20/why-it-is-the-best-time-to-invest-in-real-estate-in-2023-in-pakistan/"
   },
   {
-    "date": "13 Feb 2023",
-    "title": "At the Multan Cricket Stadium, Pakistan Super League eighth season began with a grand opening ceremony",
-    "url": "https://anngan.com/2023/02/13/at-the-multan-cricket-stadium-pakistan-super-leagues-eighth-season-began-with-a-grand-opening-ceremony/"
-  },
-  {
     "date": "14 Feb 2023",
     "title": "Lahore Qalandars defeated Multan Sultans in a last-ball cliffhanger in the PSL 08 season opener",
     "url": "https://anngan.com/2023/02/14/lahore-qalandars-defeated-multan-sultans-in-a-last-ball-cliffhanger-in-the-psl-08s-season-opener/"
+  },
+  {
+    "date": "13 Feb 2023",
+    "title": "At the Multan Cricket Stadium, Pakistan Super League eighth season began with a grand opening ceremony",
+    "url": "https://anngan.com/2023/02/13/at-the-multan-cricket-stadium-pakistan-super-leagues-eighth-season-began-with-a-grand-opening-ceremony/"
   },
   {
     "date": "11 Feb 2023",
@@ -482,7 +482,7 @@ var ANNGAN_DATA = {
     "asked": "10 Marla House, Lahore",
     "how": "Website form",
     "stage": "New",
-    "next": "Call tomorrow, 11 AM"
+    "next": "Call Sat 21 Nov 2026, 11 AM"
   },
   {
     "id": "enq-fatima",
@@ -491,7 +491,7 @@ var ANNGAN_DATA = {
     "asked": "MGH Zamindar File",
     "how": "WhatsApp",
     "stage": "New",
-    "next": "Send file details on WhatsApp"
+    "next": "Send file details on WhatsApp, Sat 21 Nov 2026"
   },
   {
     "id": "enq-bilal",
@@ -500,7 +500,7 @@ var ANNGAN_DATA = {
     "asked": "Al Ghani Phase 7",
     "how": "Phone call",
     "stage": "Called",
-    "next": "Share payment plan"
+    "next": "Share payment plan, Sun 22 Nov 2026"
   },
   {
     "id": "enq-hassan",
@@ -509,7 +509,7 @@ var ANNGAN_DATA = {
     "asked": "Urban City",
     "how": "Website form",
     "stage": "Visit",
-    "next": "Visit on Saturday, 2 PM, Lahore"
+    "next": "Visit Sat 21 Nov 2026, 2 PM, Lahore"
   }
 ]
 };
