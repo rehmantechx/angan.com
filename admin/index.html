@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<title>Anngan Dashboard | Office only</title>
+<meta name="description" content="Private Anngan dashboard for the office team only. Listings, projects, enquiries, agencies, blogs and Angan Tech in one place.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="css/admin.css">
+</head><body>
+<div class="layout">
+<aside class="sidebar">
+<div class="brand"><img src="../assets/img/logo.png" alt="anngan.com, banay khawab haqiqat"><span class="admin-tag">ADMIN</span></div>
+<nav class="nav" aria-label="Dashboard menu">
+<button type="button" data-pane="overview" class="on">Overview</button>
+<button type="button" data-pane="listings">Listings <span class="count">12</span></button>
+<button type="button" data-pane="projects">Projects <span class="count">7</span></button>
+<button type="button" data-pane="enquiries">New Enquiries</button>
+<button type="button" data-pane="agencies">Agencies <span class="count">13</span></button>
+<button type="button" data-pane="blogs">Blogs <span class="count">23</span></button>
+<button type="button" data-pane="tech">Angan Tech <span class="count">9</span></button>
+<button type="button" data-pane="users">Who Can Log In</button>
+<button type="button" data-pane="settings">Settings</button>
+</nav>
+<div class="side-user"><b>Anngan Admin</b><span>Full access</span></div>
+<div class="side-office"><b>Head Office</b>57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore<br>+92 304 1111 698<br>info@anngan.com</div>
+</aside>
+<main class="main">
+<div class="topbar">
+<input type="search" id="topSearch" placeholder="Search listings, projects, enquiries..." aria-label="Search listings, projects, enquiries">
+<button class="btn btn-red" id="addBtn" type="button">+ Add Listing</button>
+<button class="btn btn-line" id="resetData" type="button">Reset to real data</button>
+<div class="top-admin"><span class="avatar">AA</span><span><b>Anngan Admin</b><span>info@anngan.com</span></span></div>
+</div>
+<div class="content">
+<h1 id="pageTitle">Overview</h1>
+<p class="sub">Saturday, 21 November 2026. Office team only.</p>
+
+<section class="pane on" id="pane-overview">
+<div class="notice blue">Phase 1, Day 1-2. Firebase login and online saving are not connected yet. Changes you make here are saved in this browser only, until Firebase is connected in Day 3-4. See admin/js/firebase-config.js.</div>
+<div class="kpis">
+<div class="kpi"><b id="kpiListings">12</b><span>Listings</span><br><span class="up" id="kpiSaleRent">9 / 3</span> <span>for sale / for rent</span></div>
+<div class="kpi"><b id="kpiProjects">7</b><span>Projects</span><br><span>MGH, Al Ghani, Urban City and 4 more</span></div>
+<div class="kpi"><b id="kpiEnquiries">4</b><span>New enquiries</span><br><span>Example data, see below</span></div>
+<div class="kpi"><b>23</b><span>Blog articles</span><br><span>21 Dec 2022 to 27 Feb 2023</span></div>
+</div>
+<div class="card">
+<div class="card-head"><div><h2>New enquiries by stage</h2><p>New means just came in. Called means you spoke to them. Visit means they came to see it. Deal Done means they bought or rented it.</p></div><span class="tag">Example data</span></div>
+<div class="bars" id="stageBars"></div>
+<p style="color:#6B7280;font-size:14px" id="stageCounts"></p>
+</div>
+<div class="card">
+<div class="card-head"><div><h2>What needs action today</h2><p>New enquiries waiting for a call.</p></div><button class="btn btn-line btn-sm" type="button" onclick="showPane('enquiries')">See all enquiries</button></div>
+<ul id="needsAction"></ul>
+</div>
+<div class="card">
+<div class="card-head"><div><h2>Recent enquiries</h2><p>Example data. Real enquiries will appear here when the website form is connected in Day 3-4.</p></div><button class="btn btn-line btn-sm" type="button" onclick="showPane('enquiries')">See all enquiries</button></div>
+<table><thead><tr><th style="width:28%">Person</th><th style="width:26%">Asked about</th><th style="width:18%">How they contacted you</th><th style="width:18%">Where it stands</th><th style="width:10%">Open</th></tr></thead><tbody id="recentEnquiries"></tbody></table>
+</div>
+<div class="card">
+<div class="card-head"><div><h2>Latest listings</h2><p>Real listings that are live on anngan.com right now, with real prices and real photos.</p></div><button class="btn btn-line btn-sm" type="button" onclick="showPane('listings')">See all listings</button></div>
+<table><thead><tr><th style="width:38%">Property</th><th style="width:10%">City</th><th style="width:12%">For sale or rent</th><th style="width:16%">Price</th><th style="width:10%">On website</th><th style="width:14%">Actions</th></tr></thead><tbody id="latestListings"></tbody></table>
+</div>
+</section>
+
+<section class="pane" id="pane-listings">
+<div class="card">
+<div class="card-head"><div><h2>Listings</h2><p id="listCount">12 listings</p></div><button class="btn btn-red btn-sm" id="addBtn2" type="button">+ Add Listing</button></div>
+<div class="filters">
+<button type="button" data-list-filter="all" class="on">All</button>
+<button type="button" data-list-filter="sale">For Sale</button>
+<button type="button" data-list-filter="rent">For Rent</button>
+<button type="button" data-list-filter="hidden">Hidden</button>
+</div>
+<table><thead><tr><th style="width:38%">Property</th><th style="width:10%">City</th><th style="width:12%">For sale or rent</th><th style="width:14%">Price</th><th style="width:10%">On website</th><th style="width:16%">Actions</th></tr></thead><tbody id="listingsBody"></tbody></table>
+<p style="color:#6B7280;font-size:14px">The Rs 35,000,000 house is not in this list. It has no photo and no location published on anngan.com, so it is not counted as one of the 12 real listings. Pak China Grain Market has no real photo, so it is listed under Projects with its shop plan as text.</p>
+</div>
+</section>
+
+<section class="pane" id="pane-projects">
+<div class="card"><div class="card-head"><div><h2>Projects</h2><p>7 real Anngan projects, with real photos only. Pak China Grain Market has no real photo, so its card shows the shop plan as text.</p></div></div>
+<div class="grid3" id="projectsGrid"></div></div>
+</section>
+
+<section class="pane" id="pane-enquiries">
+<div class="card">
+<div class="card-head"><div><h2>New Enquiries</h2><p id="enqCount">4 enquiries</p></div><span class="tag">Example data</span></div>
+<p style="color:#6B7280">These 4 enquiries are examples, so the office can see how the list works. Real enquiries from the website form, phone and WhatsApp will appear here when Firebase is connected in Day 3-4.</p>
+<div class="stage-row" id="stageCards"></div>
+<table><thead><tr><th style="width:26%">Person</th><th style="width:26%">Asked about</th><th style="width:16%">How they contacted you</th><th style="width:22%">Where it stands</th><th style="width:10%">Open</th></tr></thead><tbody id="enquiriesBody"></tbody></table>
+</div>
+</section>
+
+<section class="pane" id="pane-agencies">
+<div class="card"><div class="card-head"><div><h2>Agencies</h2><p>13 named partners, with their real logos from anngan.com. A 14th logo in the carousel has no readable name, so it is not shown as a named partner.</p></div></div>
+<div class="logo-grid" id="agenciesGrid"></div></div>
+</section>
+
+<section class="pane" id="pane-blogs">
+<div class="card"><div class="card-head"><div><h2>Blogs</h2><p>23 real articles, newest first, 27 Feb 2023 to 21 Dec 2022.</p></div></div>
+<table><thead><tr><th style="width:16%">Date</th><th style="width:64%">Title</th><th style="width:20%">Read</th></tr></thead><tbody id="blogsBody"></tbody></table></div>
+</section>
+
+<section class="pane" id="pane-tech">
+<div class="card"><div class="card-head"><div><h2>Angan Tech</h2><p id="techCount">9 services</p></div></div>
+<p style="color:#6B7280">The repo has 9 Angan Tech service pages. Earlier designs said 8. This dashboard shows the real 9.</p>
+<div class="grid3" id="techGrid"></div></div>
+</section>
+
+<section class="pane" id="pane-users">
+<div class="card"><div class="card-head"><div><h2>Who Can Log In</h2><p>Office team only in Phase 1. Dealers do not get a login in this version.</p></div></div>
+<table><thead><tr><th style="width:24%">Access</th><th style="width:76%">What they can do</th></tr></thead><tbody>
+<tr><td data-label="Access"><b>Full access</b></td><td data-label="What they can do">Can do everything: add, edit, hide and delete listings, work on enquiries, change settings.</td></tr>
+<tr><td data-label="Access"><b>Staff</b></td><td data-label="What they can do">Can add listings and work on enquiries. Cannot delete everything and cannot change settings.</td></tr>
+<tr><td data-label="Access"><b>View only</b></td><td data-label="What they can do">Can see the dashboard. Cannot change anything.</td></tr>
+</tbody></table>
+<p style="color:#6B7280;font-size:14px">Real user accounts are set up with Firebase login in Day 3-4. Until then, this page is the plan for who can log in.</p></div>
+</section>
+
+<section class="pane" id="pane-settings">
+<div class="card"><div class="card-head"><div><h2>Settings</h2><p>Real office profile, from anngan.com.</p></div></div>
+<table><thead><tr><th style="width:24%">Field</th><th style="width:76%">Office details</th></tr></thead><tbody>
+<tr><td data-label="Field"><b>Company</b></td><td data-label="Office details">Anngan Technologies Pvt Ltd</td></tr>
+<tr><td data-label="Field"><b>Head Office</b></td><td data-label="Office details">57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore</td></tr>
+<tr><td data-label="Field"><b>Phone</b></td><td data-label="Office details">+92 304 1111 698</td></tr>
+<tr><td data-label="Field"><b>Email</b></td><td data-label="Office details">info@anngan.com</td></tr>
+<tr><td data-label="Field"><b>Public website</b></td><td data-label="Office details"><a href="../index.html">anngan.com, live site in this repo</a></td></tr>
+<tr><td data-label="Field"><b>Chairman and CEO</b></td><td data-label="Office details">Muhammad Mahmood Cheema</td></tr>
+</tbody></table>
+<p style="color:#6B7280;font-size:14px">Changing these details here will save them online once Firebase is connected in Day 3-4. For now, changes are saved in this browser only.</p></div>
+</section>
+
+<p class="footer-note">Public website: anngan.com | Call +92 304 1111 698 | info@anngan.com | Paragon City, Lahore</p>
+</div>
+</main>
+</div>
+
+<div class="modal" id="listingModal" role="dialog" aria-label="Add or edit listing">
+<div class="modal-box">
+<h2 id="formTitle">Add a listing</h2>
+<form id="listingForm">
+<div class="form-grid">
+<label class="full">Title<input id="fTitle" required></label>
+<label>Price<input id="fPrice" placeholder="Rs 3,600,000" required></label>
+<label>City<select id="fCity"><option>Lahore</option><option>Karachi</option><option>Rawalpindi</option><option>Multan</option><option>Islamabad</option><option>Mangla</option><option>Kashmir</option></select></label>
+<label>Beds<input id="fBeds" type="number" min="0" value="3"></label>
+<label>Baths<input id="fBaths" type="number" min="0" value="3"></label>
+<label>Size<input id="fSize" value="5 Marla"></label>
+<label>Type<select id="fType"><option>House</option><option>Flat</option><option>Portion</option><option>Plot</option><option>Shop</option></select></label>
+<label>For sale or rent<select id="fStatus"><option value="sale">For Sale</option><option value="rent">For Rent</option></select></label>
+<label class="full">Location<input id="fLoc" placeholder="Area, City"></label>
+</div>
+<p style="color:#6B7280;font-size:14px">A new listing added here has no photo until a real photo is added. It is saved in this browser only until Firebase is connected in Day 3-4.</p>
+<button class="btn btn-red" type="submit">Save listing</button>
+<button class="btn btn-line" type="button" id="closeForm">Cancel</button>
+</form>
+</div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/admin.js"></script>
+</body></html>
