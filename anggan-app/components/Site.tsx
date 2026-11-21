@@ -2,18 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "../lib/auth";
-import { isFirebaseConfigured } from "../lib/firebase";
 import { PROJECTS, SERVICES } from "../lib/seed";
-
-export function FirebaseNotice() {
-  if (isFirebaseConfigured()) return null;
-  return (
-    <div className="bg-amber-100 text-amber-900 text-sm px-4 py-2 text-center">
-      Firebase is not connected. Showing saved site data. Fill in .env.local
-      from the Firebase console to connect the live database.
-    </div>
-  );
-}
 
 // Decided nav, in the exact order of the static site.
 const NAV_LINKS = [

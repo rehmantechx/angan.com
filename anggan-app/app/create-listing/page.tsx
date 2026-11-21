@@ -119,7 +119,7 @@ export default function CreateListingPage() {
         <input required value={loc} onChange={(e) => setLoc(e.target.value)} placeholder="Area or society, for example DHA Phase 7" className={inputCls} />
         <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number" className={inputCls} />
         <input value={photo} onChange={(e) => setPhoto(e.target.value)} placeholder="Photo link, optional, for example https://example.com/photo.jpg" className={inputCls} />
-        <p className="text-sm text-gray-600">Photo is optional. You can paste a photo link, or leave it empty and the office adds a real photo after approval. Photo upload from the dashboard is not built yet, because Firebase Storage is not enabled.</p>
+        <p className="text-sm text-gray-600">Photo is optional. You can paste a photo link, or leave it empty and the office adds a real photo after approval.</p>
         <button disabled={busy} className="bg-anngan text-white px-4 py-2 rounded w-fit">
           {busy ? "Sending..." : "Send to office for approval"}
         </button>
