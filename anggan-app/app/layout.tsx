@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from "../lib/auth";
 import { Header, Footer } from "../components/Site";
+import { Providers } from "../components/Providers";
 
 export const metadata: Metadata = {
   title: "Anngan | Homes, Plots and Projects in Pakistan",
@@ -17,11 +17,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
+        <Providers>
           <Header />
           <main className="max-w-6xl mx-auto px-4 py-6 min-h-[60vh]">{children}</main>
           <Footer />
-        </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

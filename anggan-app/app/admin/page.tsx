@@ -301,7 +301,7 @@ export default function AdminPage() {
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {agencies.map((a) => (
             <div key={a.id} className="border rounded p-3 flex items-center gap-3">
-              <img src={`/img/${a.logo}`} alt={a.name} className="max-h-10 w-auto" />
+              <img src={`/img/${a.logo}`} alt={a.name} width={500} height={438} className="max-h-10 w-auto" />
               <span className="font-semibold">{a.name}</span>
             </div>
           ))}
