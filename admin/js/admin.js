@@ -4,6 +4,7 @@
 // admin/js/firebase-config.js, which is a placeholder and is not live.
 (function () {
   "use strict";
+  if (typeof adminLoggedIn === "function" && !adminLoggedIn()) { window.location.replace("login.html"); return; }
   var LS_LIST = "anngan-admin-listings-v1";
   var LS_ENQ = "anngan-admin-enquiries-v1";
   var IMG = "../assets/img/";
@@ -211,6 +212,7 @@
     $("listingModal").classList.remove("open");
     renderAll(); showPane("listings");
   });
+  $("logoutBtn") && $("logoutBtn").addEventListener("click", function () { if (typeof adminLogout === "function") adminLogout(); });
   $("resetData") && $("resetData").addEventListener("click", function () {
     if (confirm("Reset listings and enquiries to the real data from anngan.com? Your changes in this browser will be removed.")) {
       listings = ANNGAN_DATA.listings.slice(); enquiries = ANNGAN_DATA.enquiriesExample.slice();
