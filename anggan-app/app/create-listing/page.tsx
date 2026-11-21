@@ -18,8 +18,10 @@ export default function CreateListingPage() {
   const [type, setType] = useState("House");
   const [status, setStatus] = useState("sale");
   const [phone, setPhone] = useState("");
+  const [photo, setPhoto] = useState("");
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
   if (loading) return <p>Loading...</p>;
 
@@ -47,30 +49,37 @@ export default function CreateListingPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
+    setError("");
     const n = parseInt(price.replace(/[^0-9]/g, ""), 10) || 0;
     const id = "user-" + Date.now().toString(36);
-    await saveListing({
-      id,
-      title: title.trim(),
-      price: n > 0 ? "Rs " + n.toLocaleString("en-PK") + (status === "rent" ? " per month" : "") : "Price on call",
-      n,
-      beds: parseInt(beds, 10),
-      baths: parseInt(baths, 10),
-      size,
-      city,
-      loc: loc.trim() || city,
-      type,
-      status: status as "sale" | "rent",
-      img: "",
-      badge: "Pending approval",
-      url: "",
-      liveStatus: "pending",
-      visible: true,
-      createdAt: new Date().toISOString().slice(0, 10),
-      submittedBy: user ? user.email : "",
-    });
-    setBusy(false);
-    setDone(true);
+    try {
+      await saveListing({
+        id,
+        title: title.trim(),
+        price: n > 0 ? "Rs " + n.toLocaleString("en-PK") + (status === "rent" ? " per month" : "") : "Price on call",
+        n,
+        beds: parseInt(beds, 10),
+        baths: parseInt(baths, 10),
+        size,
+        city,
+        loc: loc.trim() || city,
+        type,
+        status: status as "sale" | "rent",
+        img: photo.trim(),
+        badge: "Pending approval",
+        url: "",
+        liveStatus: "pending",
+        visible: true,
+        createdAt: new Date().toISOString().slice(0, 10),
+        submittedBy: user ? user.email : "",
+      });
+      setDone(true);
+    } catch (err) {
+      const e2 = err as { message?: string };
+      setError("Could not send the listing: " + (e2.message || "please try again or call the office."));
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -109,10 +118,12 @@ export default function CreateListingPage() {
         </div>
         <input required value={loc} onChange={(e) => setLoc(e.target.value)} placeholder="Area or society, for example DHA Phase 7" className={inputCls} />
         <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number" className={inputCls} />
-        <p className="text-sm text-gray-600">Photos are added by the office after approval. Do not upload photos here yet.</p>
+        <input value={photo} onChange={(e) => setPhoto(e.target.value)} placeholder="Photo link, optional, for example https://example.com/photo.jpg" className={inputCls} />
+        <p className="text-sm text-gray-600">Photo is optional. You can paste a photo link, or leave it empty and the office adds a real photo after approval. Photo upload from the dashboard is not built yet, because Firebase Storage is not enabled.</p>
         <button disabled={busy} className="bg-anngan text-white px-4 py-2 rounded w-fit">
           {busy ? "Sending..." : "Send to office for approval"}
         </button>
+        {error ? <p className="bg-red-50 text-red-800 text-sm rounded p-3">{error}</p> : null}
       </form>
     </div>
   );

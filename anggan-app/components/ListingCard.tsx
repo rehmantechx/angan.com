@@ -5,7 +5,12 @@ export function ListingCard({ l }: { l: Listing }) {
   return (
     <article className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
       {l.img ? (
-        <img src={`/img/${l.img}`} alt={l.title} className="w-full h-48 object-cover" loading="lazy" />
+        <img
+          src={l.img.startsWith("http") ? l.img : `/img/${l.img}`}
+          alt={l.title}
+          className="w-full h-48 object-cover"
+          loading="lazy"
+        />
       ) : (
         <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-500 text-sm px-4 text-center">
           No photo for this property yet

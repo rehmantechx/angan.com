@@ -8,20 +8,28 @@ export function EnquiryForm({ asked, compact }: { asked: string; compact?: boole
   const [note, setNote] = useState("");
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !phone.trim()) return;
     setBusy(true);
-    await addEnquiry({
-      name: name.trim(),
-      phone: phone.trim(),
-      asked,
-      how: "Website form",
-      next: note.trim() || "Call back",
-    });
-    setBusy(false);
-    setDone(true);
+    setError("");
+    try {
+      await addEnquiry({
+        name: name.trim(),
+        phone: phone.trim(),
+        asked,
+        how: "Website form",
+        next: note.trim() || "Call back",
+      });
+      setDone(true);
+    } catch (err) {
+      const e2 = err as { message?: string };
+      setError("Could not send the enquiry: " + (e2.message || "please try again or call the office."));
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (done) {
@@ -44,6 +52,7 @@ export function EnquiryForm({ asked, compact }: { asked: string; compact?: boole
       <button disabled={busy} className="bg-anngan text-white px-4 py-2 rounded mt-3">
         {busy ? "Sending..." : "Send enquiry"}
       </button>
+      {error ? <p className="bg-red-50 text-red-800 text-sm rounded p-3 mt-3">{error}</p> : null}
     </form>
   );
 }

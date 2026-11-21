@@ -75,17 +75,27 @@ export default function AdminPage() {
   const newEnq = enquiries.filter((e) => e.stage === "New").length;
 
   async function doSave(l: Listing) {
-    await saveListing(l);
-    setEdit(null);
-    setShowAdd(false);
-    setMsg("Saved. The public site uses the same data, so it updates too.");
+    try {
+      await saveListing(l);
+      setEdit(null);
+      setShowAdd(false);
+      setMsg("Saved. The public site uses the same data, so it updates too.");
+    } catch (err) {
+      const e = err as { message?: string };
+      setMsg("Could not save: " + (e.message || "permission denied") + " The signed-in user needs the Full access or Staff role.");
+    }
     await reload();
   }
 
   async function doDelete(id: string, title: string) {
     if (!window.confirm("Delete this listing: " + title + "?")) return;
-    await deleteListing(id);
-    setMsg("Deleted. It is gone from the public site too.");
+    try {
+      await deleteListing(id);
+      setMsg("Deleted. It is gone from the public site too.");
+    } catch (err) {
+      const e = err as { message?: string };
+      setMsg("Could not delete: " + (e.message || "permission denied") + " The signed-in user needs the Full access or Staff role.");
+    }
     await reload();
   }
 
@@ -97,7 +107,14 @@ export default function AdminPage() {
           Signed in as {user.name} ({user.email}) : {user.role}
           {user.demo ? " : demo login, local test only" : ""}
         </span>
+        <span className="text-xs text-gray-500">Your user id: {user.uid}</span>
       </div>
+      {user.role === "View only" && firebaseOn() ? (
+        <p className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">
+          Your role is View only. To change listings, the owner must raise your role in the Firebase console:
+          Firestore, collection users, document {user.uid}, field role, set to Full access or Staff.
+        </p>
+      ) : null}
       {!firebaseOn() ? (
         <p className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">
           Firebase is not connected. Changes are saved in this browser only (local test mode).
@@ -327,6 +344,22 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
   const [loc, setLoc] = useState(initial?.loc || "");
   const [type, setType] = useState(initial?.type || "House");
   const [status, setStatus] = useState(initial?.status || "sale");
+  const [photo, setPhoto] = useState(initial?.img || "");
+  const REAL_PHOTOS = [
+    "",
+    "lst-karachi-shamsi.jpg",
+    "lst-dha-stunning.jpg",
+    "lst-dha-defence4.jpg",
+    "lst-dha-u7.jpg",
+    "lst-dha-1kanal.jpg",
+    "lst-bahria-luxury.jpg",
+    "lst-alhafeez.jpg",
+    "lst-bahria-rwp.jpg",
+    "lst-citi-multan.jpg",
+    "lst-orchard-rent.jpg",
+    "lst-bahria8-rent.jpg",
+    "lst-kuri-rent.jpg",
+  ];
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -343,7 +376,7 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
       loc: loc.trim() || city,
       type,
       status: status as "sale" | "rent",
-      img: initial?.img || "",
+      img: photo.trim(),
       badge: status === "rent" ? "For Rent" : "For Sale",
       url: initial?.url || "",
       liveStatus: initial?.liveStatus || "live",
@@ -379,6 +412,12 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
         </select>
       </div>
       <input required value={loc} onChange={(e) => setLoc(e.target.value)} placeholder="Area or society" className={inputCls} />
+      <select value={REAL_PHOTOS.includes(photo) ? photo : ""} onChange={(e) => setPhoto(e.target.value)} className={inputCls}>
+        <option value="">No photo, or paste a photo link below</option>
+        {REAL_PHOTOS.filter(Boolean).map((p) => <option key={p} value={p}>{p}</option>)}
+      </select>
+      <input value={REAL_PHOTOS.includes(photo) ? "" : photo} onChange={(e) => setPhoto(e.target.value)} placeholder="Photo link, optional, for example https://example.com/photo.jpg" className={inputCls} />
+      <p className="text-sm text-gray-600">Photo upload is not built yet, because Firebase Storage is not enabled. Pick a real photo from the site, or paste a photo link.</p>
       <div className="flex gap-2">
         <button className={btnRed}>Save listing</button>
         <button type="button" className={btnLine} onClick={onCancel}>Cancel</button>
