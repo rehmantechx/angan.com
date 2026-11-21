@@ -47,7 +47,23 @@ create.html                 Create a Listing (preview only, no server, no paymen
 assets/css/style.css        All styles, colours from anngan.com
 assets/js/main.js           Menu drawer, search, listing preview, fade-in
 assets/img/                 Real photos only, see SOURCES.md
+admin/index.html            Private dashboard, office team only, Phase 1
+admin/css/admin.css         Dashboard styles, white light theme
+admin/js/data.js            Dashboard data, real listings, projects, blogs
+admin/js/admin.js           Dashboard search, filter, add, edit, hide, delete
+admin/js/firebase-config.js Firebase placeholder, NOT connected yet
 ```
+
+## Dashboard, Phase 1, Day 1-2
+
+The dashboard lives at `/admin/` in this same repo, live at
+`https://rehmantechx.github.io/angan.com/admin/` after a Pages rebuild.
+It opens directly into the dashboard, no landing page. Login and online
+saving are NOT connected yet: Firebase Auth and Firestore are Day 3-4
+work, and `admin/js/firebase-config.js` holds placeholder values only.
+Until then, add, edit, hide and delete save in the browser only
+(localStorage). Angan Tech has 9 real service pages, not 8 as earlier
+designs said, so the dashboard shows 9.
 
 ## Deploy on GitHub Pages
 
