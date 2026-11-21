@@ -39,7 +39,7 @@ export default function ProjectsPage() {
               <div className="flex gap-2 mt-auto pt-3 flex-wrap">
                 <Link href={`/projects/${p.id}`} className="border border-navy text-navy text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">View project</Link>
                 <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center">Call</a>
-                <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="bg-green-600 text-white text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center">WhatsApp</a>
+                <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="bg-green-700 text-white text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center">WhatsApp</a>
               </div>
             </div>
           </article>

@@ -72,7 +72,7 @@ export function Header() {
               href="https://wa.me/923041111698"
               target="_blank"
               rel="noopener"
-              className="bg-green-600 text-white text-xs sm:text-sm px-2 sm:px-3 py-2 rounded font-semibold whitespace-nowrap"
+              className="bg-green-700 text-white text-xs sm:text-sm px-2 sm:px-3 py-2 rounded font-semibold whitespace-nowrap"
             >
               WhatsApp
             </a>
@@ -178,7 +178,7 @@ export function Header() {
                 href="https://wa.me/923041111698"
                 target="_blank"
                 rel="noopener"
-                className="bg-green-600 text-white text-sm px-3 py-2 rounded font-semibold min-h-[48px] inline-flex items-center justify-center flex-1 text-center"
+                className="bg-green-700 text-white text-sm px-3 py-2 rounded font-semibold min-h-[48px] inline-flex items-center justify-center flex-1 text-center"
               >
                 WhatsApp
               </a>

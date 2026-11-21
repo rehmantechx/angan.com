@@ -35,7 +35,7 @@ export default function ServicePage({ params }: { params: { id: string } }) {
           href="https://wa.me/923041111698"
           target="_blank"
           rel="noopener"
-          className="bg-green-600 text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold"
+          className="bg-green-700 text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold"
         >
           WhatsApp
         </a>
