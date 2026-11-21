@@ -66,8 +66,9 @@ export default function Home() {
   const sale = listings.filter((l) => l.status === "sale");
   const rent = listings.filter((l) => l.status === "rent");
 
-  const search = useMemo(() => {
-    if (!searched) return { hits: [] as Listing[], phits: [] as Project[] };
+  // One search, used both for the result note and for the rendered list.
+  // The old code ran the same filter twice; this keeps one copy only.
+  function runSearch() {
     const key = q.trim().toLowerCase();
     const hits = listings.filter((l) => {
       if (status === "sale" && l.status !== "sale") return false;
@@ -97,43 +98,17 @@ export default function Home() {
     });
     if (type === "File") phits = projects.filter((p) => p.name === "MGH Pakistan");
     return { hits, phits };
+  }
+
+  const search = useMemo(() => {
+    if (!searched) return { hits: [] as Listing[], phits: [] as Project[] };
+    return runSearch();
   }, [searched, listings, projects, status, q, type, city, beds, budget]);
 
   function doSearch() {
     const key = q.trim().toLowerCase();
-    const wantProjects = status === "project" || key.includes("mgh") || key.includes("mangla") || key.includes("project");
-    void wantProjects;
     setSearched(true);
-    const { hits, phits } = (() => {
-      const h = listings.filter((l) => {
-        if (status === "sale" && l.status !== "sale") return false;
-        if (status === "rent" && l.status !== "rent") return false;
-        if (city && l.city !== city) return false;
-        if (type && type !== "File" && l.type !== type) return false;
-        if (type === "File") return false;
-        if (beds) {
-          if (beds === "5+") { if (l.beds < 5) return false; }
-          else if (l.beds !== parseInt(beds, 10)) return false;
-        }
-        if (!budgetOK(l, budget)) return false;
-        if (key) {
-          const hay = (l.title + " " + l.loc + " " + l.city + " " + l.size + " " + l.type).toLowerCase();
-          if (!hay.includes(key)) return false;
-        }
-        return true;
-      });
-      let p = projects.filter((pr) => {
-        if (status === "sale" || status === "rent") return false;
-        if (city && pr.city !== city) return false;
-        if (key) {
-          const hay = (pr.name + " " + pr.loc + " " + pr.city).toLowerCase();
-          if (!hay.includes(key)) return false;
-        }
-        return true;
-      });
-      if (type === "File") p = projects.filter((pr) => pr.name === "MGH Pakistan");
-      return { hits: h, phits: p };
-    })();
+    const { hits, phits } = runSearch();
     if (hits.length || phits.length) {
       const parts: string[] = [];
       if (hits.length) parts.push(hits.length + (hits.length === 1 ? " listing" : " listings"));
@@ -180,6 +155,7 @@ export default function Home() {
         <img
           src="/img/mgh-lake-aerial.jpg"
           alt="Mangla Lake aerial view, MGH Pakistan"
+          fetchPriority="high"
           className="absolute inset-0 w-full h-full object-cover opacity-45"
         />
         <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-10">
