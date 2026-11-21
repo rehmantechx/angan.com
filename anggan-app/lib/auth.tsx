@@ -4,7 +4,7 @@
 "use client";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { getFirebaseAuth, getDb, isFirebaseConfigured } from "./firebase";
 
 export type Role = "Full access" | "Staff" | "View only";
@@ -68,10 +68,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       let role: Role = "View only";
       if (db) {
         try {
-          const snap = await getDoc(doc(db, "users", fbUser.uid));
+          const ref = doc(db, "users", fbUser.uid);
+          const snap = await getDoc(ref);
           if (snap.exists()) {
             const data = snap.data() as { role?: Role };
             if (data.role) role = data.role;
+          } else {
+            // First sign-in: create the user's own document as View only.
+            // The rules only allow a user to create their own document with
+            // role View only. The owner then raises the role to Full access
+            // or Staff in the Firebase console. If this write fails (for
+            // example the updated rules are not published yet), the session
+            // stays View only and the owner adds the document by hand.
+            try {
+              await setDoc(ref, {
+                email: fbUser.email || "",
+                name: fbUser.displayName || fbUser.email || "Office user",
+                role: "View only",
+              });
+            } catch {
+              // role stays View only until the owner adds the user document
+            }
           }
         } catch {
           // role stays View only until the owner adds the user document

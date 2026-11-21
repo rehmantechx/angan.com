@@ -12,6 +12,7 @@ import {
   deleteDoc,
   query,
   orderBy,
+  where,
 } from "firebase/firestore";
 import { getDb, isFirebaseConfigured } from "./firebase";
 import {
@@ -89,12 +90,40 @@ export function resetLocalData() {
   window.dispatchEvent(new Event("anngan-data"));
 }
 
+// A Firestore write that cannot reach the backend retries forever in the
+// SDK and never answers, so a form would sit on "Sending..." with no error.
+// Race every write against a timeout so the user gets a clear error
+// instead of a stuck form. A write that lands after the timeout still
+// shows up on the next reload.
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(
+        () =>
+          reject(
+            new Error(
+              label +
+                " timed out after " +
+                ms / 1000 +
+                " seconds. Check your connection and try again."
+            )
+          ),
+        ms
+      )
+    ),
+  ]);
+}
+
+const WRITE_TIMEOUT_MS = 15000;
+const READ_TIMEOUT_MS = 8000;
+
 // ---- Firestore helpers ----
 async function readCollection<T>(name: string): Promise<T[] | null> {
   const db = getDb();
   if (!db) return null;
   try {
-    const snap = await getDocs(collection(db, name));
+    const snap = await withTimeout(getDocs(collection(db, name)), READ_TIMEOUT_MS, "Reading " + name);
     return snap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as T);
   } catch {
     return null;
@@ -110,7 +139,32 @@ export async function getListings(): Promise<Listing[]> {
 }
 
 // Only live, visible listings show on the public site.
+// The query filters liveStatus == 'live' because the Firestore rules only
+// allow public reads of live listings. An unfiltered read is denied even
+// when the collection is empty, so the filter is required, not optional.
 export async function getPublicListings(): Promise<Listing[]> {
+  const db = getDb();
+  if (db) {
+    try {
+      const snap = await withTimeout(
+        getDocs(query(collection(db, "listings"), where("liveStatus", "==", "live"))),
+        READ_TIMEOUT_MS,
+        "Reading live listings"
+      );
+      const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as Listing);
+      if (rows.length > 0) return rows.filter((l) => l.visible !== false);
+      // No live listings in Firestore yet. If the settings document exists,
+      // the seed was uploaded and the empty result is real, so do not fall
+      // back to the local seed and resurrect deleted listings. If it does
+      // not exist, the seed has not been uploaded yet, so show the local
+      // real seed data instead of an empty site.
+      const seeded = await withTimeout(getDoc(doc(db, "settings", "office")), READ_TIMEOUT_MS, "Reading settings");
+      if (seeded.exists()) return [];
+      return loadLocal().listings.filter((l) => l.liveStatus === "live" && l.visible !== false);
+    } catch {
+      // fall through to local seed data below
+    }
+  }
   const all = await getListings();
   return all.filter((l) => l.liveStatus === "live" && l.visible !== false);
 }
@@ -119,7 +173,7 @@ export async function saveListing(l: Listing): Promise<void> {
   const db = getDb();
   if (db) {
     const { id, ...rest } = l;
-    await setDoc(doc(db, "listings", id), rest, { merge: true });
+    await withTimeout(setDoc(doc(db, "listings", id), rest, { merge: true }), WRITE_TIMEOUT_MS, "Saving the listing");
     return;
   }
   const store = loadLocal();
@@ -132,7 +186,7 @@ export async function saveListing(l: Listing): Promise<void> {
 export async function deleteListing(id: string): Promise<void> {
   const db = getDb();
   if (db) {
-    await deleteDoc(doc(db, "listings", id));
+    await withTimeout(deleteDoc(doc(db, "listings", id)), WRITE_TIMEOUT_MS, "Deleting the listing");
     return;
   }
   const store = loadLocal();
@@ -166,7 +220,11 @@ export async function getEnquiries(): Promise<Enquiry[]> {
   const db = getDb();
   if (db) {
     try {
-      const snap = await getDocs(query(collection(db, "enquiries"), orderBy("date", "desc")));
+      const snap = await withTimeout(
+        getDocs(query(collection(db, "enquiries"), orderBy("date", "desc"))),
+        READ_TIMEOUT_MS,
+        "Reading enquiries"
+      );
       const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as Enquiry);
       return rows;
     } catch {
@@ -186,7 +244,7 @@ export async function addEnquiry(e: Omit<Enquiry, "id" | "date" | "stage"> & { s
   const db = getDb();
   if (db) {
     const { id, ...rest } = full;
-    await setDoc(doc(db, "enquiries", id), rest);
+    await withTimeout(setDoc(doc(db, "enquiries", id), rest), WRITE_TIMEOUT_MS, "Sending the enquiry");
     return full;
   }
   const store = loadLocal();
@@ -198,7 +256,7 @@ export async function addEnquiry(e: Omit<Enquiry, "id" | "date" | "stage"> & { s
 export async function updateEnquiryStage(id: string, stage: Enquiry["stage"], next: string): Promise<void> {
   const db = getDb();
   if (db) {
-    await updateDoc(doc(db, "enquiries", id), { stage, next });
+    await withTimeout(updateDoc(doc(db, "enquiries", id), { stage, next }), WRITE_TIMEOUT_MS, "Updating the enquiry");
     return;
   }
   const store = loadLocal();
@@ -215,7 +273,7 @@ export async function getSettings(): Promise<OfficeSettings> {
   const db = getDb();
   if (db) {
     try {
-      const snap = await getDoc(doc(db, "settings", "office"));
+      const snap = await withTimeout(getDoc(doc(db, "settings", "office")), READ_TIMEOUT_MS, "Reading settings");
       if (snap.exists()) return { ...SETTINGS, ...(snap.data() as OfficeSettings) };
     } catch {
       // fall through to local
@@ -227,7 +285,7 @@ export async function getSettings(): Promise<OfficeSettings> {
 export async function saveSettings(s: OfficeSettings): Promise<void> {
   const db = getDb();
   if (db) {
-    await setDoc(doc(db, "settings", "office"), s, { merge: true });
+    await withTimeout(setDoc(doc(db, "settings", "office"), s, { merge: true }), WRITE_TIMEOUT_MS, "Saving the settings");
     return;
   }
   const store = loadLocal();
@@ -239,27 +297,37 @@ export async function saveSettings(s: OfficeSettings): Promise<void> {
 export async function seedFirestore(): Promise<string> {
   const db = getDb();
   if (!db) return "Firebase is not connected.";
-  const store = loadLocal();
-  for (const l of store.listings) {
-    const { id, ...rest } = l;
-    await setDoc(doc(db, "listings", id), rest);
+  try {
+    const store = loadLocal();
+    for (const l of store.listings) {
+      const { id, ...rest } = l;
+      await setDoc(doc(db, "listings", id), rest);
+    }
+    for (const p of store.projects) {
+      const { id, ...rest } = p;
+      await setDoc(doc(db, "projects", id), rest);
+    }
+    for (const b of store.blogs) {
+      const { id, ...rest } = b;
+      await setDoc(doc(db, "blogs", id), rest);
+    }
+    for (const a of store.agencies) {
+      const { id, ...rest } = a;
+      await setDoc(doc(db, "agencies", id), rest);
+    }
+    for (const s of store.services) {
+      const { id, ...rest } = s;
+      await setDoc(doc(db, "services", id), rest);
+    }
+    await setDoc(doc(db, "settings", "office"), store.settings);
+    return "Seed data uploaded to Firestore.";
+  } catch (e) {
+    const err = e as { message?: string; code?: string };
+    return (
+      "Seed upload failed: " +
+      (err.code ? err.code + " : " : "") +
+      (err.message || "permission denied") +
+      " The signed-in user needs the Full access role in the users collection first."
+    );
   }
-  for (const p of store.projects) {
-    const { id, ...rest } = p;
-    await setDoc(doc(db, "projects", id), rest);
-  }
-  for (const b of store.blogs) {
-    const { id, ...rest } = b;
-    await setDoc(doc(db, "blogs", id), rest);
-  }
-  for (const a of store.agencies) {
-    const { id, ...rest } = a;
-    await setDoc(doc(db, "agencies", id), rest);
-  }
-  for (const s of store.services) {
-    const { id, ...rest } = s;
-    await setDoc(doc(db, "services", id), rest);
-  }
-  await setDoc(doc(db, "settings", "office"), store.settings);
-  return "Seed data uploaded to Firestore.";
 }

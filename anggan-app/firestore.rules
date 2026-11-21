@@ -11,10 +11,13 @@ service cloud.firestore {
       return isSignedIn() &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
-    // Public read only for live content
+    // Public read only for live listings. Office can read every listing.
+    // A signed-in user may create a listing only as pending (office approval
+    // makes it live). Only the office can update or delete listings.
     match /listings/{id} {
-      allow read: if resource.data.liveStatus == 'live';
-      allow create, update, delete: if isOffice();
+      allow read: if resource.data.liveStatus == 'live' || isOfficeAnyRole();
+      allow create: if isOffice() || (isSignedIn() && request.resource.data.liveStatus == 'pending');
+      allow update, delete: if isOffice();
     }
     match /projects/{id} {
       allow read: if true;
@@ -38,10 +41,17 @@ service cloud.firestore {
       allow read, update: if isOfficeAnyRole();
       allow delete: if isOffice();
     }
-    // Users and settings: office only
+    // Users: a signed-in user may read their own document and may create
+    // their own document only as View only. The owner then raises the role
+    // to Full access or Staff in the Firebase console. Only the office can
+    // change or delete user documents.
     match /users/{id} {
-      allow read, write: if isOfficeAnyRole();
+      allow get: if isSignedIn() && (request.auth.uid == id || isOfficeAnyRole());
+      allow list: if isOfficeAnyRole();
+      allow create: if isSignedIn() && request.auth.uid == id && request.resource.data.role == 'View only';
+      allow update, delete: if isOfficeAnyRole();
     }
+    // Settings: public read, office write only
     match /settings/{id} {
       allow read: if true;
       allow write: if isOffice();
