@@ -16,6 +16,11 @@ export default function PropertiesPage() {
 
   useEffect(() => {
     getPublicListings().then(setListings);
+    if (typeof window !== "undefined") {
+      const qs = new URLSearchParams(window.location.search);
+      if (qs.get("q")) setQ(qs.get("q") || "");
+      if (qs.get("city")) setCity(qs.get("city") || "");
+    }
   }, []);
 
   const results = useMemo(() => {

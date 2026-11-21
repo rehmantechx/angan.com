@@ -4,9 +4,9 @@ import { getPublicListings } from "../../lib/db";
 import { Listing, GRAIN_MARKET } from "../../lib/seed";
 import { ListingCard } from "../../components/ListingCard";
 
-function Tool({ title, children }: { title: string; children: React.ReactNode }) {
+function Tool({ title, children, id }: { title: string; children: React.ReactNode; id: string }) {
   return (
-    <section className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+    <section id={id} className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm scroll-mt-4">
       <h2 className="font-bold text-navy text-lg">{title}</h2>
       <div className="mt-3 grid gap-2">{children}</div>
     </section>
@@ -86,7 +86,7 @@ export default function ToolsPage() {
       <p className="text-gray-600 mt-1">Free tools. Prices come from the real listings on this site, nothing made up.</p>
 
       <div className="grid gap-4 mt-4 md:grid-cols-2">
-        <Tool title="1. Building cost calculator">
+        <Tool id="cost" title="1. Building cost calculator">
           <input value={ccArea} onChange={(e) => setCcArea(e.target.value)} placeholder="Covered area in sqft" inputMode="decimal" className={inputCls} />
           <input value={ccRate} onChange={(e) => setCcRate(e.target.value)} placeholder="Rate per sqft in Rs" inputMode="decimal" className={inputCls} />
           <label className="text-sm flex gap-2 items-center">
@@ -108,7 +108,7 @@ export default function ToolsPage() {
           {ccOut ? <p className="text-sm font-semibold">{ccOut}</p> : null}
         </Tool>
 
-        <Tool title="2. Home loan calculator">
+        <Tool id="loan" title="2. Home loan calculator">
           <input value={lnAmt} onChange={(e) => setLnAmt(e.target.value)} placeholder="Loan amount in Rs" inputMode="decimal" className={inputCls} />
           <input value={lnYears} onChange={(e) => setLnYears(e.target.value)} placeholder="Years" inputMode="decimal" className={inputCls} />
           <input value={lnRate} onChange={(e) => setLnRate(e.target.value)} placeholder="Yearly markup % (for example 18)" inputMode="decimal" className={inputCls} />
@@ -130,7 +130,7 @@ export default function ToolsPage() {
           {lnOut ? <p className="text-sm font-semibold">{lnOut}</p> : null}
         </Tool>
 
-        <Tool title="3. Area converter">
+        <Tool id="area" title="3. Area converter">
           <input value={acVal} onChange={(e) => setAcVal(e.target.value)} placeholder="Enter a number" inputMode="decimal" className={inputCls} />
           <select value={acFrom} onChange={(e) => setAcFrom(e.target.value)} className={inputCls}>
             <option>Marla</option>
@@ -153,7 +153,7 @@ export default function ToolsPage() {
           {acOut ? <p className="text-sm font-semibold">{acOut}</p> : null}
         </Tool>
 
-        <Tool title="4. City prices from real listings">
+        <Tool id="index" title="4. City prices from real listings">
           <p className="text-sm text-gray-600">For sale only. Rent is listed separately below, so sale prices and rent are never mixed.</p>
           <select value={pfCity} onChange={(e) => setPfCity(e.target.value)} className={inputCls}>
             <option value="">All cities</option>
@@ -178,7 +178,7 @@ export default function ToolsPage() {
           ) : null}
         </Tool>
 
-        <Tool title="5. Area guides">
+        <Tool id="guides" title="5. Area guides">
           <select value={guide} onChange={(e) => setGuide(e.target.value)} className={inputCls}>
             <option value="">Pick an area</option>
             {Object.keys(guides).map((g) => <option key={g}>{g}</option>)}
@@ -186,7 +186,7 @@ export default function ToolsPage() {
           {guide ? <p className="text-sm">{guides[guide]}</p> : <p className="text-sm text-gray-600">Guides use only the real listings and projects on this site.</p>}
         </Tool>
 
-        <Tool title="6. Plot and file finder">
+        <Tool id="finder" title="6. Plot and file finder">
           <input value={ffQ} onChange={(e) => setFfQ(e.target.value)} placeholder="Search files, for example MGH or Grain Market" className={inputCls} />
           <button className={btnCls} onClick={() => setFfGo(true)}>Find</button>
           {ffGo ? (
