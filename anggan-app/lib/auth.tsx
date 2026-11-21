@@ -53,61 +53,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    const auth = getFirebaseAuth();
-    const db = getDb();
-    if (!auth) {
-      setLoading(false);
-      return;
-    }
-    const unsub = onAuthStateChanged(auth, async (fbUser) => {
-      if (!fbUser) {
-        setUser(null);
+    let cancelled = false;
+    let unsub: (() => void) | undefined;
+    (async () => {
+      const auth = await getFirebaseAuth();
+      const db = await getDb();
+      if (cancelled) return;
+      if (!auth) {
         setLoading(false);
         return;
       }
-      let role: Role = "View only";
-      if (db) {
-        try {
-          const ref = doc(db, "users", fbUser.uid);
-          const snap = await getDoc(ref);
-          if (snap.exists()) {
-            const data = snap.data() as { role?: Role };
-            if (data.role) role = data.role;
-          } else {
-            // First sign-in: create the user's own document as View only.
-            // The rules only allow a user to create their own document with
-            // role View only. The owner then raises the role to Full access
-            // or Staff in the Firebase console. If this write fails (for
-            // example the updated rules are not published yet), the session
-            // stays View only and the owner adds the document by hand.
-            try {
-              await setDoc(ref, {
-                email: fbUser.email || "",
-                name: fbUser.displayName || fbUser.email || "Office user",
-                role: "View only",
-              });
-            } catch {
-              // role stays View only until the owner adds the user document
-            }
-          }
-        } catch {
-          // role stays View only until the owner adds the user document
+      unsub = onAuthStateChanged(auth, async (fbUser) => {
+        if (!fbUser) {
+          setUser(null);
+          setLoading(false);
+          return;
         }
-      }
-      setUser({
-        uid: fbUser.uid,
-        email: fbUser.email || "",
-        name: fbUser.displayName || fbUser.email || "Office user",
-        role,
-        demo: false,
+        let role: Role = "View only";
+        if (db) {
+          try {
+            const ref = doc(db, "users", fbUser.uid);
+            const snap = await getDoc(ref);
+            if (snap.exists()) {
+              const data = snap.data() as { role?: Role };
+              if (data.role) role = data.role;
+            } else {
+              // First sign-in: create the user's own document as View only.
+              // The rules only allow a user to create their own document with
+              // role View only. The owner then raises the role to Full access
+              // or Staff in the Firebase console. If this write fails (for
+              // example the updated rules are not published yet), the session
+              // stays View only and the owner adds the document by hand.
+              try {
+                await setDoc(ref, {
+                  email: fbUser.email || "",
+                  name: fbUser.displayName || fbUser.email || "Office user",
+                  role: "View only",
+                });
+              } catch {
+                // role stays View only until the owner adds the user document
+              }
+            }
+          } catch {
+            // role stays View only until the owner adds the user document
+          }
+        }
+        setUser({
+          uid: fbUser.uid,
+          email: fbUser.email || "",
+          name: fbUser.displayName || fbUser.email || "Office user",
+          role,
+          demo: false,
+        });
+        setLoading(false);
       });
-      setLoading(false);
-    });
-    return () => unsub();
+    })();
+    return () => {
+      cancelled = true;
+      if (unsub) unsub();
+    };
   }, [firebaseOn]);
 
   async function signInGoogle(): Promise<string | null> {
-    const auth = getFirebaseAuth();
+    const auth = await getFirebaseAuth();
     if (!auth) return "Firebase is not connected. Fill in .env.local first.";
     try {
       await signInWithPopup(auth, new GoogleAuthProvider());
@@ -131,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
-    const auth = getFirebaseAuth();
+    const auth = await getFirebaseAuth();
     if (auth) {
       try {
         await fbSignOut(auth);

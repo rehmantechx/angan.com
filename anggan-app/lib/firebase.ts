@@ -2,10 +2,15 @@
 // (NEXT_PUBLIC_FIREBASE_*). No keys are committed. If the variables are
 // empty or still placeholders, Firebase stays off and the app runs on the
 // real seed data with a clear notice.
-import { initializeApp, getApps, FirebaseApp } from "firebase/app";
-import { Firestore, initializeFirestore } from "firebase/firestore";
-import { getAuth, Auth } from "firebase/auth";
-import { getStorage, FirebaseStorage } from "firebase/storage";
+//
+// The Firebase SDK is loaded dynamically, only when a read or write
+// actually runs. A static import would bundle the whole SDK into every
+// public page, even for visitors who never sign in. Type-only imports
+// below are erased at build time, so they add no JavaScript.
+import type { FirebaseApp } from "firebase/app";
+import type { Firestore } from "firebase/firestore";
+import type { Auth } from "firebase/auth";
+import type { FirebaseStorage } from "firebase/storage";
 
 export function isFirebaseConfigured(): boolean {
   // NOTE: access each variable with a static literal key. Next.js only
@@ -23,9 +28,10 @@ export function isFirebaseConfigured(): boolean {
 
 let app: FirebaseApp | null = null;
 
-export function getFirebaseApp(): FirebaseApp | null {
+export async function getFirebaseApp(): Promise<FirebaseApp | null> {
   if (!isFirebaseConfigured()) return null;
   if (app) return app;
+  const { initializeApp, getApps } = await import("firebase/app");
   if (getApps().length > 0) {
     app = getApps()[0];
     return app;
@@ -43,10 +49,11 @@ export function getFirebaseApp(): FirebaseApp | null {
 
 let db: Firestore | null = null;
 
-export function getDb(): Firestore | null {
-  const a = getFirebaseApp();
+export async function getDb(): Promise<Firestore | null> {
+  const a = await getFirebaseApp();
   if (!a) return null;
   if (db) return db;
+  const { initializeFirestore } = await import("firebase/firestore");
   // Forced long polling: the Firestore SDK normally streams over a
   // long-lived WebChannel connection. Some networks and proxies block that
   // stream, and the SDK then retries forever without ever answering, so
@@ -57,12 +64,16 @@ export function getDb(): Firestore | null {
   return db;
 }
 
-export function getFirebaseAuth(): Auth | null {
-  const a = getFirebaseApp();
-  return a ? getAuth(a) : null;
+export async function getFirebaseAuth(): Promise<Auth | null> {
+  const a = await getFirebaseApp();
+  if (!a) return null;
+  const { getAuth } = await import("firebase/auth");
+  return getAuth(a);
 }
 
-export function getFirebaseStorage(): FirebaseStorage | null {
-  const a = getFirebaseApp();
-  return a ? getStorage(a) : null;
+export async function getFirebaseStorage(): Promise<FirebaseStorage | null> {
+  const a = await getFirebaseApp();
+  if (!a) return null;
+  const { getStorage } = await import("firebase/storage");
+  return getStorage(a);
 }

@@ -2,19 +2,15 @@
 // One source of truth, no second copy. When Firebase is configured it reads
 // and writes Firestore. When it is not configured it reads the real seed
 // data and saves changes in the browser (localStorage), with a clear notice.
-import {
-  collection,
-  doc,
-  getDocs,
-  getDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  orderBy,
-  where,
-} from "firebase/firestore";
 import { getDb, isFirebaseConfigured } from "./firebase";
+
+// The Firestore SDK is loaded only when a read or write actually runs,
+// so public pages never download it. All callers below are async.
+let fsMod: typeof import("firebase/firestore") | null = null;
+async function fs(): Promise<typeof import("firebase/firestore")> {
+  if (!fsMod) fsMod = await import("firebase/firestore");
+  return fsMod;
+}
 import {
   LISTINGS,
   PROJECTS,
@@ -120,8 +116,9 @@ const READ_TIMEOUT_MS = 8000;
 
 // ---- Firestore helpers ----
 async function readCollection<T>(name: string): Promise<T[] | null> {
-  const db = getDb();
+  const db = await getDb();
   if (!db) return null;
+  const { collection, getDocs } = await fs();
   try {
     const snap = await withTimeout(getDocs(collection(db, name)), READ_TIMEOUT_MS, "Reading " + name);
     return snap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as T);
@@ -143,8 +140,9 @@ export async function getListings(): Promise<Listing[]> {
 // allow public reads of live listings. An unfiltered read is denied even
 // when the collection is empty, so the filter is required, not optional.
 export async function getPublicListings(): Promise<Listing[]> {
-  const db = getDb();
+  const db = await getDb();
   if (db) {
+    const { collection, doc, getDoc, getDocs, query, where } = await fs();
     try {
       const snap = await withTimeout(
         getDocs(query(collection(db, "listings"), where("liveStatus", "==", "live"))),
@@ -170,8 +168,9 @@ export async function getPublicListings(): Promise<Listing[]> {
 }
 
 export async function saveListing(l: Listing): Promise<void> {
-  const db = getDb();
+  const db = await getDb();
   if (db) {
+    const { doc, setDoc } = await fs();
     const { id, ...rest } = l;
     await withTimeout(setDoc(doc(db, "listings", id), rest, { merge: true }), WRITE_TIMEOUT_MS, "Saving the listing");
     return;
@@ -184,8 +183,9 @@ export async function saveListing(l: Listing): Promise<void> {
 }
 
 export async function deleteListing(id: string): Promise<void> {
-  const db = getDb();
+  const db = await getDb();
   if (db) {
+    const { deleteDoc, doc } = await fs();
     await withTimeout(deleteDoc(doc(db, "listings", id)), WRITE_TIMEOUT_MS, "Deleting the listing");
     return;
   }
@@ -217,8 +217,9 @@ export async function getServices(): Promise<Service[]> {
 
 // ---- Enquiries ----
 export async function getEnquiries(): Promise<Enquiry[]> {
-  const db = getDb();
+  const db = await getDb();
   if (db) {
+    const { collection, getDocs, orderBy, query } = await fs();
     try {
       const snap = await withTimeout(
         getDocs(query(collection(db, "enquiries"), orderBy("date", "desc"))),
@@ -241,8 +242,9 @@ export async function addEnquiry(e: Omit<Enquiry, "id" | "date" | "stage"> & { s
     date: new Date().toISOString().slice(0, 10),
     stage: e.stage || "New",
   };
-  const db = getDb();
+  const db = await getDb();
   if (db) {
+    const { doc, setDoc } = await fs();
     const { id, ...rest } = full;
     await withTimeout(setDoc(doc(db, "enquiries", id), rest), WRITE_TIMEOUT_MS, "Sending the enquiry");
     return full;
@@ -254,8 +256,9 @@ export async function addEnquiry(e: Omit<Enquiry, "id" | "date" | "stage"> & { s
 }
 
 export async function updateEnquiryStage(id: string, stage: Enquiry["stage"], next: string): Promise<void> {
-  const db = getDb();
+  const db = await getDb();
   if (db) {
+    const { doc, updateDoc } = await fs();
     await withTimeout(updateDoc(doc(db, "enquiries", id), { stage, next }), WRITE_TIMEOUT_MS, "Updating the enquiry");
     return;
   }
@@ -270,8 +273,9 @@ export async function updateEnquiryStage(id: string, stage: Enquiry["stage"], ne
 
 // ---- Settings ----
 export async function getSettings(): Promise<OfficeSettings> {
-  const db = getDb();
+  const db = await getDb();
   if (db) {
+    const { doc, getDoc } = await fs();
     try {
       const snap = await withTimeout(getDoc(doc(db, "settings", "office")), READ_TIMEOUT_MS, "Reading settings");
       if (snap.exists()) return { ...SETTINGS, ...(snap.data() as OfficeSettings) };
@@ -283,8 +287,9 @@ export async function getSettings(): Promise<OfficeSettings> {
 }
 
 export async function saveSettings(s: OfficeSettings): Promise<void> {
-  const db = getDb();
+  const db = await getDb();
   if (db) {
+    const { doc, setDoc } = await fs();
     await withTimeout(setDoc(doc(db, "settings", "office"), s, { merge: true }), WRITE_TIMEOUT_MS, "Saving the settings");
     return;
   }
@@ -295,8 +300,9 @@ export async function saveSettings(s: OfficeSettings): Promise<void> {
 
 // ---- Seed upload helper (used once from the dashboard when Firebase is connected) ----
 export async function seedFirestore(): Promise<string> {
-  const db = getDb();
+  const db = await getDb();
   if (!db) return "Firebase is not connected.";
+  const { doc, setDoc } = await fs();
   try {
     const store = loadLocal();
     for (const l of store.listings) {
