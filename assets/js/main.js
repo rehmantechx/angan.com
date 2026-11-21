@@ -29,14 +29,14 @@ var LISTINGS=[
 ];
 var PROJECTS=[
 {name:'MGH Pakistan',loc:'Mangla',city:'Mangla',page:'project-mgh.html',img:'mgh-lake-aerial.jpg',note:'Zamindar File, Affidavit MGH and Serene Farm Houses, inside one project.'},
-{name:'Global Homes Lahore',loc:'Lahore',city:'Lahore',page:'project-global.html',img:'global-zamzam-location.jpg',note:'Zam Zam City, Lahore. LDA approved.'},
-{name:'Al Ghani Phase 7',loc:'Lahore',city:'Lahore',page:'project-alghani.html',img:'alghani-hero.jpeg',note:'Bhaini Road, Lahore.'},
+{name:'Global Homes Lahore',loc:'Lahore',city:'Lahore',page:'project-global.html',img:'global-zamzam-2.jpg',note:'Zam Zam City, Lahore. LDA approved.'},
+{name:'Al Ghani Phase 7',loc:'Lahore',city:'Lahore',page:'project-alghani.html',img:'alghani-site.jpeg',note:'Bhaini Road, Lahore.'},
 {name:'Urban City',loc:'Lahore',city:'Lahore',page:'project-urban.html',img:'urban-drone.jpg',note:'80,000+ kanals, Lahore.'},
 {name:'China Town',loc:'Lahore',city:'Lahore',page:'project-chinatown.html',img:'chinatown-bahria-sky.jpg',note:'Inside Bahria Sky, Bahria Orchard, Lahore.'},
 {name:'Pak China Grain Market',loc:'Multan',city:'Multan',page:'project-grain.html',img:'',note:'54 acres, Shujabad Road, Multan. 996 shops.'},
 {name:'Kashmir Modern City',loc:'Kashmir',city:'Kashmir',page:'project-kashmir.html',img:'kmc-01.jpg',note:'Sold Out. Mirpur, Kashmir.'}
 ];
-function cardHTML(l){return "<article class='card'><div class='ph'><img src='assets/img/"+l.img+"' alt='"+l.title+"' loading='lazy'><span class='tag'>"+l.badge+"</span></div><div class='bd'><div class='price'>"+l.price+"</div><h3>"+l.title+"</h3><div class='loc'>"+l.loc+"</div><div class='specs'><span>"+l.beds+" Beds</span><span>"+l.baths+" Baths</span><span>"+l.size+"</span><span>"+l.type+"</span></div><div class='row'><a class='btn btn-red btn-sm' href='tel:+923041111698'>Call</a><a class='btn btn-wa btn-sm' href='https://wa.me/923041111698' target='_blank' rel='noopener'>WhatsApp</a><a class='btn btn-line btn-sm' href='"+l.url+"' target='_blank' rel='noopener'>On anngan.com</a></div></div></article>"}
+function cardHTML(l,eager){return "<article class='card'><div class='ph'><img src='assets/img/"+l.img+"' alt='"+l.title+"' loading='"+(eager?'eager':'lazy')+"'"+(eager?" fetchpriority='high'":"")+"><span class='tag'>"+l.badge+"</span></div><div class='bd'><div class='price'>"+l.price+"</div><h3>"+l.title+"</h3><div class='loc'>"+l.loc+"</div><div class='specs'><span>"+l.beds+" Beds</span><span>"+l.baths+" Baths</span><span>"+l.size+"</span><span>"+l.type+"</span></div><div class='row'><a class='btn btn-red btn-sm' href='tel:+923041111698'>Call</a><a class='btn btn-wa btn-sm' href='https://wa.me/923041111698' target='_blank' rel='noopener'>WhatsApp</a><a class='btn btn-line btn-sm' href='"+l.url+"' target='_blank' rel='noopener'>On anngan.com</a></div></div></article>"}
 function projHTML(p){var ph=p.img?"<div class='ph'><img src='assets/img/"+p.img+"' alt='"+p.name+"' loading='lazy'></div>":"<div class='ph shopplan'><div class='shopplan-in'><b>Pak China Grain Market</b><span>2 Marla Rs 56 Lac</span><span>3 Marla Rs 84 Lac</span><span>4 Marla Rs 112 Lac</span></div></div>";return "<article class='card'>"+ph+"<div class='bd'><h3>"+p.name+"</h3><div class='loc'>"+p.loc+"</div><p>"+p.note+"</p><div class='row'><a class='btn btn-red btn-sm' href='"+p.page+"'>View project</a><a class='btn btn-line btn-sm' href='tel:+923041111698'>Call</a></div></div></article>"}
 var cur='all';
 document.querySelectorAll('.tabs button[data-status]').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.tabs button[data-status]').forEach(function(x){x.setAttribute('aria-selected','false')});b.setAttribute('aria-selected','true');cur=b.getAttribute('data-status')})});
@@ -66,8 +66,8 @@ function doSearch(fromURL){
     if(hits.length)out+=hits.map(cardHTML).join('');
     if(phits.length)out+=phits.map(projHTML).join('');
     var parts=[];
-    if(hits.length)parts.push(hits.length+' listing(s)');
-    if(phits.length)parts.push(phits.length+' project(s)');
+    if(hits.length)parts.push(hits.length+(hits.length===1?' listing':' listings'));
+    if(phits.length)parts.push(phits.length+(phits.length===1?' project':' projects'));
     msg='Found '+parts.join(' and ')+'.';
     if(loc==='Karachi'&&hits.length===1)msg+=' Karachi has only 1 real listing on anngan.com, the Shamsi Society flat below. Nearest other listings are in Lahore.';
     if(key&&hits.length===0&&phits.length>0)msg+=' No listing matched that word, but these projects did.';
@@ -81,6 +81,9 @@ function doSearch(fromURL){
   }
   if(box){box.innerHTML=out;box.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in')})}
   if(band&&band.id==='searchResultsBand'&&band.style)band.style.display='block';
+  var lb=document.getElementById('listingsBand');if(lb)lb.style.display='none';
+  var sr=document.getElementById('searchResultsTitle');if(sr)sr.innerHTML='Search results <button type="button" id="clearSearch" class="btn btn-line btn-sm" style="margin-left:.6rem">Show all 12 listings</button>';
+  var cs=document.getElementById('clearSearch');if(cs)cs.addEventListener('click',function(){var b2=document.getElementById('searchResultsBand');if(b2)b2.style.display='none';var l2=document.getElementById('listingsBand');if(l2)l2.style.display='';var n2=document.getElementById('searchNote');if(n2)n2.textContent='';var k=document.getElementById('sKey');if(k)k.value='';});
   if(note)note.textContent=msg;
   if(box)box.scrollIntoView({behavior:'smooth',block:'start'});
   return {hits:hits.length,projects:phits.length,msg:msg};
@@ -100,8 +103,8 @@ if(qs.get('city')||qs.get('q')){
 var bg=document.getElementById('browseGrid');
 function renderBrowse(kind){
   if(!bg)return;
-  if(kind==='homes'){bg.innerHTML=LISTINGS.filter(function(l){return l.type==='House'||l.type==='Flat'||l.type==='Portion'}).slice(0,6).map(cardHTML).join('')}
-  else if(kind==='plots'){bg.innerHTML="<article class='card'><div class='bd'><h3>No plot listing on anngan.com right now</h3><p>Plots are sold as files and projects instead. See MGH Zamindar File at MGH Pakistan, Mangla, and the 7 projects.</p><div class='row'><a class='btn btn-red btn-sm' href='project-mgh.html'>MGH Zamindar File</a><a class='btn btn-navy btn-sm' href='projects.html'>All projects</a></div></div></article>"+PROJECTS.slice(0,2).map(projHTML).join('')}
+  if(kind==='homes'){bg.innerHTML=LISTINGS.map(function(l,i){return cardHTML(l,i<6)}).join('')}
+  else if(kind==='plots'){bg.innerHTML="<article class='card'><div class='bd'><h3>No plot listing on anngan.com right now</h3><p>There is no plot for sale in the 12 real listings. Plots are sold as files and projects instead. The MGH Zamindar File is a file, not a plot listing. See MGH Pakistan, Mangla, and the 7 projects.</p><div class='row'><a class='btn btn-red btn-sm' href='project-mgh.html'>MGH Zamindar File</a><a class='btn btn-navy btn-sm' href='projects.html'>All projects</a></div></div></article>"}
   else{bg.innerHTML="<article class='card'><div class='bd'><h3>Pak China Grain Market, Multan</h3><p>996 shops, 54 acres, Shujabad Road. 2 Marla Rs 56 Lac, 3 Marla Rs 84 Lac, 4 Marla Rs 112 Lac.</p><div class='row'><a class='btn btn-red btn-sm' href='project-grain.html'>View market</a></div></div></article><article class='card'><div class='bd'><h3>China Town, Lahore</h3><p>Pakistan's First China Town, inside Bahria Sky, Bahria Orchard, Lahore.</p><div class='row'><a class='btn btn-red btn-sm' href='project-chinatown.html'>View project</a></div></div></article>"}
 }
 if(bg){renderBrowse('homes');
