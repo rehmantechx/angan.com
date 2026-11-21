@@ -144,7 +144,7 @@ export default function Home() {
   const otherProjects = projects.filter((p) => p.id !== "proj-1");
 
   const tabCls = (on: boolean) =>
-    "px-4 py-2 rounded font-bold text-sm " + (on ? "bg-[#005F90] text-white" : "bg-[#2F96CD] text-white");
+    "px-4 py-3 rounded font-bold text-sm min-h-[48px] inline-flex items-center " + (on ? "bg-[#005F90] text-white" : "bg-gray-200 text-navy");
 
   return (
     <div>
@@ -165,10 +165,10 @@ export default function Home() {
           </p>
           <div className="bg-white rounded-lg p-3 mt-4 shadow-xl border-t-4 border-anngan">
             <div className="flex gap-2 flex-wrap" role="tablist" aria-label="Property status">
-              <button type="button" role="tab" aria-selected={status === "all"} className={tabCls(status === "all")} onClick={() => setStatus("all")}>All Status</button>
-              <button type="button" role="tab" aria-selected={status === "sale"} className={tabCls(status === "sale")} onClick={() => setStatus("sale")}>For Sale</button>
-              <button type="button" role="tab" aria-selected={status === "rent"} className={tabCls(status === "rent")} onClick={() => setStatus("rent")}>For Rent</button>
-              <button type="button" role="tab" aria-selected={status === "project"} className={tabCls(status === "project")} onClick={() => setStatus("project")}>Projects</button>
+              <button type="button" role="tab" id="tab-all" aria-controls="search-results" aria-selected={status === "all"} className={tabCls(status === "all")} onClick={() => setStatus("all")}>All Status</button>
+              <button type="button" role="tab" id="tab-sale" aria-controls="search-results" aria-selected={status === "sale"} className={tabCls(status === "sale")} onClick={() => setStatus("sale")}>For Sale</button>
+              <button type="button" role="tab" id="tab-rent" aria-controls="search-results" aria-selected={status === "rent"} className={tabCls(status === "rent")} onClick={() => setStatus("rent")}>For Rent</button>
+              <button type="button" role="tab" id="tab-project" aria-controls="search-results" aria-selected={status === "project"} className={tabCls(status === "project")} onClick={() => setStatus("project")}>Projects</button>
             </div>
             <div className="grid gap-3 mt-3 sm:grid-cols-2 lg:grid-cols-6 items-end">
               <div className="lg:col-span-2">
@@ -201,7 +201,7 @@ export default function Home() {
                 </select>
               </div>
             </div>
-            <button type="button" onClick={doSearch} className="bg-anngan text-white font-bold px-8 py-2.5 rounded mt-3 w-full sm:w-auto">
+            <button type="button" onClick={doSearch} className="bg-anngan text-white font-bold px-8 py-3 rounded mt-3 w-full sm:w-auto min-h-[48px]">
               Search
             </button>
             {searchNote ? <p className="text-sm font-semibold text-navy mt-2" role="status">{searchNote}</p> : null}
@@ -210,15 +210,15 @@ export default function Home() {
       </section>
 
       {searched ? (
-        <section className="mt-8">
+        <section className="mt-8" id="search-results" role="tabpanel" aria-labelledby="tab-all">
           <div className="flex items-baseline justify-between flex-wrap gap-2">
             <h2 className="text-2xl font-bold text-navy">
               Search results
-              <button type="button" onClick={clearSearch} className="border border-navy text-navy text-sm px-3 py-1 rounded ml-3 font-semibold">
+              <button type="button" onClick={clearSearch} className="border border-navy text-navy text-sm px-3 py-2 rounded ml-3 font-semibold min-h-[48px] inline-flex items-center">
                 Show all 12 listings
               </button>
             </h2>
-            <Link href="/properties" className="text-anngan font-semibold text-sm">All properties &rarr;</Link>
+            <Link href="/properties" className="text-anngan-dark font-semibold text-sm">All properties &rarr;</Link>
           </div>
           <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
             {searchResults.listings.map((l) => <ListingCard key={l.id} l={l} />)}
@@ -232,7 +232,7 @@ export default function Home() {
                   </div>
                 )}
                 <div className="p-4">
-                  <h3 className="font-semibold"><Link href={`/projects/${p.id}`} className="text-navy hover:text-anngan">{p.name}</Link></h3>
+                  <h3 className="font-semibold"><Link href={`/projects/${p.id}`} className="text-navy hover:text-anngan-dark">{p.name}</Link></h3>
                   <p className="text-gray-600 text-sm">{p.loc}</p>
                   <p className="text-sm mt-1">{p.note}</p>
                 </div>
@@ -244,16 +244,17 @@ export default function Home() {
         <section className="mt-8">
           <div className="flex items-baseline justify-between flex-wrap gap-2">
             <h2 className="text-2xl font-bold text-navy">Houses and flats from Anngan</h2>
-            <Link href="/properties" className="text-anngan font-semibold text-sm">See all 12 &rarr;</Link>
+            <Link href="/properties" className="text-anngan-dark font-semibold text-sm">See all 12 &rarr;</Link>
           </div>
           <p className="text-gray-600 mt-1">
             All 12 houses below are real Anngan listings, each with a real photo and a real price. Tap a tab to change the list. Prices are what the seller is asking today, call to check before you travel.
           </p>
           <div className="flex gap-2 mt-3 flex-wrap" role="tablist" aria-label="Change the list">
-            <button type="button" aria-selected={browse === "homes"} className={tabCls(browse === "homes")} onClick={() => setBrowse("homes")}>Houses and flats</button>
-            <button type="button" aria-selected={browse === "plots"} className={tabCls(browse === "plots")} onClick={() => setBrowse("plots")}>Files and plots</button>
-            <button type="button" aria-selected={browse === "commercial"} className={tabCls(browse === "commercial")} onClick={() => setBrowse("commercial")}>Shops and markets</button>
+            <button type="button" role="tab" id="tab-homes" aria-controls="browse-list" aria-selected={browse === "homes"} className={tabCls(browse === "homes")} onClick={() => setBrowse("homes")}>Houses and flats</button>
+            <button type="button" role="tab" id="tab-plots" aria-controls="browse-list" aria-selected={browse === "plots"} className={tabCls(browse === "plots")} onClick={() => setBrowse("plots")}>Files and plots</button>
+            <button type="button" role="tab" id="tab-commercial" aria-controls="browse-list" aria-selected={browse === "commercial"} className={tabCls(browse === "commercial")} onClick={() => setBrowse("commercial")}>Shops and markets</button>
           </div>
+          <div id="browse-list" role="tabpanel" aria-labelledby="tab-homes">
           {browse === "homes" ? (
             <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
               {listings.map((l) => <ListingCard key={l.id} l={l} />)}
@@ -263,8 +264,8 @@ export default function Home() {
               <h3 className="font-bold text-navy text-lg">No plot listing on anngan.com right now</h3>
               <p className="text-gray-600 text-sm mt-1">There is no plot for sale in the 12 real listings. Plots are sold as files and projects instead. The MGH Zamindar File is a file, not a plot listing. See MGH Pakistan, Mangla, and the 7 projects.</p>
               <div className="flex gap-2 mt-3 flex-wrap">
-                <Link href="/projects/proj-1" className="bg-anngan text-white text-sm px-3 py-2 rounded font-semibold">MGH Zamindar File</Link>
-                <Link href="/projects" className="bg-navy text-white text-sm px-3 py-2 rounded font-semibold">All projects</Link>
+                <Link href="/projects/proj-1" className="bg-anngan text-white text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center">MGH Zamindar File</Link>
+                <Link href="/projects" className="bg-navy text-white text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center">All projects</Link>
               </div>
             </article>
           ) : (
@@ -272,19 +273,20 @@ export default function Home() {
               <article className="border border-gray-200 rounded-lg bg-white shadow-sm p-5">
                 <h3 className="font-bold text-navy text-lg">Pak China Grain Market, Multan</h3>
                 <p className="text-gray-600 text-sm mt-1">996 shops, 54 acres, Shujabad Road. 2 Marla Rs 56 Lac, 3 Marla Rs 84 Lac, 4 Marla Rs 112 Lac.</p>
-                <Link href="/projects/proj-6" className="bg-anngan text-white text-sm px-3 py-2 rounded font-semibold inline-block mt-3">View market</Link>
+                <Link href="/projects/proj-6" className="bg-anngan text-white text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center inline-block mt-3">View market</Link>
               </article>
               <article className="border border-gray-200 rounded-lg bg-white shadow-sm p-5">
                 <h3 className="font-bold text-navy text-lg">China Town, Lahore</h3>
                 <p className="text-gray-600 text-sm mt-1">Pakistan's First China Town, inside Bahria Sky, Bahria Orchard, Lahore.</p>
-                <Link href="/projects/proj-5" className="bg-anngan text-white text-sm px-3 py-2 rounded font-semibold inline-block mt-3">View project</Link>
+                <Link href="/projects/proj-5" className="bg-anngan text-white text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center inline-block mt-3">View project</Link>
               </article>
             </div>
           )}
+          </div>
           <p className="mt-4 text-sm">
             <span className="font-semibold">By size:</span>{" "}
             {["3 Marla", "5 Marla", "6 Marla", "10 Marla", "1 Kanal"].map((s) => (
-              <Link key={s} href={`/properties?q=${encodeURIComponent(s)}`} className="text-anngan font-semibold mr-3 hover:underline">{s}</Link>
+              <Link key={s} href={`/properties?q=${encodeURIComponent(s)}`} className="text-anngan-dark font-semibold mr-3 hover:underline">{s}</Link>
             ))}
           </p>
           <p className="mt-3 text-sm text-gray-600">
@@ -298,7 +300,7 @@ export default function Home() {
       <section className="mt-10 bg-slate-50 -mx-4 px-4 py-8">
         <div className="flex items-baseline justify-between flex-wrap gap-2">
           <h2 className="text-2xl font-bold text-navy">Our projects</h2>
-          <Link href="/projects" className="text-anngan font-semibold text-sm">All 7 projects &rarr;</Link>
+          <Link href="/projects" className="text-anngan-dark font-semibold text-sm">All 7 projects &rarr;</Link>
         </div>
         <p className="text-gray-600 mt-1">These are the projects Anngan markets itself. MGH Pakistan at Mangla comes first, it is the one we know best. Each project has its own page, with its own pictures.</p>
         {mgh ? (
@@ -317,8 +319,8 @@ export default function Home() {
                 <span className="bg-slate-100 text-navy text-xs font-semibold px-2 py-1 rounded">Serene Farm Houses</span>
               </div>
               <div className="flex gap-2 mt-4 flex-wrap">
-                <Link href="/projects/proj-1" className="bg-anngan text-white text-sm px-4 py-2 rounded font-semibold">Open MGH Pakistan</Link>
-                <a href="tel:+923041111698" className="border border-navy text-navy text-sm px-4 py-2 rounded font-semibold">Call for today's file rate</a>
+                <Link href="/projects/proj-1" className="bg-anngan text-white text-sm px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">Open MGH Pakistan</Link>
+                <a href="tel:+923041111698" className="border border-navy text-navy text-sm px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">Call for today's file rate</a>
               </div>
             </div>
           </article>
@@ -343,7 +345,7 @@ export default function Home() {
                 <p className="text-sm mt-1">{p.note}</p>
                 {p.id === "proj-6" ? <p className="text-sm mt-1">54-acre site, Shujabad Road, Multan. 996 shops. No real photo exists yet, so the shop sizes and prices are shown here instead of a picture.</p> : null}
                 {p.id === "proj-5" ? <p className="text-sm mt-1">Photo shows Bahria Sky.</p> : null}
-                <Link href={`/projects/${p.id}`} className="border border-navy text-navy text-sm px-3 py-1.5 rounded font-semibold inline-block mt-2">Open project</Link>
+                <Link href={`/projects/${p.id}`} className="border border-navy text-navy text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold inline-block mt-2">Open project</Link>
               </div>
             </article>
           ))}
@@ -353,7 +355,7 @@ export default function Home() {
       <section className="mt-10">
         <div className="flex items-baseline justify-between flex-wrap gap-2">
           <h2 className="text-2xl font-bold text-navy">Ask Anngan before you buy</h2>
-          <Link href="/tools" className="text-anngan font-semibold text-sm">All six, on one page &rarr;</Link>
+          <Link href="/tools" className="text-anngan-dark font-semibold text-sm">All six, on one page &rarr;</Link>
         </div>
         <p className="text-gray-600 mt-1">Six small tools that work in your browser. No account, no payment. They use your own numbers and the real Anngan listings on this site, nothing else.</p>
         <div className="mt-4 space-y-3">
@@ -364,7 +366,7 @@ export default function Home() {
                 <h3 className="font-bold text-navy">{t.title}</h3>
                 <p className="text-sm text-gray-600">{t.note}</p>
               </div>
-              <Link href={t.href} className="bg-navy text-white text-sm px-3 py-2 rounded font-semibold shrink-0">Open it</Link>
+              <Link href={t.href} className="bg-navy text-white text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center shrink-0">Open it</Link>
             </div>
           ))}
         </div>
@@ -384,7 +386,7 @@ export default function Home() {
         <h2 className="text-xl font-bold text-navy mt-8">By society</h2>
         <p className="mt-2 text-sm flex flex-wrap gap-x-4 gap-y-1">
           {SOCIETY_LINKS.map((s) => (
-            <Link key={s} href={`/properties?q=${encodeURIComponent(s)}`} className="text-anngan font-semibold hover:underline">{s === "DHA" ? "DHA Lahore" : s === "Bahria" ? "Bahria Town" : s === "Paragon" ? "Paragon City" : s === "Al Kabir" ? "Al Kabir Town" : s === "Lake City" ? "Lake City" : s === "Citi Housing" ? "Citi Housing" : s === "Shamsi" ? "Shamsi Society" : s}</Link>
+            <Link key={s} href={`/properties?q=${encodeURIComponent(s)}`} className="text-anngan-dark font-semibold hover:underline">{s === "DHA" ? "DHA Lahore" : s === "Bahria" ? "Bahria Town" : s === "Paragon" ? "Paragon City" : s === "Al Kabir" ? "Al Kabir Town" : s === "Lake City" ? "Lake City" : s === "Citi Housing" ? "Citi Housing" : s === "Shamsi" ? "Shamsi Society" : s}</Link>
           ))}
         </p>
       </section>
@@ -392,17 +394,17 @@ export default function Home() {
       <section className="mt-10 bg-slate-50 -mx-4 px-4 py-8">
         <div className="flex items-baseline justify-between flex-wrap gap-2">
           <h2 className="text-2xl font-bold text-navy">From the Anngan blog</h2>
-          <Link href="/blogs" className="text-anngan font-semibold text-sm">All 23 articles &rarr;</Link>
+          <Link href="/blogs" className="text-anngan-dark font-semibold text-sm">All 23 articles &rarr;</Link>
         </div>
         <p className="text-gray-600 mt-1">These are the latest real articles published on anngan.com, newest first. The newest one here is from 27 Feb 2023, and no new article has been published since, so the list looks old. No thumbnails were published with these articles on anngan.com, so none are shown here, and no dates are invented.</p>
         <div className="mt-4 space-y-3">
           {blogs.slice(0, 6).map((b) => (
             <article key={b.id} className="border border-gray-200 rounded-lg bg-white p-4 flex gap-4 items-start justify-between">
               <div className="min-w-0">
-                <p className="text-sm text-gray-500">{b.date}</p>
+                <p className="text-sm text-gray-600">{b.date}</p>
                 <h3 className="font-semibold text-navy">{b.title}</h3>
               </div>
-              <a href={b.url} target="_blank" rel="noopener" className="border border-navy text-navy text-sm px-3 py-1.5 rounded font-semibold shrink-0">Read it</a>
+              <a href={b.url} target="_blank" rel="noopener" className="border border-navy text-navy text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold shrink-0">Read it</a>
             </article>
           ))}
         </div>
@@ -415,11 +417,11 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-navy">Who we are</h2>
             <p className="text-gray-600 mt-2">ANNGAN.COM was established to give our devoted customers a competitive edge by delivering top-tier real estate solutions under one roof. We work every day to establish ourselves as Pakistan's premier and trusted source of real estate services.</p>
             <p className="text-gray-600 mt-2"><b>Muhammad Mahmood Cheema</b>, Chairman and Chief Executive Officer</p>
-            <p className="font-bold text-anngan mt-2">banay khawab haqiqat</p>
+            <p className="font-bold text-anngan-dark mt-2">banay khawab haqiqat</p>
             <p className="text-sm text-gray-600 mt-2">Office: {settings?.address || "57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore"}. Phone {settings?.phone || "+92 304 1111 698"}, email info@anngan.com.</p>
             <div className="flex gap-2 mt-4 flex-wrap">
-              <Link href="/about" className="bg-anngan text-white px-4 py-2 rounded font-semibold text-sm">Read our story</Link>
-              <Link href="/projects" className="border border-navy text-navy px-4 py-2 rounded font-semibold text-sm">See the projects</Link>
+              <Link href="/about" className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold text-sm">Read our story</Link>
+              <Link href="/projects" className="border border-navy text-navy px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold text-sm">See the projects</Link>
             </div>
           </div>
         </div>

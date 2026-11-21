@@ -12,7 +12,7 @@ const GUIDES = [
 export default function SocietiesPage() {
   return (
     <div>
-      <p className="text-sm text-gray-500">Home &rsaquo; Societies Guide</p>
+      <p className="text-sm text-gray-600">Home &rsaquo; Societies Guide</p>
       <h1 className="text-3xl font-bold text-navy mt-1">Societies guide</h1>
       <p className="text-gray-600 mt-1">Guides for the societies Anngan covers.</p>
       <div className="grid gap-4 mt-6 sm:grid-cols-2">
@@ -25,13 +25,13 @@ export default function SocietiesPage() {
                 className={g.contain ? "w-full h-40 object-contain bg-white p-4" : "w-full h-40 object-cover"}
                 loading="lazy"
               />
-              <figcaption className="text-xs text-gray-500 px-4 pt-2">{g.caption}</figcaption>
+              <figcaption className="text-xs text-gray-600 px-4 pt-2">{g.caption}</figcaption>
             </figure>
             <div className="p-4 pt-2 flex flex-col flex-1">
               <h2 className="font-bold text-navy text-lg leading-snug">{g.name}</h2>
               <p className="text-sm text-gray-600 mt-1">{g.note}</p>
               <div className="mt-auto pt-3">
-                <Link href={g.href} className="bg-anngan text-white text-sm px-3 py-2 rounded font-semibold inline-block">{g.label}</Link>
+                <Link href={g.href} className="bg-anngan text-white text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center inline-block">{g.label}</Link>
               </div>
             </div>
           </article>

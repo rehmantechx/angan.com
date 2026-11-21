@@ -17,10 +17,10 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   return (
     <div>
       <p className="text-sm">
-        <Link href="/projects" className="text-anngan font-semibold">
+        <Link href="/projects" className="text-anngan-dark font-semibold">
           All projects
         </Link>
-        <span className="text-gray-500"> / {project.name}</span>
+        <span className="text-gray-600"> / {project.name}</span>
       </p>
       <h1 className="text-3xl font-bold text-navy mt-2">{project.name}</h1>
       <p className="text-gray-600 mt-1">
@@ -70,7 +70,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                 href={d.website.url}
                 target="_blank"
                 rel="noopener"
-                className="text-anngan font-semibold underline"
+                className="text-anngan-dark font-semibold underline"
               >
                 {d.website.label}
               </a>
@@ -149,14 +149,14 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
             <h2 className="font-bold text-navy text-lg">Talk to the office about {project.name}</h2>
             <div className="flex gap-2 mt-3 flex-wrap">
-              <a href="tel:+923041111698" className="bg-anngan text-white px-4 py-2 rounded font-semibold">
+              <a href="tel:+923041111698" className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">
                 Call +92 304 1111 698
               </a>
               <a
                 href="https://wa.me/923041111698"
                 target="_blank"
                 rel="noopener"
-                className="bg-green-600 text-white px-4 py-2 rounded font-semibold"
+                className="bg-green-600 text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold"
               >
                 WhatsApp
               </a>
@@ -169,7 +169,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <EnquiryForm asked={project.name} compact />
           </div>
           <p className="mt-4 text-sm">
-            <Link href="/projects" className="text-anngan font-semibold underline">
+            <Link href="/projects" className="text-anngan-dark font-semibold underline">
               Back to all projects
             </Link>
           </p>

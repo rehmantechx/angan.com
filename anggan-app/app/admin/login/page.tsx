@@ -28,7 +28,7 @@ export default function LoginPage() {
       <div className="grid gap-3 mt-4">
         <button
           disabled={busy}
-          className="bg-navy text-white px-4 py-2 rounded disabled:opacity-50"
+          className="bg-navy text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center disabled:opacity-50"
           onClick={async () => {
             setBusy(true);
             setError("");

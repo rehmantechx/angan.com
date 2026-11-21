@@ -24,9 +24,9 @@ import { Listing, Project, Blog, Agency, Service, Enquiry, OfficeSettings } from
 type Tab = "Overview" | "Listings" | "Enquiries" | "Projects" | "Blogs" | "Agencies" | "Services" | "Settings";
 
 const inputCls = "border border-gray-300 rounded px-3 py-2 w-full";
-const btnRed = "bg-anngan text-white px-3 py-1.5 rounded text-sm";
-const btnNavy = "bg-navy text-white px-3 py-1.5 rounded text-sm";
-const btnLine = "border border-navy text-navy px-3 py-1.5 rounded text-sm";
+const btnRed = "bg-anngan text-white px-3 py-2.5 rounded min-h-[48px] inline-flex items-center text-sm";
+const btnNavy = "bg-navy text-white px-3 py-2.5 rounded min-h-[48px] inline-flex items-center text-sm";
+const btnLine = "border border-navy text-navy px-3 py-2.5 rounded min-h-[48px] inline-flex items-center text-sm";
 
 const STAGES: Enquiry["stage"][] = ["New", "Called", "Visit", "Deal Done"];
 
@@ -107,7 +107,7 @@ export default function AdminPage() {
           Signed in as {user.name} ({user.email}) : {user.role}
           {user.demo ? " : demo login, local test only" : ""}
         </span>
-        <span className="text-xs text-gray-500">Your user id: {user.uid}</span>
+        <span className="text-xs text-gray-600">Your user id: {user.uid}</span>
       </div>
       {user.role === "View only" && firebaseOn() ? (
         <p className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">
@@ -132,7 +132,7 @@ export default function AdminPage() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={tab === t ? "bg-navy text-white px-3 py-1.5 rounded text-sm" : "border border-navy text-navy px-3 py-1.5 rounded text-sm"}
+            className={tab === t ? "bg-navy text-white px-3 py-2.5 rounded min-h-[48px] inline-flex items-center text-sm" : "border border-navy text-navy px-3 py-2.5 rounded min-h-[48px] inline-flex items-center text-sm"}
           >
             {t}
             {t === "Enquiries" && newEnq > 0 ? ` (${newEnq} new)` : ""}
@@ -290,7 +290,7 @@ export default function AdminPage() {
         <div className="mt-4 grid gap-2">
           {blogs.map((b) => (
             <div key={b.id} className="border rounded p-3 text-sm">
-              <span className="text-gray-500">{b.date} : </span>
+              <span className="text-gray-600">{b.date} : </span>
               <a href={b.url} target="_blank" rel="noopener" className="text-navy underline">{b.title}</a>
             </div>
           ))}

@@ -29,7 +29,7 @@ export default function AboutPage() {
           alt="Mangla Lake aerial view, MGH Pakistan"
           className="w-full h-56 sm:h-64 object-cover"
         />
-        <figcaption className="text-xs text-gray-500 px-4 py-2 bg-white">Mangla Lake, MGH Pakistan, our main project.</figcaption>
+        <figcaption className="text-xs text-gray-600 px-4 py-2 bg-white">Mangla Lake, MGH Pakistan, our main project.</figcaption>
       </figure>
 
       <div className="grid gap-6 mt-6 lg:grid-cols-2 items-start">
@@ -72,18 +72,18 @@ export default function AboutPage() {
               <dd className="text-2xl font-bold text-navy">23</dd>
             </div>
           </dl>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-600 mt-2">
             No office count, employee count or founding year is published on anngan.com.
           </p>
 
           <div className="mt-6 flex gap-2 flex-wrap">
-            <Link href="/projects" className="bg-anngan text-white px-4 py-2 rounded font-semibold text-sm">
+            <Link href="/projects" className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold text-sm">
               See our 7 projects
             </Link>
-            <Link href="/properties" className="border border-navy text-navy px-4 py-2 rounded font-semibold text-sm">
+            <Link href="/properties" className="border border-navy text-navy px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold text-sm">
               Houses and flats for sale
             </Link>
-            <Link href="/contact" className="border border-navy text-navy px-4 py-2 rounded font-semibold text-sm">
+            <Link href="/contact" className="border border-navy text-navy px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold text-sm">
               Contact the office
             </Link>
           </div>

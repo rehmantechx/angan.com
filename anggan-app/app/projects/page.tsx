@@ -29,16 +29,16 @@ export default function ProjectsPage() {
             )}
             <div className="p-4 flex flex-col flex-1">
               <h3 className="font-semibold text-lg">
-                <Link href={`/projects/${p.id}`} className="text-navy hover:text-anngan">
+                <Link href={`/projects/${p.id}`} className="text-navy hover:text-anngan-dark">
                   {p.name}
                 </Link>
               </h3>
               <p className="text-gray-600 text-sm">{p.loc}</p>
               <p className="text-sm mt-1">{p.note}</p>
               <div className="flex gap-2 mt-auto pt-3 flex-wrap">
-                <Link href={`/projects/${p.id}`} className="border border-navy text-navy text-sm px-3 py-1.5 rounded font-semibold">View project</Link>
-                <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-3 py-1.5 rounded">Call</a>
-                <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="bg-green-600 text-white text-sm px-3 py-1.5 rounded">WhatsApp</a>
+                <Link href={`/projects/${p.id}`} className="border border-navy text-navy text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">View project</Link>
+                <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center">Call</a>
+                <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="bg-green-600 text-white text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center">WhatsApp</a>
               </div>
             </div>
           </article>

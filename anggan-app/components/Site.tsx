@@ -59,7 +59,7 @@ export function Header() {
           <div className="flex gap-2 ml-auto shrink-0">
             <a
               href="tel:+923041111698"
-              className="bg-navy text-white text-xs sm:text-sm px-2 sm:px-3 py-2 rounded font-semibold whitespace-nowrap"
+              className="bg-navy text-white text-xs sm:text-sm px-2 sm:px-3 py-2 rounded font-semibold whitespace-nowrap min-h-[48px] inline-flex items-center"
               aria-label="Call Anngan on +92 304 1111 698"
             >
               Call<span className="hidden sm:inline">&nbsp;+92 304 1111 698</span>
@@ -79,28 +79,28 @@ export function Header() {
         <div className="px-4">
           <button
             onClick={() => setMenuOpen(true)}
-            className="lg:hidden font-bold py-2.5 pr-2 text-sm tracking-wide"
+            className="lg:hidden font-bold pr-2 text-sm tracking-wide min-h-[48px] inline-flex items-center"
             aria-label="Open menu"
             aria-expanded={menuOpen}
           >
             MENU &#9776;
           </button>
-          <div className="hidden lg:flex items-center gap-4 text-xs font-bold whitespace-nowrap overflow-x-auto py-3 max-w-7xl mx-auto px-4">
+          <div className="hidden lg:flex items-center gap-4 text-xs font-bold whitespace-nowrap overflow-x-auto max-w-7xl mx-auto px-4">
             {NAV_LINKS.map((l) => (
-              <Link key={l.href} href={l.href} className="hover:underline shrink-0">
+              <Link key={l.href} href={l.href} className="hover:underline shrink-0 inline-flex items-center min-h-[48px] px-1">
                 {l.label}
               </Link>
             ))}
-            <Link href="/create-listing" className="bg-sky-400 text-navy px-2 py-1.5 rounded shrink-0">
+            <Link href="/create-listing" className="bg-sky-400 text-navy px-3 rounded shrink-0 inline-flex items-center min-h-[48px]">
               CREATE A LISTING
             </Link>
             {user ? (
               <>
-                <Link href="/admin" className="hover:underline shrink-0">DASHBOARD</Link>
-                <button onClick={() => signOut()} className="hover:underline shrink-0">SIGN OUT</button>
+                <Link href="/admin" className="hover:underline shrink-0 inline-flex items-center min-h-[48px] px-1">DASHBOARD</Link>
+                <button onClick={() => signOut()} className="hover:underline shrink-0 inline-flex items-center min-h-[48px] px-1">SIGN OUT</button>
               </>
             ) : (
-              <Link href="/admin/login" className="hover:underline shrink-0">OFFICE LOGIN</Link>
+              <Link href="/admin/login" className="hover:underline shrink-0 inline-flex items-center min-h-[48px] px-1">OFFICE LOGIN</Link>
             )}
           </div>
         </div>
@@ -113,32 +113,32 @@ export function Header() {
               <img src="/img/logo.png" alt="anngan.com logo, banay khawab haqiqat" className="h-9 w-auto" />
               <button
                 onClick={() => setMenuOpen(false)}
-                className="text-navy font-bold px-2 py-1"
+                className="text-navy font-bold px-3 py-2 min-h-[48px] min-w-[48px] inline-flex items-center justify-center"
                 aria-label="Close menu"
               >
                 &#10005;
               </button>
             </div>
             <nav className="px-4 py-3 flex flex-col gap-1 text-sm font-bold" aria-label="Menu links">
-              <p className="text-xs text-gray-500 font-bold tracking-wide pt-1">Anngan</p>
+              <p className="text-xs text-gray-600 font-bold tracking-wide pt-1">Anngan</p>
               {NAV_LINKS.map((l) => (
                 <Link
                   key={l.href}
                   href={l.href}
                   onClick={() => setMenuOpen(false)}
-                  className="text-navy py-2 border-b border-gray-100 hover:text-anngan"
+                  className="text-navy py-3 min-h-[48px] flex items-center border-b border-gray-100 hover:text-anngan-dark"
                 >
                   {l.label} &rsaquo;
                 </Link>
               ))}
-              <p className="text-xs text-gray-500 font-bold tracking-wide pt-3">Companies</p>
-              <Link href="/companies" onClick={() => setMenuOpen(false)} className="text-navy py-2 border-b border-gray-100">
+              <p className="text-xs text-gray-600 font-bold tracking-wide pt-3">Companies</p>
+              <Link href="/companies" onClick={() => setMenuOpen(false)} className="text-navy py-3 min-h-[48px] flex items-center border-b border-gray-100">
                 Anngan Companies &rsaquo;
               </Link>
-              <Link href="/services" onClick={() => setMenuOpen(false)} className="text-navy py-2 border-b border-gray-100">
+              <Link href="/services" onClick={() => setMenuOpen(false)} className="text-navy py-3 min-h-[48px] flex items-center border-b border-gray-100">
                 Angan Tech &rsaquo;
               </Link>
-              <Link href="/services/service-7" onClick={() => setMenuOpen(false)} className="text-navy py-2 border-b border-gray-100">
+              <Link href="/services/service-7" onClick={() => setMenuOpen(false)} className="text-navy py-3 min-h-[48px] flex items-center border-b border-gray-100">
                 Angan Tech CRM &rsaquo;
               </Link>
               <Link
@@ -150,31 +150,31 @@ export function Header() {
               </Link>
               {user ? (
                 <>
-                  <Link href="/admin" onClick={() => setMenuOpen(false)} className="text-anngan py-2 border-b border-gray-100">
+                  <Link href="/admin" onClick={() => setMenuOpen(false)} className="text-anngan-dark py-3 min-h-[48px] flex items-center border-b border-gray-100">
                     Dashboard
                   </Link>
                   <button
                     onClick={() => { signOut(); setMenuOpen(false); }}
-                    className="text-gray-500 py-2 text-left"
+                    className="text-gray-600 py-3 min-h-[48px] flex items-center text-left"
                   >
                     Sign out
                   </button>
                 </>
               ) : (
-                <Link href="/admin/login" onClick={() => setMenuOpen(false)} className="text-navy py-2 hover:text-anngan">
+                <Link href="/admin/login" onClick={() => setMenuOpen(false)} className="text-navy py-3 min-h-[48px] flex items-center hover:text-anngan-dark">
                   Office login
                 </Link>
               )}
             </nav>
             <div className="px-4 pb-4 flex gap-2">
-              <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-3 py-2 rounded font-semibold">
+              <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-3 py-2 rounded font-semibold min-h-[48px] inline-flex items-center justify-center flex-1 text-center">
                 Call +92 304 1111 698
               </a>
               <a
                 href="https://wa.me/923041111698"
                 target="_blank"
                 rel="noopener"
-                className="bg-green-600 text-white text-sm px-3 py-2 rounded font-semibold"
+                className="bg-green-600 text-white text-sm px-3 py-2 rounded font-semibold min-h-[48px] inline-flex items-center justify-center flex-1 text-center"
               >
                 WhatsApp
               </a>
@@ -188,7 +188,7 @@ export function Header() {
 
 export function Footer() {
   return (
-    <footer className="bg-anngan text-red-100 mt-0">
+    <footer className="bg-anngan text-white mt-0">
       <div className="max-w-6xl mx-auto px-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8 py-10 text-sm">
         <div>
           <span className="inline-block bg-white rounded-lg px-3 py-2 shadow">
@@ -199,18 +199,18 @@ export function Footer() {
           </p>
           <p className="mt-3">
             57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore<br />
-            <a href="tel:+923041111698" className="hover:text-white hover:underline">+92 304 1111 698</a><br />
-            <a href="mailto:info@anngan.com" className="hover:text-white hover:underline">info@anngan.com</a>
+            <a href="tel:+923041111698" className="inline-block py-2 hover:text-white hover:underline">+92 304 1111 698</a><br />
+            <a href="mailto:info@anngan.com" className="inline-block py-2 hover:text-white hover:underline">info@anngan.com</a>
           </p>
         </div>
         <div>
           <p className="font-bold text-white text-base">Company</p>
           <ul className="mt-3 space-y-1.5">
-            <li><Link href="/about" className="hover:text-white hover:underline">About Us</Link></li>
-            <li><Link href="/contact" className="hover:text-white hover:underline">Contact Us</Link></li>
-            <li><Link href="/companies" className="hover:text-white hover:underline">Anngan Companies</Link></li>
-            <li><Link href="/services" className="hover:text-white hover:underline">Angan Tech</Link></li>
-            <li><Link href="/create-listing" className="hover:text-white hover:underline">Create a Listing</Link></li>
+            <li><Link href="/about" className="inline-block py-2 hover:text-white hover:underline">About Us</Link></li>
+            <li><Link href="/contact" className="inline-block py-2 hover:text-white hover:underline">Contact Us</Link></li>
+            <li><Link href="/companies" className="inline-block py-2 hover:text-white hover:underline">Anngan Companies</Link></li>
+            <li><Link href="/services" className="inline-block py-2 hover:text-white hover:underline">Angan Tech</Link></li>
+            <li><Link href="/create-listing" className="inline-block py-2 hover:text-white hover:underline">Create a Listing</Link></li>
           </ul>
         </div>
         <div>
@@ -218,7 +218,7 @@ export function Footer() {
           <ul className="mt-3 space-y-1.5">
             {PROJECTS.map((p) => (
               <li key={p.id}>
-                <Link href={`/projects/${p.id}`} className="hover:text-white hover:underline">{p.name}</Link>
+                <Link href={`/projects/${p.id}`} className="inline-block py-2 hover:text-white hover:underline">{p.name}</Link>
               </li>
             ))}
           </ul>
@@ -226,12 +226,12 @@ export function Footer() {
         <div>
           <p className="font-bold text-white text-base">Connect</p>
           <ul className="mt-3 space-y-1.5">
-            <li><Link href="/blogs" className="hover:text-white hover:underline">Blogs</Link></li>
-            <li><Link href="/properties" className="hover:text-white hover:underline">Properties</Link></li>
-            <li><Link href="/projects" className="hover:text-white hover:underline">Projects</Link></li>
-            <li><Link href="/societies" className="hover:text-white hover:underline">Societies Guide</Link></li>
-            <li><Link href="/tools" className="hover:text-white hover:underline">Ask Anngan</Link></li>
-            <li><a href="https://anngan.com/" target="_blank" rel="noopener" className="hover:text-white hover:underline">anngan.com</a></li>
+            <li><Link href="/blogs" className="inline-block py-2 hover:text-white hover:underline">Blogs</Link></li>
+            <li><Link href="/properties" className="inline-block py-2 hover:text-white hover:underline">Properties</Link></li>
+            <li><Link href="/projects" className="inline-block py-2 hover:text-white hover:underline">Projects</Link></li>
+            <li><Link href="/societies" className="inline-block py-2 hover:text-white hover:underline">Societies Guide</Link></li>
+            <li><Link href="/tools" className="inline-block py-2 hover:text-white hover:underline">Ask Anngan</Link></li>
+            <li><a href="https://anngan.com/" target="_blank" rel="noopener" className="inline-block py-2 hover:text-white hover:underline">anngan.com</a></li>
           </ul>
         </div>
         <div>
@@ -239,17 +239,17 @@ export function Footer() {
           <ul className="mt-3 space-y-1.5">
             {SOCIAL_LINKS.map((s) => (
               <li key={s.href}>
-                <a href={s.href} target="_blank" rel="noopener" className="hover:text-white hover:underline">{s.label}</a>
+                <a href={s.href} target="_blank" rel="noopener" className="inline-block py-2 hover:text-white hover:underline">{s.label}</a>
               </li>
             ))}
           </ul>
           <p className="mt-4">
-            <Link href="/services" className="hover:text-white hover:underline">Angan Tech services</Link>
+            <Link href="/services" className="inline-block py-2 hover:text-white hover:underline">Angan Tech services</Link>
           </p>
           <ul className="mt-2 space-y-1.5">
             {SERVICES.slice(0, 4).map((s) => (
               <li key={s.id}>
-                <Link href={`/services/${s.id}`} className="hover:text-white hover:underline">{s.name}</Link>
+                <Link href={`/services/${s.id}`} className="inline-block py-2 hover:text-white hover:underline">{s.name}</Link>
               </li>
             ))}
           </ul>

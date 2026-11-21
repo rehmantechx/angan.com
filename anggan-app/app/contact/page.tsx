@@ -29,7 +29,7 @@ export default function ContactPage() {
             Call +92 304 1111 698 for files, prices and payment plans. File rates
             change with the market, so call for today's rate.
           </p>
-          <p className="text-anngan font-semibold mt-2">Call now</p>
+          <p className="text-anngan-dark font-semibold mt-2">Call now</p>
         </a>
       </div>
 
@@ -44,7 +44,7 @@ export default function ContactPage() {
             <div className="px-4 py-3">
               <dt className="font-semibold text-navy">Phone</dt>
               <dd className="mt-1">
-                <a href="tel:+923041111698" className="text-anngan font-semibold underline">
+                <a href="tel:+923041111698" className="text-anngan-dark font-semibold underline">
                   +92 304 1111 698
                 </a>
               </dd>
@@ -52,7 +52,7 @@ export default function ContactPage() {
             <div className="px-4 py-3">
               <dt className="font-semibold text-navy">Email</dt>
               <dd className="mt-1">
-                <a href="mailto:info@anngan.com" className="text-anngan font-semibold underline">
+                <a href="mailto:info@anngan.com" className="text-anngan-dark font-semibold underline">
                   info@anngan.com
                 </a>
               </dd>
@@ -74,7 +74,7 @@ export default function ContactPage() {
               href="https://www.google.com/maps/search/?api=1&query=Paragon+City+Lahore"
               target="_blank"
               rel="noopener"
-              className="text-anngan font-semibold underline"
+              className="text-anngan-dark font-semibold underline"
             >
               Open Paragon City, Lahore on Google Maps
             </a>

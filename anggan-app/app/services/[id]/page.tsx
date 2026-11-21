@@ -16,10 +16,10 @@ export default function ServicePage({ params }: { params: { id: string } }) {
   return (
     <div>
       <p className="text-sm">
-        <Link href="/services" className="text-anngan font-semibold">
+        <Link href="/services" className="text-anngan-dark font-semibold">
           All Angan Tech services
         </Link>
-        <span className="text-gray-500"> / {service.name}</span>
+        <span className="text-gray-600"> / {service.name}</span>
       </p>
       <h1 className="text-3xl font-bold text-navy mt-2">{service.name}</h1>
       <p className="text-gray-600 mt-1">
@@ -28,14 +28,14 @@ export default function ServicePage({ params }: { params: { id: string } }) {
       <p className="mt-3">{d.scope}</p>
 
       <div className="flex gap-2 mt-5 flex-wrap">
-        <a href="tel:+923041111698" className="bg-anngan text-white px-4 py-2 rounded font-semibold">
+        <a href="tel:+923041111698" className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">
           Call +92 304 1111 698
         </a>
         <a
           href="https://wa.me/923041111698"
           target="_blank"
           rel="noopener"
-          className="bg-green-600 text-white px-4 py-2 rounded font-semibold"
+          className="bg-green-600 text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold"
         >
           WhatsApp
         </a>
@@ -80,11 +80,11 @@ export default function ServicePage({ params }: { params: { id: string } }) {
           <h2 className="text-xl font-bold text-navy mt-8">Price</h2>
           <p className="mt-2 text-sm">{d.priceNote}</p>
           <p className="mt-4 text-sm">
-            <Link href="/services" className="text-anngan font-semibold underline">
+            <Link href="/services" className="text-anngan-dark font-semibold underline">
               Back to all Angan Tech services
             </Link>
             {" | "}
-            <Link href="/contact" className="text-anngan font-semibold underline">
+            <Link href="/contact" className="text-anngan-dark font-semibold underline">
               Contact the office
             </Link>
           </p>

@@ -49,7 +49,7 @@ export function EnquiryForm({ asked, compact }: { asked: string; compact?: boole
         <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number" className="border border-gray-300 rounded px-3 py-2 w-full" />
         <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything else (optional)" className="border border-gray-300 rounded px-3 py-2 w-full sm:col-span-2" />
       </div>
-      <button disabled={busy} className="bg-anngan text-white px-4 py-2 rounded mt-3">
+      <button disabled={busy} className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center mt-3">
         {busy ? "Sending..." : "Send enquiry"}
       </button>
       {error ? <p className="bg-red-50 text-red-800 text-sm rounded p-3 mt-3">{error}</p> : null}

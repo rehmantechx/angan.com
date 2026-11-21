@@ -14,7 +14,7 @@ function Tool({ title, children, id }: { title: string; children: React.ReactNod
 }
 
 const inputCls = "border border-gray-300 rounded px-3 py-2 w-full";
-const btnCls = "bg-anngan text-white px-4 py-2 rounded w-fit";
+const btnCls = "bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center w-fit";
 
 export default function ToolsPage() {
   const [listings, setListings] = useState<Listing[]>([]);

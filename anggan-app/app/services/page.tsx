@@ -23,16 +23,16 @@ export default function ServicesPage() {
             <div className="w-10 h-1 bg-anngan ml-5 -mt-0.5" aria-hidden="true" />
             <div className="p-5 flex flex-col flex-1">
               <h2 className="font-bold text-xl text-navy leading-snug">
-                <Link href={`/services/${s.id}`} className="hover:text-anngan">
+                <Link href={`/services/${s.id}`} className="hover:text-anngan-dark">
                   {s.name}
                 </Link>
               </h2>
               <p className="text-base text-gray-600 mt-2 leading-relaxed">{s.note}</p>
               <div className="flex gap-2 mt-auto pt-5 flex-wrap">
-                <Link href={`/services/${s.id}`} className="border border-navy text-navy text-sm px-3 py-2 rounded font-semibold flex-1 text-center">
+                <Link href={`/services/${s.id}`} className="border border-navy text-navy text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center flex-1 text-center">
                   See what is included
                 </Link>
-                <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-4 py-2 rounded font-semibold">Call</a>
+                <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">Call</a>
               </div>
             </div>
           </article>
@@ -41,11 +41,11 @@ export default function ServicesPage() {
       <p className="mt-6 text-sm text-gray-600">
         No fixed price is published for these services. The price is agreed on
         discussion with the office. Call{" "}
-        <a href="tel:+923041111698" className="text-anngan font-semibold underline">
+        <a href="tel:+923041111698" className="text-anngan-dark font-semibold underline">
           +92 304 1111 698
         </a>{" "}
         or{" "}
-        <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="text-anngan font-semibold underline">
+        <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="text-anngan-dark font-semibold underline">
           WhatsApp us
         </a>
         .

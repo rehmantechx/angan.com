@@ -31,7 +31,7 @@ export default function CreateListingPage() {
         <h1 className="text-3xl font-bold text-navy">List a property</h1>
         <p className="mt-2">You need an account to list a property. Sign in first, then your listing goes to the office for approval.</p>
         <p className="mt-2 text-sm text-gray-600">Nothing goes live without office approval.</p>
-        <Link href="/admin/login" className="inline-block bg-anngan text-white px-4 py-2 rounded mt-4">Sign in</Link>
+        <Link href="/admin/login" className="inline-block bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center mt-4">Sign in</Link>
       </div>
     );
   }
@@ -41,7 +41,7 @@ export default function CreateListingPage() {
       <div>
         <h1 className="text-3xl font-bold text-navy">Sent to the office</h1>
         <p className="mt-2">Your listing is saved as pending. The office will check it and approve it before it shows on the public site.</p>
-        <Link href="/properties" className="inline-block bg-navy text-white px-4 py-2 rounded mt-4">See public properties</Link>
+        <Link href="/properties" className="inline-block bg-navy text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center mt-4">See public properties</Link>
       </div>
     );
   }
@@ -120,7 +120,7 @@ export default function CreateListingPage() {
         <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number" className={inputCls} />
         <input value={photo} onChange={(e) => setPhoto(e.target.value)} placeholder="Photo link, optional, for example https://example.com/photo.jpg" className={inputCls} />
         <p className="text-sm text-gray-600">Photo is optional. You can paste a photo link, or leave it empty and the office adds a real photo after approval.</p>
-        <button disabled={busy} className="bg-anngan text-white px-4 py-2 rounded w-fit">
+        <button disabled={busy} className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center w-fit">
           {busy ? "Sending..." : "Send to office for approval"}
         </button>
         {error ? <p className="bg-red-50 text-red-800 text-sm rounded p-3">{error}</p> : null}

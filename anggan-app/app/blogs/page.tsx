@@ -16,8 +16,8 @@ export default function BlogsPage() {
       <ul className="mt-4 space-y-3">
         {blogs.map((b) => (
           <li key={b.id} className="border border-gray-200 rounded-lg p-4 bg-white">
-            <p className="text-sm text-gray-500">{b.date}</p>
-            <a href={b.url} target="_blank" rel="noopener" className="font-semibold text-navy hover:text-anngan">
+            <p className="text-sm text-gray-600">{b.date}</p>
+            <a href={b.url} target="_blank" rel="noopener" className="font-semibold text-navy hover:text-anngan-dark">
               {b.title}
             </a>
           </li>
