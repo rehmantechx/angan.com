@@ -97,7 +97,7 @@ export function Header() {
           >
             MENU &#9776;
           </button>
-          <div className="hidden lg:flex items-center gap-3 text-xs font-bold whitespace-nowrap overflow-x-auto py-2.5 max-w-7xl mx-auto px-4">
+          <div className="hidden lg:flex items-center gap-4 text-xs font-bold whitespace-nowrap overflow-x-auto py-3 max-w-7xl mx-auto px-4">
             {NAV_LINKS.map((l) => (
               <Link key={l.href} href={l.href} className="hover:underline shrink-0">
                 {l.label}
@@ -201,7 +201,7 @@ export function Header() {
 export function Footer() {
   return (
     <footer className="bg-anngan text-red-100 mt-0">
-      <div className="max-w-6xl mx-auto px-4 grid gap-8 sm:grid-cols-2 lg:grid-cols-5 py-8 text-sm">
+      <div className="max-w-6xl mx-auto px-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8 py-10 text-sm">
         <div>
           <span className="inline-block bg-white rounded-lg px-3 py-2 shadow">
             <img src="/img/logo.png" alt="anngan.com logo, banay khawab haqiqat" className="w-[230px] max-w-full h-auto" />

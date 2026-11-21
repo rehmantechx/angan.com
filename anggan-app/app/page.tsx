@@ -225,7 +225,7 @@ export default function Home() {
           <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
             {searchResults.listings.map((l) => <ListingCard key={l.id} l={l} />)}
             {searchResults.projects.map((p) => (
-              <article key={p.id} className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+              <article key={p.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
                 {p.img ? <img src={`/img/${p.img}`} alt={p.name} className="w-full h-48 object-cover" loading="lazy" /> : (
                   <div className="w-full h-48 bg-amber-100 flex flex-col items-center justify-center text-navy text-sm font-semibold px-4 text-center">
                     <span>{p.name}</span>
@@ -327,7 +327,7 @@ export default function Home() {
         ) : null}
         <div className="grid gap-4 mt-4 md:grid-cols-2">
           {otherProjects.map((p) => (
-            <article key={p.id} className="border border-gray-200 rounded-lg bg-white shadow-sm p-4 flex gap-4 items-start">
+            <article key={p.id} className="card border border-gray-200 rounded-lg bg-white shadow-sm p-4 flex gap-4 items-start h-full">
               {p.img ? (
                 <img src={`/img/${p.img}`} alt={p.name} className="w-28 h-24 object-cover rounded shrink-0" loading="lazy" />
               ) : (

@@ -18,10 +18,10 @@ export default function AgenciesPage() {
             <img
               src={`/img/${a.logo}`}
               alt={`${a.name} logo`}
-              className="max-h-24 w-auto mx-auto object-contain"
+              className="h-20 w-full mx-auto object-contain"
               loading="lazy"
             />
-            <h2 className="font-semibold mt-3">{a.name}</h2>
+            <h2 className="font-semibold mt-3 leading-snug">{a.name}</h2>
           </article>
         ))}
       </div>
