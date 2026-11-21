@@ -55,12 +55,12 @@ export function Header() {
       <div className="bg-white border-b-4 border-anngan">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <img src="/img/logo.png" alt="Anngan, anngan.com" className="h-11 w-auto" />
+            <img src="/img/logo.png" alt="Anngan, anngan.com" className="h-8 sm:h-11 w-auto max-w-[160px] sm:max-w-none object-contain" />
           </Link>
-          <div className="flex gap-2 ml-auto">
+          <div className="flex gap-2 ml-auto shrink-0">
             <a
               href="tel:+923041111698"
-              className="bg-anngan text-white text-sm px-3 py-2 rounded font-semibold whitespace-nowrap"
+              className="bg-anngan text-white text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded font-semibold whitespace-nowrap"
             >
               Call
             </a>
@@ -68,13 +68,13 @@ export function Header() {
               href="https://wa.me/923041111698"
               target="_blank"
               rel="noopener"
-              className="bg-green-600 text-white text-sm px-3 py-2 rounded font-semibold whitespace-nowrap"
+              className="bg-green-600 text-white text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded font-semibold whitespace-nowrap"
             >
               WhatsApp
             </a>
             <button
               onClick={() => setMenuOpen(true)}
-              className="lg:hidden bg-navy text-white text-sm px-3 py-2 rounded font-semibold"
+              className="lg:hidden bg-navy text-white text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded font-semibold"
               aria-label="Open menu"
             >
               MENU
