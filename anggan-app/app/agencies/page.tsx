@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AGENCIES } from "../lib/seed";
+import { AGENCIES } from "../../lib/seed";
 
 export default function AgenciesPage() {
   return (

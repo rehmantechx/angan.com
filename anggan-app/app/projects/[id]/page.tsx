@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PROJECTS, GRAIN_MARKET } from "../../lib/seed";
-import { PROJECT_DETAILS } from "../../lib/projectDetails";
-import { EnquiryForm } from "../../components/EnquiryForm";
+import { PROJECTS, GRAIN_MARKET } from "../../../lib/seed";
+import { PROJECT_DETAILS } from "../../../lib/projectDetails";
+import { EnquiryForm } from "../../../components/EnquiryForm";
 
 export function generateStaticParams() {
   return PROJECTS.map((p) => ({ id: p.id }));

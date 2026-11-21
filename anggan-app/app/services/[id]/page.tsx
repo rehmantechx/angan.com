@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { SERVICES } from "../../lib/seed";
-import { SERVICE_DETAILS } from "../../lib/serviceDetails";
+import { SERVICES } from "../../../lib/seed";
+import { SERVICE_DETAILS } from "../../../lib/serviceDetails";
 
 export function generateStaticParams() {
   return SERVICES.map((s) => ({ id: s.id }));

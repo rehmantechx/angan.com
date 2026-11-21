@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SERVICES } from "../lib/seed";
+import { SERVICES } from "../../lib/seed";
 
 export default function ServicesPage() {
   return (
