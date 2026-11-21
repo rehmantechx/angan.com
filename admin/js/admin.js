@@ -74,7 +74,7 @@
     $("stageBars").innerHTML = STAGES.map(function (s, i) {
       return '<div class="bar-col"><i style="height:' + Math.round(counts[i] / max * 80 + 8) + 'px"></i><b>' + counts[i] + '</b><br>' + s + '</div>';
     }).join("");
-    $("kpiEnqBreak").textContent = "New " + counts[0] + ", Called " + counts[1] + ", Visit " + counts[2] + ", Deal Done " + counts[3];
+    $("kpiEnqBreak").textContent = "New " + counts[0] + " | Called " + counts[1] + " | Visit " + counts[2] + " | Done " + counts[3];
     $("recentEnquiries").innerHTML = enquiries.slice(0, 4).map(function (e) {
       return '<tr><td data-label="Person"><b>' + esc(e.name) + '</b><br><span style="color:#6B7280">' + esc(e.phone) + '</span></td><td data-label="Asked about">' + esc(e.asked) + '</td><td data-label="Contacted By">' + esc(e.how) + '</td><td data-label="Where it stands">' + stageTag(e.stage) + '</td><td data-label="Open" class="row-actions"><button class="btn btn-line btn-sm" data-open-enq="' + esc(e.id) + '">Open</button></td></tr>';
     }).join("");
