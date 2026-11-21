@@ -33,14 +33,15 @@ export default function AboutPage() {
       </figure>
 
       <div className="grid gap-6 mt-6 lg:grid-cols-2 items-start">
-        <figure className="border border-gray-200 rounded-lg p-4 bg-white">
+        <figure className="border border-gray-200 rounded-lg p-4 bg-white max-w-md w-full">
           <img
             src="/img/ceo.jpg"
             alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan"
-            className="w-full h-auto"
+            className="w-full h-auto object-contain"
           />
           <figcaption className="text-sm text-gray-600 mt-2">
             Muhammad Mahmood Cheema, Chairman and Chief Executive Officer.
+            Photo shown in full, no crop.
           </figcaption>
         </figure>
 
@@ -57,7 +58,7 @@ export default function AboutPage() {
           </p>
 
           <h2 className="text-xl font-bold text-navy mt-6">Anngan in numbers</h2>
-          <dl className="mt-3 grid grid-cols-2 gap-3 text-center">
+          <dl className="mt-3 grid grid-cols-3 gap-3 text-center">
             <div className="border border-gray-200 rounded-lg p-4 bg-white">
               <dt className="text-sm text-gray-600">Projects on this site</dt>
               <dd className="text-2xl font-bold text-navy">7</dd>
@@ -65,10 +66,6 @@ export default function AboutPage() {
             <div className="border border-gray-200 rounded-lg p-4 bg-white">
               <dt className="text-sm text-gray-600">Real listings with photos and prices</dt>
               <dd className="text-2xl font-bold text-navy">12</dd>
-            </div>
-            <div className="border border-gray-200 rounded-lg p-4 bg-white">
-              <dt className="text-sm text-gray-600">Named business partners</dt>
-              <dd className="text-2xl font-bold text-navy">13</dd>
             </div>
             <div className="border border-gray-200 rounded-lg p-4 bg-white">
               <dt className="text-sm text-gray-600">Real news and blog articles</dt>

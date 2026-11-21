@@ -21,7 +21,6 @@ const NAV_LINKS = [
   { href: "/about", label: "ABOUT US" },
   { href: "/projects", label: "PROJECTS" },
   { href: "/properties", label: "PROPERTIES" },
-  { href: "/agencies", label: "AGENCIES" },
   { href: "/blogs", label: "BLOGS" },
   { href: "/societies", label: "SOCIETIES GUIDE" },
   { href: "/contact", label: "CONTACT" },
@@ -220,7 +219,6 @@ export function Footer() {
           <ul className="mt-3 space-y-1.5">
             <li><Link href="/about" className="hover:text-white hover:underline">About Us</Link></li>
             <li><Link href="/contact" className="hover:text-white hover:underline">Contact Us</Link></li>
-            <li><Link href="/agencies" className="hover:text-white hover:underline">Agencies</Link></li>
             <li><Link href="/companies" className="hover:text-white hover:underline">Anngan Companies</Link></li>
             <li><Link href="/services" className="hover:text-white hover:underline">Angan Tech</Link></li>
             <li><Link href="/create-listing" className="hover:text-white hover:underline">Create a Listing</Link></li>

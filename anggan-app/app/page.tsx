@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { getPublicListings, getProjects, getAgencies, getBlogs, getSettings } from "../lib/db";
-import { Listing, Project, Agency, Blog, OfficeSettings, GRAIN_MARKET } from "../lib/seed";
+import { getPublicListings, getProjects, getBlogs, getSettings } from "../lib/db";
+import { Listing, Project, Blog, OfficeSettings, GRAIN_MARKET } from "../lib/seed";
 import { ListingCard } from "../components/ListingCard";
 
 const CITIES = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Multan", "Mangla", "Kashmir"];
@@ -41,7 +41,6 @@ function budgetOK(l: Listing, bud: string): boolean {
 export default function Home() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [agencies, setAgencies] = useState<Agency[]>([]);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [settings, setSettings] = useState<OfficeSettings | null>(null);
 
@@ -58,7 +57,6 @@ export default function Home() {
   useEffect(() => {
     getPublicListings().then(setListings);
     getProjects().then(setProjects);
-    getAgencies().then(setAgencies);
     getBlogs().then(setBlogs);
     getSettings().then(setSettings);
   }, []);
@@ -372,22 +370,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-10 bg-slate-50 -mx-4 px-4 py-8">
-        <div className="flex items-baseline justify-between flex-wrap gap-2">
-          <h2 className="text-2xl font-bold text-navy">Dealers we work with</h2>
-          <Link href="/agencies" className="text-anngan font-semibold text-sm">All 13 partners &rarr;</Link>
-        </div>
-        <p className="text-gray-600 mt-1">Our dealers in Pakistan, from the Business Partners carousel on anngan.com. Swipe the row to see them all.</p>
-        <div className="flex gap-3 mt-4 overflow-x-auto pb-2">
-          {agencies.map((a) => (
-            <Link key={a.id} href="/agencies" className="border border-gray-200 rounded-lg bg-white p-3 w-36 shrink-0 text-center shadow-sm">
-              <img src={`/img/${a.logo}`} alt={`${a.name} logo`} className="max-h-12 w-auto mx-auto object-contain" loading="lazy" />
-              <p className="font-semibold text-sm text-navy mt-2">{a.name}</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
       <section className="mt-10">
         <h2 className="text-2xl font-bold text-navy">Where we work</h2>
         <p className="text-gray-600 mt-1">Tap a city to see what Anngan has there. anngan.com does not publish a listing count for any city, so no count is shown here, and none is invented.</p>
@@ -428,7 +410,7 @@ export default function Home() {
 
       <section className="mt-10">
         <div className="grid gap-6 md:grid-cols-2 items-start">
-          <img src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" className="w-full h-auto rounded-lg" loading="lazy" />
+          <img src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" className="w-full h-auto object-contain rounded-lg" loading="lazy" />
           <div>
             <h2 className="text-2xl font-bold text-navy">Who we are</h2>
             <p className="text-gray-600 mt-2">ANNGAN.COM was established to give our devoted customers a competitive edge by delivering top-tier real estate solutions under one roof. We work every day to establish ourselves as Pakistan's premier and trusted source of real estate services.</p>

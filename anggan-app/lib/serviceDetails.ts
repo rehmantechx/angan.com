@@ -23,7 +23,7 @@ export const SERVICE_DETAILS: Record<string, ServiceDetails> = {
     scope:
       "A coded business or property website, built in HTML, CSS and JavaScript, designed mobile first, that loads fast on a cheap Android phone and brings enquiries to your phone.",
     included: [
-      { title: "Pages, not a landing page", text: "Home, About, Projects, Properties, Agencies, Blogs, Societies Guide and Contact, each a real page, with your real content, not dummy text." },
+      { title: "Pages, not a landing page", text: "Home, About, Projects, Properties, Blogs, Societies Guide and Contact, each a real page, with your real content, not dummy text." },
       { title: "Search that works", text: "A search bar with city, type, beds and budget filters that actually filters your real listings and projects, and never returns a blank page." },
       { title: "Real photos first", text: "Your real project photos and listing photos, resized for fast loading. No AI images, no stock renders labelled as your project." },
       { title: "Your logo and colours", text: "Your original logo on white, and your brand colours, red #DD3333 and dark blue #004274, used consistently on every page." },

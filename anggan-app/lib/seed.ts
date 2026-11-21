@@ -1,6 +1,8 @@
 // Real data copied from the live static site (assets/js/main.js and admin/js/data.js).
-// 12 listings (9 for sale, 3 for rent), 7 projects, 13 agencies, 23 blogs,
-// 9 Angan Tech services. Nothing invented. Two items have no real photo and
+// 12 listings (9 for sale, 3 for rent), 7 projects, 23 blogs,
+// 9 Angan Tech services. Nothing invented. The 13 agencies from anngan.com
+// are kept in this file for the office dashboard only and are not shown
+// anywhere on the public site.
 // show no photo: Pak China Grain Market (project) and the Rs 35,000,000 house,
 // which is not among the 12 real listings and is not included here.
 export type Listing = { id: string; title: string; price: string; n: number; beds: number; baths: number; size: string; city: string; loc: string; type: string; status: "sale" | "rent"; img: string; badge: string; url: string; liveStatus: "live" | "pending" | "hidden"; visible: boolean; createdAt: string; submittedBy?: string };
