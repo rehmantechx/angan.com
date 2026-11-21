@@ -83,9 +83,9 @@ export const PROJECT_DETAILS: Record<string, ProjectDetails> = {
     intro:
       "Al Ghani Phase 7 by Al Ghani Developers, Bhaini Road, Lahore. TMA approval LGU50/64.",
     photos: [
-      { file: "alghani-site.jpeg", caption: "Al Ghani Phase 7 site" },
-      { file: "alghani-hero.jpeg", caption: "Al Ghani Phase 7" },
-      { file: "alghani-anngan.jpg", caption: "Al Ghani Phase 7" },
+      { file: "alghani-site.jpeg", caption: "Al Ghani Garden Phase 7, Lahore. Project marketing image, not a site photo." },
+      { file: "alghani-hero.jpeg", caption: "Al Ghani Garden Phase 7, Lahore. Project marketing image." },
+      { file: "alghani-anngan.jpg", caption: "Al Ghani Garden Phase 7 location map, from Anngan." },
     ],
     facts: [
       { label: "Location", value: "Bhaini Road, Lahore" },
