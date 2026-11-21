@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const WORK = [
@@ -24,20 +25,26 @@ export default function AboutPage() {
       </p>
 
       <figure className="mt-5 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-        <img
+        <Image
           src="/img/mgh-lake-aerial.jpg"
           alt="Mangla Lake aerial view, MGH Pakistan"
+          width={1200}
+          height={675}
           className="w-full h-56 sm:h-64 object-cover"
+          sizes="100vw"
         />
         <figcaption className="text-xs text-gray-600 px-4 py-2 bg-white">Mangla Lake, MGH Pakistan, our main project.</figcaption>
       </figure>
 
       <div className="grid gap-6 mt-6 lg:grid-cols-2 items-start">
         <figure className="border border-gray-200 rounded-lg p-4 bg-white max-w-md w-full">
-          <img
+          <Image
             src="/img/ceo.jpg"
             alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan"
+            width={1024}
+            height={683}
             className="w-full h-auto object-contain"
+            sizes="(max-width: 1024px) 100vw, 50vw"
           />
           <figcaption className="text-sm text-gray-600 mt-2">
             Muhammad Mahmood Cheema, Chairman and Chief Executive Officer.
@@ -94,7 +101,7 @@ export default function AboutPage() {
       <div className="grid gap-4 mt-4 sm:grid-cols-2">
         {WORK.map((w) => (
           <article key={w.title} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
-            <img src={`/img/${w.img}`} alt={w.alt} className="w-full h-36 object-cover" loading="lazy" />
+            <Image src={`/img/${w.img}`} alt={w.alt} width={1200} height={675} className="w-full h-36 object-cover" loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" />
             <div className="p-4">
               <h3 className="font-bold text-navy">{w.title}</h3>
               <p className="text-sm text-gray-600 mt-1">{w.note}</p>

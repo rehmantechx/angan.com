@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const GUIDES = [
@@ -19,11 +20,14 @@ export default function SocietiesPage() {
         {GUIDES.map((g) => (
           <article key={g.name} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
             <figure>
-              <img
+              <Image
                 src={`/img/${g.img}`}
                 alt={g.caption}
+                width={1200}
+                height={675}
                 className={g.contain ? "w-full h-40 object-contain bg-white p-4" : "w-full h-40 object-cover"}
                 loading="lazy"
+                sizes="(max-width: 640px) 100vw, 50vw"
               />
               <figcaption className="text-xs text-gray-600 px-4 pt-2">{g.caption}</figcaption>
             </figure>

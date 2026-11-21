@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { getPublicListings, getProjects, getBlogs, getSettings } from "../lib/db";
 import { Listing, Project, Blog, OfficeSettings, GRAIN_MARKET } from "../lib/seed";
@@ -150,10 +151,12 @@ export default function Home() {
     <div>
       {/* Hero, decided static version, full width */}
       <section className="relative left-1/2 w-screen -translate-x-1/2 -mt-6 bg-navy overflow-hidden">
-        <img
+        <Image
           src="/img/mgh-lake-aerial.jpg"
           alt="Mangla Lake aerial view, MGH Pakistan"
-          fetchPriority="high"
+          fill
+          priority
+          sizes="100vw"
           className="absolute inset-0 w-full h-full object-cover opacity-45"
         />
         <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-10">
@@ -224,7 +227,7 @@ export default function Home() {
             {searchResults.listings.map((l) => <ListingCard key={l.id} l={l} />)}
             {searchResults.projects.map((p) => (
               <article key={p.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
-                {p.img ? <img src={`/img/${p.img}`} alt={p.name} className="w-full h-48 object-cover" loading="lazy" /> : (
+                {p.img ? <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover" loading="lazy" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" /> : (
                   <div className="w-full h-48 bg-amber-100 flex flex-col items-center justify-center text-navy text-sm font-semibold px-4 text-center">
                     <span>{p.name}</span>
                     {GRAIN_MARKET.prices.map((x) => <span key={x.size}>{x.size} {x.price}</span>)}
@@ -306,7 +309,7 @@ export default function Home() {
         {mgh ? (
           <article className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm mt-4 md:flex">
             <div className="relative md:w-1/2">
-              <img src={`/img/${mgh.img}`} alt="Mangla Lake aerial view, MGH Pakistan" className="w-full h-56 md:h-full object-cover" loading="lazy" />
+              <Image src={`/img/${mgh.img}`} alt="Mangla Lake aerial view, MGH Pakistan" width={1200} height={675} className="w-full h-56 md:h-full object-cover" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
               <span className="absolute top-3 left-3 bg-anngan text-white text-xs font-bold px-2 py-1 rounded">Our main project</span>
             </div>
             <div className="p-5 md:w-1/2">
@@ -329,7 +332,7 @@ export default function Home() {
           {otherProjects.map((p) => (
             <article key={p.id} className="card border border-gray-200 rounded-lg bg-white shadow-sm p-4 flex gap-4 items-start h-full">
               {p.img ? (
-                <img src={`/img/${p.img}`} alt={p.name} className="w-28 h-24 object-cover rounded shrink-0" loading="lazy" />
+                <Image src={`/img/${p.img}`} alt={p.name} width={592} height={444} className="w-28 h-24 object-cover rounded shrink-0" loading="lazy" />
               ) : (
                 <div className="w-28 h-24 bg-amber-100 rounded shrink-0 flex flex-col items-center justify-center text-navy text-xs font-bold px-2 text-center">
                   <span>Pak China Grain Market</span>
@@ -412,7 +415,7 @@ export default function Home() {
 
       <section className="mt-10">
         <div className="grid gap-6 md:grid-cols-2 items-start">
-          <img src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" className="w-full h-auto object-contain rounded-lg" loading="lazy" />
+          <Image src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full h-auto object-contain rounded-lg" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
           <div>
             <h2 className="text-2xl font-bold text-navy">Who we are</h2>
             <p className="text-gray-600 mt-2">ANNGAN.COM was established to give our devoted customers a competitive edge by delivering top-tier real estate solutions under one roof. We work every day to establish ourselves as Pakistan's premier and trusted source of real estate services.</p>

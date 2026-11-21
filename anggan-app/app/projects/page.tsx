@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { getProjects } from "../../lib/db";
 import { Project, GRAIN_MARKET } from "../../lib/seed";
@@ -18,7 +19,7 @@ export default function ProjectsPage() {
         {projects.map((p) => (
           <article key={p.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
             {p.img ? (
-              <img src={`/img/${p.img}`} alt={p.name} className="w-full h-48 object-cover" loading="lazy" />
+              <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover" loading="lazy" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
             ) : (
               <div className="w-full h-44 bg-gold/40 flex flex-col items-center justify-center text-navy text-sm font-semibold px-4 text-center">
                 <span>{p.name}</span>

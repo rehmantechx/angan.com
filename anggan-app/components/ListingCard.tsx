@@ -1,15 +1,19 @@
 "use client";
+import Image from "next/image";
 import { Listing } from "../lib/seed";
 
 export function ListingCard({ l }: { l: Listing }) {
   return (
     <article className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
       {l.img ? (
-        <img
+        <Image
           src={l.img.startsWith("http") ? l.img : `/img/${l.img}`}
           alt={l.title}
+          width={592}
+          height={444}
           className="w-full h-48 object-cover"
           loading="lazy"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
       ) : (
         <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-600 text-sm px-4 text-center">

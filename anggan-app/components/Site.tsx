@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "../lib/auth";
@@ -50,9 +51,12 @@ export function Header() {
       <div className="bg-white">
         <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center gap-3">
           <Link href="/" className="flex items-center shrink-0" aria-label="Anngan home">
-            <img
+            <Image
               src="/img/logo.png"
               alt="anngan.com, banay khawab haqiqat"
+              width={1200}
+              height={231}
+              priority
               className="h-10 sm:h-[54px] w-auto max-w-[170px] sm:max-w-[280px] object-contain"
             />
           </Link>
@@ -110,7 +114,7 @@ export function Header() {
           <div className="absolute inset-0 bg-black/50" onClick={() => setMenuOpen(false)} />
           <div className="absolute left-0 top-0 h-full w-72 max-w-[85vw] bg-white shadow-lg overflow-y-auto">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-              <img src="/img/logo.png" alt="anngan.com logo, banay khawab haqiqat" className="h-9 w-auto" />
+              <Image src="/img/logo.png" alt="anngan.com logo, banay khawab haqiqat" width={1200} height={231} className="h-9 w-auto" />
               <button
                 onClick={() => setMenuOpen(false)}
                 className="text-navy font-bold px-3 py-2 min-h-[48px] min-w-[48px] inline-flex items-center justify-center"
@@ -192,7 +196,7 @@ export function Footer() {
       <div className="max-w-6xl mx-auto px-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8 py-10 text-sm">
         <div>
           <span className="inline-block bg-white rounded-lg px-3 py-2 shadow">
-            <img src="/img/logo.png" alt="anngan.com logo, banay khawab haqiqat" className="w-[230px] max-w-full h-auto" />
+            <Image src="/img/logo.png" alt="anngan.com logo, banay khawab haqiqat" width={1200} height={231} className="w-[230px] max-w-full h-auto" />
           </span>
           <p className="mt-3">
             Pakistan's trusted real estate service providers. Projects and property in Karachi, Islamabad, Lahore and Peshawar.

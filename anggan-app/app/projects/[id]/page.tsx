@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PROJECTS, GRAIN_MARKET } from "../../../lib/seed";
@@ -32,11 +33,14 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         <div className="grid gap-4 mt-5 sm:grid-cols-2">
           {d.photos.map((ph, i) => (
             <figure key={ph.file} className={i === 0 ? "sm:col-span-2" : ""}>
-              <img
+              <Image
                 src={`/img/${ph.file}`}
                 alt={ph.caption}
+                width={1200}
+                height={675}
                 className="w-full rounded-lg object-cover"
                 loading={i === 0 ? "eager" : "lazy"}
+                sizes="(max-width: 768px) 100vw, 60vw"
               />
               <figcaption className="text-sm text-gray-600 mt-1">{ph.caption}</figcaption>
             </figure>
