@@ -3,14 +3,19 @@
 // empty or still placeholders, Firebase stays off and the app runs on the
 // real seed data with a clear notice.
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
-import { getFirestore, Firestore } from "firebase/firestore";
+import { Firestore, initializeFirestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 
 export function isFirebaseConfigured(): boolean {
-  const v = (k: string) => (process.env[k] || "").trim();
-  const apiKey = v("NEXT_PUBLIC_FIREBASE_API_KEY");
-  const projectId = v("NEXT_PUBLIC_FIREBASE_PROJECT_ID");
+  // NOTE: access each variable with a static literal key. Next.js only
+  // inlines NEXT_PUBLIC_* values into the browser bundle for static
+  // process.env.NEXT_PUBLIC_... access. A dynamic lookup such as
+  // process.env[key] is NOT replaced, so it reads as empty in the browser
+  // and the app always thinks Firebase is off. That was a real bug: the
+  // config was baked into the bundle but this check still returned false.
+  const apiKey = (process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "").trim();
+  const projectId = (process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "").trim();
   if (!apiKey || !projectId) return false;
   if (apiKey.includes("YOUR_") || projectId.includes("YOUR_")) return false;
   return true;
@@ -36,9 +41,20 @@ export function getFirebaseApp(): FirebaseApp | null {
   return app;
 }
 
+let db: Firestore | null = null;
+
 export function getDb(): Firestore | null {
   const a = getFirebaseApp();
-  return a ? getFirestore(a) : null;
+  if (!a) return null;
+  if (db) return db;
+  // Forced long polling: the Firestore SDK normally streams over a
+  // long-lived WebChannel connection. Some networks and proxies block that
+  // stream, and the SDK then retries forever without ever answering, so
+  // reads and writes hang. Long polling uses regular requests instead, so
+  // the app works on those networks too. Auto-detect was tried first and
+  // did not switch the write stream over, so polling is forced.
+  db = initializeFirestore(a, { experimentalForceLongPolling: true });
+  return db;
 }
 
 export function getFirebaseAuth(): Auth | null {
