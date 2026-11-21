@@ -48,6 +48,8 @@ assets/css/style.css        All styles, colours from anngan.com
 assets/js/main.js           Menu drawer, search, listing preview, fade-in
 assets/img/                 Real photos only, see SOURCES.md
 admin/index.html            Private dashboard, office team only, Phase 1
+admin/login.html            Temporary office login gate, see below
+admin/js/gate.js            Temporary passcode gate, CHANGE THIS before sharing
 admin/css/admin.css         Dashboard styles, white light theme
 admin/js/data.js            Dashboard data, real listings, projects, blogs
 admin/js/admin.js           Dashboard search, filter, add, edit, hide, delete
@@ -58,12 +60,25 @@ admin/js/firebase-config.js Firebase placeholder, NOT connected yet
 
 The dashboard lives at `/admin/` in this same repo, live at
 `https://rehmantechx.github.io/angan.com/admin/` after a Pages rebuild.
-It opens directly into the dashboard, no landing page. Login and online
-saving are NOT connected yet: Firebase Auth and Firestore are Day 3-4
-work, and `admin/js/firebase-config.js` holds placeholder values only.
+It opens at `admin/login.html` first. The dashboard is behind a
+TEMPORARY office passcode gate until Firebase login is connected in
+Day 3-4. The passcode is in `admin/js/gate.js` as
+`OFFICE_PASSCODE = "CHANGE-THIS-CODE"`. CHANGE THIS to a code only
+the office team knows before sharing the dashboard link, and do not
+use a password used anywhere else. This gate is not real security:
+anyone who can read the file can read the code, and it only stops a
+casual visitor in that browser session. It must be replaced by
+Firebase login, and the gate file deleted, in Day 3-4. Do not merge
+or share the admin link as secure until then.
+Firebase Auth and Firestore are Day 3-4 work, and
+`admin/js/firebase-config.js` holds placeholder values only.
 Until then, add, edit, hide and delete save in the browser only
-(localStorage). Angan Tech has 9 real service pages, not 8 as earlier
-designs said, so the dashboard shows 9.
+(localStorage). Angan Tech has 9 real service pages, so the dashboard
+shows 9. Counts everywhere are 12 listings (9 for sale, 3 for rent:
+Lahore 7, Rawalpindi 2, Karachi 1, Multan 1, Islamabad 1), 7
+projects, 13 agencies, 23 blogs, 9 Angan Tech services. The
+Rs 35,000,000 house is not counted as a listing: it has no photo and
+no published location.
 
 ## Deploy on GitHub Pages
 
