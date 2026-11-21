@@ -1,7 +1,8 @@
 # Anngan App (real backend)
 
 Next.js 14, React, TypeScript, Tailwind CSS, App Router. Backend: Firebase
-Auth (Google), Firestore, Firebase Storage. The old static site in the repo
+Auth (Google), Firestore. Firebase Storage is NOT enabled, so there is no
+photo upload yet. The old static site in the repo
 root stays live until this app is tested and the owner approves the switch.
 
 ## Run locally (no Firebase needed)
@@ -18,23 +19,37 @@ in the browser (localStorage) in this mode.
 
 ## Connect the real Firebase project
 
-The owner must do these steps in the Firebase console (console.firebase.google.com).
-No Firebase project exists yet. Do not invent one.
+Real project, created 21 Nov 2026: **anngan**, project id **anngan-7a3ff**,
+Firestore in Production mode, asia-south1, Google sign-in enabled, support
+email pakmultilinks@gmail.com, Google Analytics off, Spark plan $0/month.
+Storage is NOT enabled, by choice, do not upgrade to Blaze.
 
-1. Create a project (any name, for example anngan).
-2. Build > Authentication > Sign-in method > enable Google.
-3. Build > Firestore Database > Create database > Production mode, location
-   asia-south1 (or nearest).
-4. Build > Storage > Get started.
-5. Project settings > Your apps > Web app > copy the config values.
-6. Copy `.env.local.example` to `.env.local` and fill in the 6 values.
-7. Set the rules: `firebase deploy --only firestore:rules` (needs Firebase CLI
-   and `firebase init firestore` once), or open Firestore > Rules in the
-   console and paste the contents of `firestore.rules`.
-8. Add the first office user: after the first Google sign-in, add a document
-   in the `users` collection with the user uid as the document id and fields
-   `email`, `name`, `role` (one of: Full access, Staff, View only).
-9. Restart `npm run dev` and sign in at /admin/login with Continue with Google.
+The config is in `anggan-app/.env.local` (local only, never committed).
+`.env.local.example` holds placeholders only.
+
+Rules: the first version of `firestore.rules` was published in the console
+on 21 Nov 2026. The rules file in this repo has since been fixed (public
+listings read needs a liveStatus filter, signed-in users may create pending
+listings, first users self-register as View only). **Re-publish the rules
+from this repo before the approval flow works**: open Firestore > Rules in
+the console and paste the contents of `firestore.rules`, then Publish.
+
+First office user, in order:
+1. Sign in at /admin/login with Continue with Google (pakmultilinks@gmail.com).
+   The app creates your own `users` document as View only, and shows your
+   user id on the dashboard.
+2. In the Firebase console, Firestore, collection `users`, open your document
+   (id is your user id), set field `role` to `Full access`, save.
+3. Sign out and sign in again. The dashboard now shows Full access.
+4. In the dashboard Overview, click "Upload seed data to Firestore" once.
+   It uploads 12 listings, 7 projects, 23 blogs, 13 agencies, 9 services
+   and the office settings. If it fails, the button shows the exact error:
+   the signed-in user needs the Full access role first.
+5. Restart `npm run dev` if it was running when `.env.local` was added.
+
+Photo upload is not built: Firebase Storage is not enabled, so new listings
+use a real photo from `public/img/` (pick one in the form) or a photo link
+pasted in the form. The office adds real photos after approval.
 
 ## Data
 
