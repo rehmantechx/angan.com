@@ -22,10 +22,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={urduFont.variable}>
-      <body>
+      <body className="flex min-h-screen flex-col">
         <Providers>
           <Header />
-          <main className="max-w-6xl mx-auto px-4 py-6 min-h-[60vh]">{children}</main>
+          <main className="w-full flex-1">{children}</main>
           <Footer />
         </Providers>
       </body>

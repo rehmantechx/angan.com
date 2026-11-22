@@ -171,13 +171,17 @@ export default function Home() {
     "px-4 py-3 rounded font-bold text-sm min-h-[48px] inline-flex items-center " + (on ? "bg-[#005F90] text-white" : "bg-gray-200 text-navy");
 
   return (
-    <div>
+    <>
       {/* Hero, decided static version, full width. Background photo
           changes every 10 seconds, crossfade, loop, like anngan.com.
           Dark navy behind the photos plus a gradient keeps the white
-          hero text and the search box readable on every photo. */}
+          hero text and the search box readable on every photo.
+          Full width with w-full, because this section is a direct
+          child of <main>, not of the content div. No w-screen: 100vw
+          counts the classic desktop scrollbar, so the old hero made
+          the page about 15px wider than the viewport. */}
       <section
-        className="relative left-1/2 w-screen -translate-x-1/2 -mt-6 bg-navy overflow-hidden"
+        className="relative w-full bg-navy overflow-hidden"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
@@ -288,6 +292,7 @@ export default function Home() {
         </div>
       </section>
 
+      <div>
       {searched ? (
         <section className="mt-8" id="search-results" role="tabpanel" aria-labelledby="tab-all">
           <div className="flex items-baseline justify-between flex-wrap gap-2">
@@ -465,6 +470,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

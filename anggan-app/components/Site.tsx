@@ -40,11 +40,12 @@ export function Header() {
       : href === "/admin/login"
         ? pathname === "/admin/login" || pathname === "/admin"
         : pathname === href || pathname.startsWith(href + "/");
-  // White pill on the red bar: navy text on white is 9 to 1, and the pill
-  // makes the current page obvious at a glance. In the drawer the active
-  // link gets a red left rule and a light navy tint instead.
+  // Active page: the white pill sits INSIDE the red bar. The bar has
+  // py-1 (see the nav row below), and the pill is 40px tall, so 4px of
+  // red shows above and below it instead of the pill touching, or
+  // sticking out past, the top and bottom of the bar.
   const navCls = (href: string) =>
-    "shrink-0 inline-flex items-center min-h-[48px] px-2 rounded " +
+    "shrink-0 inline-flex items-center min-h-[40px] px-2 rounded " +
     (isActive(href)
       ? "bg-white text-navy font-extrabold"
       : "text-white hover:bg-white/15");
@@ -113,19 +114,19 @@ export function Header() {
           >
             MENU &#9776;
           </button>
-          <div className="hidden xl:flex items-center gap-3 text-xs font-bold whitespace-nowrap max-w-6xl mx-auto px-4">
+          <div className="hidden xl:flex items-center gap-3 text-xs font-bold whitespace-nowrap max-w-6xl mx-auto px-4 py-1">
             {NAV_LINKS.map((l) => (
               <Link key={l.href} href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)}>
                 {l.label}
               </Link>
             ))}
-            <Link href="/create-listing" aria-current={isActive("/create-listing") ? "page" : undefined} className={"btn btn-sky px-3 shrink-0 " + (isActive("/create-listing") ? "ring-2 ring-white" : "")}>
+            <Link href="/create-listing" aria-current={isActive("/create-listing") ? "page" : undefined} className={"btn btn-sky px-3 shrink-0 min-h-[40px] py-2 " + (isActive("/create-listing") ? "ring-2 ring-white" : "")}>
               CREATE A LISTING
             </Link>
             {user ? (
               <>
                 <Link href="/admin" aria-current={isActive("/admin/login") ? "page" : undefined} className={navCls("/admin/login")}>DASHBOARD</Link>
-                <button onClick={() => signOut()} className="hover:bg-white/15 shrink-0 inline-flex items-center min-h-[48px] px-2 rounded">SIGN OUT</button>
+                <button onClick={() => signOut()} className="hover:bg-white/15 shrink-0 inline-flex items-center min-h-[40px] px-2 rounded">SIGN OUT</button>
               </>
             ) : (
               <Link href="/admin/login" aria-current={isActive("/admin/login") ? "page" : undefined} className={navCls("/admin/login")}>OFFICE LOGIN</Link>

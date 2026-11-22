@@ -52,25 +52,25 @@ export default function PropertiesPage() {
       <h1 className="text-3xl font-bold text-navy">Properties</h1>
       <p className="text-gray-600 mt-1">{listings.length} real properties. Only live, approved listings are shown here.</p>
 
-      <div className="grid gap-2 mt-4 sm:grid-cols-2 lg:grid-cols-5 bg-gray-50 border border-gray-200 rounded-lg p-3">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by word, area or society" className="border border-gray-300 rounded px-3 py-2" />
-        <select value={city} onChange={(e) => setCity(e.target.value)} className="border border-gray-300 rounded px-3 py-2">
+      <div className="grid gap-2 mt-4 sm:grid-cols-2 lg:grid-cols-6 bg-gray-50 border border-gray-200 rounded-lg p-3">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search listings" aria-label="Search listings by word, area or society" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px] lg:col-span-2" />
+        <select value={city} onChange={(e) => setCity(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
           <option value="">All cities</option>
           {CITIES.filter(Boolean).map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="border border-gray-300 rounded px-3 py-2">
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
           <option value="">For sale or rent</option>
           <option value="sale">For sale</option>
           <option value="rent">For rent</option>
         </select>
-        <select value={beds} onChange={(e) => setBeds(e.target.value)} className="border border-gray-300 rounded px-3 py-2">
+        <select value={beds} onChange={(e) => setBeds(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
           <option value="">Any beds</option>
           <option value="2">2 beds</option>
           <option value="3">3 beds</option>
           <option value="4">4 beds</option>
           <option value="5+">5+ beds</option>
         </select>
-        <select value={size} onChange={(e) => setSize(e.target.value)} className="border border-gray-300 rounded px-3 py-2">
+        <select value={size} onChange={(e) => setSize(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
           <option value="">Any size</option>
           <option value="4 Marla">4 Marla</option>
           <option value="5 Marla">5 Marla</option>

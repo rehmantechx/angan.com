@@ -37,8 +37,8 @@ export default function ServicesPage() {
               </h2>
               <p className="text-base text-gray-600 mt-2 leading-relaxed">{SERVICE_SHORT[s.id] || s.note}</p>
               <div className="flex gap-2 mt-auto pt-5">
-                <Link href={`/services/${s.id}`} className="bg-slate-100 text-navy text-sm px-3 rounded font-semibold min-h-[48px] inline-flex items-center justify-center flex-1 text-center">
-                  See what is included
+                <Link href={`/services/${s.id}`} className="bg-slate-100 text-navy text-sm px-3 rounded font-semibold min-h-[48px] inline-flex items-center justify-center flex-1 text-center whitespace-nowrap">
+                  What&apos;s included
                 </Link>
                 <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-4 rounded min-h-[48px] inline-flex items-center justify-center font-semibold flex-1 text-center">Call</a>
               </div>

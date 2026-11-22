@@ -8,6 +8,21 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Page container: every page returns one root div, and that div gets the
+   decided content width here. The hero on Home is a direct child of
+   <main> (a <section>, not a div), so it spans the full viewport width
+   with w-full and never needs a vw width. That is the fix for the
+   sideways scroll on desktop: the old hero used w-screen (100vw), and
+   100vw counts the classic desktop scrollbar, so the page was about
+   15px wider than the viewport. No vw width remains in the layout. */
+main > div {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  padding-block: 1.5rem;
+}
+
 /* Premium Anngan buttons: one look everywhere. Red is the action,
    navy is the office, green-700 is WhatsApp. All are 48px tall so a
    finger never misses, with a clear shadow and a hover state. */
