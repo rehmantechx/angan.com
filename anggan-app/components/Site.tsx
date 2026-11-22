@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "../lib/auth-context";
 import { PROJECTS, SERVICES } from "../lib/seed";
 
 // Decided nav, in the exact order of the static site.
@@ -63,7 +63,7 @@ export function Header() {
           <div className="flex gap-2 ml-auto shrink-0">
             <a
               href="tel:+923041111698"
-              className="bg-navy text-white text-xs sm:text-sm px-2 sm:px-3 py-2 rounded font-semibold whitespace-nowrap min-h-[48px] inline-flex items-center"
+              className="btn btn-navy text-xs sm:text-sm px-2 sm:px-3 whitespace-nowrap"
               aria-label="Call Anngan on +92 304 1111 698"
             >
               Call<span className="hidden sm:inline">&nbsp;+92 304 1111 698</span>
@@ -72,7 +72,7 @@ export function Header() {
               href="https://wa.me/923041111698"
               target="_blank"
               rel="noopener"
-              className="bg-green-700 text-white text-xs sm:text-sm px-2 sm:px-3 py-2 rounded font-semibold whitespace-nowrap"
+              className="btn btn-green text-xs sm:text-sm px-2 sm:px-3 whitespace-nowrap"
             >
               WhatsApp
             </a>
@@ -95,7 +95,7 @@ export function Header() {
                 {l.label}
               </Link>
             ))}
-            <Link href="/create-listing" className="bg-sky-400 text-navy px-3 rounded shrink-0 inline-flex items-center min-h-[48px]">
+            <Link href="/create-listing" className="btn btn-sky px-3 shrink-0">
               CREATE A LISTING
             </Link>
             {user ? (
@@ -148,7 +148,7 @@ export function Header() {
               <Link
                 href="/create-listing"
                 onClick={() => setMenuOpen(false)}
-                className="bg-sky-400 text-navy py-2 px-3 rounded mt-2 text-center"
+                className="btn btn-sky mt-2 text-center"
               >
                 CREATE A LISTING
               </Link>
@@ -171,14 +171,14 @@ export function Header() {
               )}
             </nav>
             <div className="px-4 pb-4 flex gap-2">
-              <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-3 py-2 rounded font-semibold min-h-[48px] inline-flex items-center justify-center flex-1 text-center">
+              <a href="tel:+923041111698" className="btn btn-red flex-1 text-center">
                 Call +92 304 1111 698
               </a>
               <a
                 href="https://wa.me/923041111698"
                 target="_blank"
                 rel="noopener"
-                className="bg-green-700 text-white text-sm px-3 py-2 rounded font-semibold min-h-[48px] inline-flex items-center justify-center flex-1 text-center"
+                className="btn btn-green flex-1 text-center"
               >
                 WhatsApp
               </a>
@@ -192,74 +192,77 @@ export function Header() {
 
 export function Footer() {
   return (
-    <footer className="bg-anngan text-white mt-0">
-      <div className="max-w-6xl mx-auto px-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-5 lg:gap-8 py-10 text-sm">
-        <div>
+    <footer className="bg-navy text-white mt-0 border-t-4 border-anngan">
+      <div className="max-w-6xl mx-auto px-4 grid gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8 py-12 text-sm">
+        <div className="lg:col-span-4">
           <span className="inline-block bg-white rounded-lg px-3 py-2 shadow">
             <Image src="/img/logo.png" alt="anngan.com logo, banay khawab haqiqat" width={1200} height={231} className="w-[230px] max-w-full h-auto" />
           </span>
-          <p className="mt-3">
-            Pakistan's trusted real estate service providers. Projects and property in Karachi, Islamabad, Lahore and Peshawar.
+          <p className="mt-4 leading-relaxed">
+            Pakistan's trusted real estate service provider. Projects and property in Karachi, Islamabad, Lahore and Peshawar.
           </p>
-          <p className="mt-3">
+          <p className="mt-4 leading-relaxed">
             57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore<br />
-            <a href="tel:+923041111698" className="inline-block py-2 hover:text-white hover:underline">+92 304 1111 698</a><br />
-            <a href="mailto:info@anngan.com" className="inline-block py-2 hover:text-white hover:underline">info@anngan.com</a>
+            <a href="tel:+923041111698" className="inline-flex items-center min-h-[48px] font-semibold hover:underline">+92 304 1111 698</a><br />
+            <a href="mailto:info@anngan.com" className="inline-flex items-center min-h-[48px] hover:underline">info@anngan.com</a>
           </p>
         </div>
-        <div>
+        <div className="lg:col-span-2">
           <p className="font-bold text-white text-base">Company</p>
-          <ul className="mt-3 space-y-1.5">
-            <li><Link href="/about" className="inline-block py-2 hover:text-white hover:underline">About Us</Link></li>
-            <li><Link href="/contact" className="inline-block py-2 hover:text-white hover:underline">Contact Us</Link></li>
-            <li><Link href="/companies" className="inline-block py-2 hover:text-white hover:underline">Anngan Companies</Link></li>
-            <li><Link href="/services" className="inline-block py-2 hover:text-white hover:underline">Angan Tech</Link></li>
-            <li><Link href="/create-listing" className="inline-block py-2 hover:text-white hover:underline">Create a Listing</Link></li>
+          <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
+          <ul className="mt-4 space-y-1">
+            <li><Link href="/about" className="inline-flex items-center min-h-[48px] hover:underline">About Us</Link></li>
+            <li><Link href="/contact" className="inline-flex items-center min-h-[48px] hover:underline">Contact Us</Link></li>
+            <li><Link href="/companies" className="inline-flex items-center min-h-[48px] hover:underline">Anngan Companies</Link></li>
+            <li><Link href="/services" className="inline-flex items-center min-h-[48px] hover:underline">Angan Tech</Link></li>
+            <li><Link href="/create-listing" className="inline-flex items-center min-h-[48px] hover:underline">Create a Listing</Link></li>
           </ul>
         </div>
-        <div>
+        <div className="lg:col-span-2">
           <p className="font-bold text-white text-base">Projects</p>
-          <ul className="mt-3 space-y-1.5">
+          <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
+          <ul className="mt-4 space-y-1">
             {PROJECTS.map((p) => (
               <li key={p.id}>
-                <Link href={`/projects/${p.id}`} className="inline-block py-2 hover:text-white hover:underline">{p.name}</Link>
+                <Link href={`/projects/${p.id}`} className="inline-flex items-center min-h-[48px] hover:underline">{p.name}</Link>
               </li>
             ))}
           </ul>
         </div>
-        <div>
+        <div className="lg:col-span-2">
           <p className="font-bold text-white text-base">Connect</p>
-          <ul className="mt-3 space-y-1.5">
-            <li><Link href="/blogs" className="inline-block py-2 hover:text-white hover:underline">Blogs</Link></li>
-            <li><Link href="/properties" className="inline-block py-2 hover:text-white hover:underline">Properties</Link></li>
-            <li><Link href="/projects" className="inline-block py-2 hover:text-white hover:underline">Projects</Link></li>
-            <li><Link href="/societies" className="inline-block py-2 hover:text-white hover:underline">Societies Guide</Link></li>
-            <li><Link href="/tools" className="inline-block py-2 hover:text-white hover:underline">Ask Anngan</Link></li>
-            <li><a href="https://anngan.com/" target="_blank" rel="noopener" className="inline-block py-2 hover:text-white hover:underline">anngan.com</a></li>
+          <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
+          <ul className="mt-4 space-y-1">
+            <li><Link href="/blogs" className="inline-flex items-center min-h-[48px] hover:underline">Blogs</Link></li>
+            <li><Link href="/properties" className="inline-flex items-center min-h-[48px] hover:underline">Properties</Link></li>
+            <li><Link href="/projects" className="inline-flex items-center min-h-[48px] hover:underline">Projects</Link></li>
+            <li><Link href="/societies" className="inline-flex items-center min-h-[48px] hover:underline">Societies Guide</Link></li>
+            <li><Link href="/tools" className="inline-flex items-center min-h-[48px] hover:underline">Ask Anngan</Link></li>
+            <li><a href="https://anngan.com/" target="_blank" rel="noopener" className="inline-flex items-center min-h-[48px] hover:underline">anngan.com</a></li>
           </ul>
         </div>
-        <div>
+        <div className="lg:col-span-2">
           <p className="font-bold text-white text-base">Get Connected</p>
-          <ul className="mt-3 space-y-1.5">
+          <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
+          <ul className="mt-4 space-y-1">
             {SOCIAL_LINKS.map((s) => (
               <li key={s.href}>
-                <a href={s.href} target="_blank" rel="noopener" className="inline-block py-2 hover:text-white hover:underline">{s.label}</a>
+                <a href={s.href} target="_blank" rel="noopener" className="inline-flex items-center min-h-[48px] hover:underline">{s.label}</a>
               </li>
             ))}
           </ul>
-          <p className="mt-4">
-            <Link href="/services" className="inline-block py-2 hover:text-white hover:underline">Angan Tech services</Link>
-          </p>
-          <ul className="mt-2 space-y-1.5">
+          <p className="font-bold text-white text-base mt-6">Angan Tech services</p>
+          <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
+          <ul className="mt-4 space-y-1">
             {SERVICES.slice(0, 4).map((s) => (
               <li key={s.id}>
-                <Link href={`/services/${s.id}`} className="inline-block py-2 hover:text-white hover:underline">{s.name}</Link>
+                <Link href={`/services/${s.id}`} className="inline-flex items-center min-h-[48px] hover:underline">{s.name}</Link>
               </li>
             ))}
           </ul>
         </div>
       </div>
-      <div className="bg-[#003257] text-blue-100 text-xs text-center py-3 px-4">
+      <div className="bg-[#00263E] text-white text-sm text-center py-4 px-4">
         Copyright &copy; ANNGAN TECHNOLOGIES PVT. LTD. All rights reserved.
       </div>
     </footer>
