@@ -314,8 +314,8 @@ export default function AdminPage() {
       {tab === "Enquiries" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Enquiries ({enquiries.length})</h2>
-          <p className="text-sm text-gray-600">Enquiries from the website form appear here. Change the stage as you work them.</p>
-          {enquiries.length === 0 ? <p className="text-sm mt-2">No enquiries yet. Send one from the home page form to test.</p> : null}
+          <p className="text-sm text-gray-600">Enquiries from the website form appear here.{canEdit ? " Change the stage as you work them." : ""}</p>
+          {enquiries.length === 0 ? <p className="text-sm mt-2">No enquiries yet.</p> : null}
           <div className="grid gap-3 mt-2">
             {enquiries.map((e) => (
               <div key={e.id} className="border rounded p-3">
