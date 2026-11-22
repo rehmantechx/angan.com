@@ -115,13 +115,13 @@ export function Header() {
           >
             MENU &#9776;
           </button>
-          <div className="hidden xl:flex items-center gap-2 text-xs font-bold whitespace-nowrap max-w-7xl mx-auto px-4 py-1">
+          <div className="hidden xl:flex items-center gap-2 text-xs font-bold whitespace-nowrap max-w-7xl mx-auto px-4 sm:px-6 py-1">
             {NAV_LINKS.map((l) => (
               <Link key={l.href} href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)}>
                 {l.label}
               </Link>
             ))}
-            <Link href="/create-listing" aria-current={isActive("/create-listing") ? "page" : undefined} className={"btn btn-sky px-3 shrink-0 min-h-[40px] py-2 " + (isActive("/create-listing") ? "ring-2 ring-white" : "")}>
+            <Link href="/create-listing" aria-current={isActive("/create-listing") ? "page" : undefined} className={"btn btn-white px-3 shrink-0 min-h-[40px] py-2 " + (isActive("/create-listing") ? "ring-2 ring-white" : "")}>
               CREATE A LISTING
             </Link>
             {user ? (
@@ -165,7 +165,7 @@ export function Header() {
               <Link
                 href="/create-listing"
                 onClick={() => setMenuOpen(false)}
-                className="btn btn-sky mt-2 text-center"
+                className="btn btn-white mt-2 text-center"
               >
                 CREATE A LISTING
               </Link>
@@ -204,6 +204,35 @@ export function Header() {
         </div>
       ) : null}
     </header>
+  );
+}
+
+// One 24px brand icon per social link, same size and shape for all five,
+// so no link is text-only while another has an icon.
+function SocialIcon({ label }: { label: string }) {
+  const box = "shrink-0";
+  if (label === "Facebook") {
+    return (
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#1877F2" /><path d="M13.8 21v-6.9h2.3l.4-2.7h-2.7V9.6c0-.8.3-1.3 1.4-1.3h1.4V5.9c-.3 0-1.1-.1-2-.1-2 0-3.4 1.2-3.4 3.5v2.1H8.9v2.7h2.3V21h2.6z" fill="#fff" /></svg>
+    );
+  }
+  if (label === "X") {
+    return (
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#000" /><path d="M6 5.5 13.4 15l-7 3.5h2.6l5.2-2.6 4.1 2.6H20l-7.8-10 6.6-3H16l-4.9 2.4L7.4 5.5H6z" fill="#fff" transform="scale(0.92) translate(1,1)" /></svg>
+    );
+  }
+  if (label === "LinkedIn") {
+    return (
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#0A66C2" /><rect x="6" y="10" width="2.6" height="8" fill="#fff" /><circle cx="7.3" cy="7.3" r="1.5" fill="#fff" /><path d="M11 18v-4.4c0-1.5.8-2.4 2.1-2.4 1.2 0 1.9.8 1.9 2.4V18h2.6v-4.8c0-2.8-1.5-4.2-3.9-4.2-1.5 0-2.5.7-3.1 1.7V10H11v8z" fill="#fff" transform="translate(-1.4,0)" /></svg>
+    );
+  }
+  if (label === "Instagram") {
+    return (
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#C13584" /><rect x="5.5" y="5.5" width="13" height="13" rx="4" fill="none" stroke="#fff" strokeWidth="1.8" /><circle cx="12" cy="12" r="3.2" fill="none" stroke="#fff" strokeWidth="1.8" /><circle cx="16" cy="8" r="1.2" fill="#fff" /></svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#FF0000" /><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#fff" /></svg>
   );
 }
 
@@ -265,20 +294,16 @@ export function Footer() {
           <ul className="mt-3 grid grid-cols-2 gap-x-2 gap-y-2">
             {SOCIAL_LINKS.map((s) => (
               <li key={s.href}>
-                {s.label === "YouTube" ? (
-                  <a href={s.href} target="_blank" rel="noopener" aria-label="Anngan on YouTube, @annganpk" className="inline-flex items-center gap-2 min-h-[32px] hover:underline">
-                    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className="shrink-0"><rect width="24" height="24" rx="5" fill="#FF0000" /><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#fff" /></svg>
-                    YouTube
-                  </a>
-                ) : (
-                  <a href={s.href} target="_blank" rel="noopener" className="inline-flex items-center min-h-[32px] hover:underline">{s.label}</a>
-                )}
+                <a href={s.href} target="_blank" rel="noopener" aria-label={`Anngan on ${s.label}, @annganpk`} className="inline-flex items-center gap-2 min-h-[32px] hover:underline">
+                  <SocialIcon label={s.label} />
+                  {s.label}
+                </a>
               </li>
             ))}
           </ul>
           <p className="font-bold text-white text-base mt-5">Angan Tech services</p>
           <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
-          <ul className="mt-3 grid grid-cols-2 gap-x-2 gap-y-2">
+          <ul className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2">
             {SERVICES.slice(0, 4).map((s) => (
               <li key={s.id}>
                 <Link href={`/services/${s.id}`} className="inline-flex items-center min-h-[32px] hover:underline">{s.name}</Link>

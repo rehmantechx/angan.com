@@ -55,6 +55,10 @@ main > div {
 .btn-outline-navy:hover { background: #EFF6FF; }
 .btn-sky { background: #38BDF8; color: #004274; }
 .btn-sky:hover { background: #7DD3FC; }
+/* High-contrast white CTA for the red navbar: deep red text #7F1D1D on
+   white is about 10:1, well above the 7:1 bar. */
+.btn-white { background: #fff; color: #7F1D1D; }
+.btn-white:hover { background: #FEF2F2; }
 
 a:focus-visible,
 button:focus-visible,
