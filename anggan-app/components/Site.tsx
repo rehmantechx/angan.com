@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useAuth } from "../lib/auth-context";
 import { PROJECTS, SERVICES } from "../lib/seed";
 
@@ -29,6 +30,29 @@ const SOCIAL_LINKS = [
 export function Header() {
   const { user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+  // Active page: exact match, or a detail page under its section
+  // (/projects/proj-1 is still Projects, /services/service-3 is Angan Tech,
+  // anything under /admin is the office area).
+  const isActive = (href: string) =>
+    href === "/"
+      ? pathname === "/"
+      : href === "/admin/login"
+        ? pathname === "/admin/login" || pathname === "/admin"
+        : pathname === href || pathname.startsWith(href + "/");
+  // White pill on the red bar: navy text on white is 9 to 1, and the pill
+  // makes the current page obvious at a glance. In the drawer the active
+  // link gets a red left rule and a light navy tint instead.
+  const navCls = (href: string) =>
+    "shrink-0 inline-flex items-center min-h-[48px] px-2 rounded " +
+    (isActive(href)
+      ? "bg-white text-navy font-extrabold"
+      : "text-white hover:bg-white/15");
+  const drawerCls = (href: string) =>
+    "py-3 min-h-[48px] flex items-center border-b border-gray-100 " +
+    (isActive(href)
+      ? "text-navy font-extrabold bg-blue-50 border-l-4 border-l-anngan pl-3"
+      : "text-navy hover:text-anngan-dark");
   return (
     <header>
       <div className="bg-navy text-white text-xs sm:text-sm">
@@ -49,21 +73,21 @@ export function Header() {
         </div>
       </div>
       <div className="bg-white">
-        <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center gap-3">
-          <Link href="/" className="flex items-center shrink-0" aria-label="Anngan home">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2 sm:gap-3">
+          <Link href="/" className="flex items-center shrink-0 min-w-0" aria-label="Anngan home">
             <Image
               src="/img/logo.png"
               alt="anngan.com, banay khawab haqiqat"
               width={1200}
               height={231}
               priority
-              className="h-10 sm:h-[54px] w-auto max-w-[170px] sm:max-w-[280px] object-contain"
+              className="h-9 sm:h-[54px] w-auto max-w-[140px] sm:max-w-[280px] object-contain"
             />
           </Link>
           <div className="flex gap-2 ml-auto shrink-0">
             <a
               href="tel:+923041111698"
-              className="btn btn-navy text-xs sm:text-sm px-2 sm:px-3 whitespace-nowrap"
+              className="btn btn-navy text-xs sm:text-sm px-2.5 sm:px-3 whitespace-nowrap"
               aria-label="Call Anngan on +92 304 1111 698"
             >
               Call<span className="hidden sm:inline">&nbsp;+92 304 1111 698</span>
@@ -72,7 +96,7 @@ export function Header() {
               href="https://wa.me/923041111698"
               target="_blank"
               rel="noopener"
-              className="btn btn-green text-xs sm:text-sm px-2 sm:px-3 whitespace-nowrap"
+              className="btn btn-green text-xs sm:text-sm px-2.5 sm:px-3 whitespace-nowrap"
             >
               WhatsApp
             </a>
@@ -91,20 +115,20 @@ export function Header() {
           </button>
           <div className="hidden lg:flex items-center gap-4 text-xs font-bold whitespace-nowrap overflow-x-auto max-w-7xl mx-auto px-4">
             {NAV_LINKS.map((l) => (
-              <Link key={l.href} href={l.href} className="hover:underline shrink-0 inline-flex items-center min-h-[48px] px-1">
+              <Link key={l.href} href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)}>
                 {l.label}
               </Link>
             ))}
-            <Link href="/create-listing" className="btn btn-sky px-3 shrink-0">
+            <Link href="/create-listing" aria-current={isActive("/create-listing") ? "page" : undefined} className={"btn btn-sky px-3 shrink-0 " + (isActive("/create-listing") ? "ring-2 ring-white" : "")}>
               CREATE A LISTING
             </Link>
             {user ? (
               <>
-                <Link href="/admin" className="hover:underline shrink-0 inline-flex items-center min-h-[48px] px-1">DASHBOARD</Link>
-                <button onClick={() => signOut()} className="hover:underline shrink-0 inline-flex items-center min-h-[48px] px-1">SIGN OUT</button>
+                <Link href="/admin" aria-current={isActive("/admin/login") ? "page" : undefined} className={navCls("/admin/login")}>DASHBOARD</Link>
+                <button onClick={() => signOut()} className="hover:bg-white/15 shrink-0 inline-flex items-center min-h-[48px] px-2 rounded">SIGN OUT</button>
               </>
             ) : (
-              <Link href="/admin/login" className="hover:underline shrink-0 inline-flex items-center min-h-[48px] px-1">OFFICE LOGIN</Link>
+              <Link href="/admin/login" aria-current={isActive("/admin/login") ? "page" : undefined} className={navCls("/admin/login")}>OFFICE LOGIN</Link>
             )}
           </div>
         </div>
@@ -130,19 +154,20 @@ export function Header() {
                   key={l.href}
                   href={l.href}
                   onClick={() => setMenuOpen(false)}
-                  className="text-navy py-3 min-h-[48px] flex items-center border-b border-gray-100 hover:text-anngan-dark"
+                  aria-current={isActive(l.href) ? "page" : undefined}
+                  className={drawerCls(l.href)}
                 >
                   {l.label} &rsaquo;
                 </Link>
               ))}
               <p className="text-xs text-gray-600 font-bold tracking-wide pt-3">Companies</p>
-              <Link href="/companies" onClick={() => setMenuOpen(false)} className="text-navy py-3 min-h-[48px] flex items-center border-b border-gray-100">
+              <Link href="/companies" onClick={() => setMenuOpen(false)} aria-current={isActive("/companies") ? "page" : undefined} className={drawerCls("/companies")}>
                 Anngan Companies &rsaquo;
               </Link>
-              <Link href="/services" onClick={() => setMenuOpen(false)} className="text-navy py-3 min-h-[48px] flex items-center border-b border-gray-100">
+              <Link href="/services" onClick={() => setMenuOpen(false)} aria-current={isActive("/services") ? "page" : undefined} className={drawerCls("/services")}>
                 Angan Tech &rsaquo;
               </Link>
-              <Link href="/services/service-7" onClick={() => setMenuOpen(false)} className="text-navy py-3 min-h-[48px] flex items-center border-b border-gray-100">
+              <Link href="/services/service-7" onClick={() => setMenuOpen(false)} aria-current={pathname === "/services/service-7" ? "page" : undefined} className={drawerCls("/services/service-7")}>
                 Angan Tech CRM &rsaquo;
               </Link>
               <Link
@@ -154,7 +179,7 @@ export function Header() {
               </Link>
               {user ? (
                 <>
-                  <Link href="/admin" onClick={() => setMenuOpen(false)} className="text-anngan-dark py-3 min-h-[48px] flex items-center border-b border-gray-100">
+                  <Link href="/admin" onClick={() => setMenuOpen(false)} aria-current={isActive("/admin/login") ? "page" : undefined} className={drawerCls("/admin/login")}>
                     Dashboard
                   </Link>
                   <button
@@ -165,7 +190,7 @@ export function Header() {
                   </button>
                 </>
               ) : (
-                <Link href="/admin/login" onClick={() => setMenuOpen(false)} className="text-navy py-3 min-h-[48px] flex items-center hover:text-anngan-dark">
+                <Link href="/admin/login" onClick={() => setMenuOpen(false)} aria-current={isActive("/admin/login") ? "page" : undefined} className={drawerCls("/admin/login")}>
                   Office login
                 </Link>
               )}
