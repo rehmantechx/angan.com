@@ -1,39 +1,16 @@
-// Auth: Firebase Google sign-in when connected. When Firebase is not
-// connected the login page offers a clearly labelled demo office login so
-// the dashboard can be tested locally. There is no passcode gate anywhere.
+// Auth: Firebase Google sign-in when connected. This file is only loaded
+// on /admin and /create-listing (see Providers). It must NOT be imported
+// by the header or any public page: the Firebase SDK imports below are
+// dynamic, and the context lives in lib/auth-context.tsx, so public pages
+// never download the Firebase SDK.
 "use client";
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useEffect, useState, ReactNode } from "react";
+import { AuthContext, Role, SessionUser, useAuth } from "./auth-context";
 import { getFirebaseAuth, getDb, isFirebaseConfigured } from "./firebase";
 
-export type Role = "Full access" | "Staff" | "View only";
-
-export type SessionUser = {
-  uid: string;
-  email: string;
-  name: string;
-  role: Role;
-  demo: boolean;
-};
-
-type AuthCtx = {
-  user: SessionUser | null;
-  loading: boolean;
-  firebaseOn: boolean;
-  signInGoogle: () => Promise<string | null>;
-  signInDemo: () => void;
-  signOut: () => Promise<void>;
-};
-
-const Ctx = createContext<AuthCtx>({
-  user: null,
-  loading: true,
-  firebaseOn: false,
-  signInGoogle: async () => "Firebase is not connected.",
-  signInDemo: () => {},
-  signOut: async () => {},
-});
+export type { Role, SessionUser };
+export { useAuth };
+export const Ctx = AuthContext;
 
 const DEMO_KEY = "anngan-demo-session";
 
@@ -63,6 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
         return;
       }
+      const { onAuthStateChanged } = await import("firebase/auth");
+      const { doc, getDoc, setDoc } = await import("firebase/firestore");
+      if (cancelled) return;
       unsub = onAuthStateChanged(auth, async (fbUser) => {
         if (!fbUser) {
           setUser(null);
@@ -118,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const auth = await getFirebaseAuth();
     if (!auth) return "Firebase is not connected. Fill in .env.local first.";
     try {
+      const { GoogleAuthProvider, signInWithPopup } = await import("firebase/auth");
       await signInWithPopup(auth, new GoogleAuthProvider());
       return null;
     } catch (e) {
@@ -142,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const auth = await getFirebaseAuth();
     if (auth) {
       try {
+        const { signOut: fbSignOut } = await import("firebase/auth");
         await fbSignOut(auth);
       } catch {
         // ignore
@@ -156,8 +138,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </Ctx.Provider>
   );
-}
-
-export function useAuth() {
-  return useContext(Ctx);
 }
