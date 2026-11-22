@@ -14,8 +14,14 @@ service cloud.firestore {
     // Public read only for live listings. Office can read every listing.
     // A signed-in user may create a listing only as pending (office approval
     // makes it live). Only the office can update or delete listings.
+    // NOTE: the published rules had no explicit list allowance, and an
+    // unfiltered list query was denied whenever any doc was not live
+    // (rules are not filters). The app now queries by liveStatus, which
+    // the rules can prove, but publish this file so an office list query
+    // is also explicitly allowed.
     match /listings/{id} {
       allow read: if resource.data.liveStatus == 'live' || isOfficeAnyRole();
+      allow list: if isOfficeAnyRole();
       allow create: if isOffice() || (isSignedIn() && request.resource.data.liveStatus == 'pending');
       allow update, delete: if isOffice();
     }

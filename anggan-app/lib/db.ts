@@ -145,10 +145,86 @@ async function readCollection<T>(name: string): Promise<T[] | null> {
 export async function getListings(): Promise<Listing[]> {
   if (demoMode) return demoStore().listings;
 
-  const rows = await readCollection<Listing>("listings");
-  if (rows && rows.length > 0) return rows;
-  if (rows && rows.length === 0) return loadLocal().listings;
+  const db = await getDb();
+  if (db) {
+    const { collection, getDocs, query, where, doc, getDoc } = await fs();
+    try {
+      // Root cause of the live bug: an unfiltered getDocs(listings) is
+      // denied by the published rules whenever any doc is not live,
+      // because Firestore rules are not filters. The read then fell back
+      // to the static 12-item seed, so Firestore-created listings never
+      // showed in /admin Listings even though /properties (which uses the
+      // liveStatus == 'live' query) showed them. Query by liveStatus,
+      // which the rules can prove, and merge the three statuses.
+      const byStatus = async (s: string): Promise<Listing[]> => {
+        const snap = await withTimeout(
+          getDocs(query(collection(db, "listings"), where("liveStatus", "==", s))),
+          READ_TIMEOUT_MS,
+          "Reading listings"
+        );
+        return snap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as Listing);
+      };
+      const settled = await Promise.allSettled([byStatus("live"), byStatus("pending"), byStatus("hidden")]);
+      const seen = new Set<string>();
+      const rows: Listing[] = [];
+      for (const r of settled) {
+        if (r.status !== "fulfilled") continue;
+        for (const l of r.value) {
+          if (!seen.has(l.id)) {
+            seen.add(l.id);
+            rows.push(l);
+          }
+        }
+      }
+      if (rows.length > 0) return rows;
+      // Firestore reachable but no listings. If the settings document
+      // exists, the seed was uploaded and the empty result is real, so do
+      // not fall back to the local seed and resurrect deleted listings.
+      const seeded = await withTimeout(getDoc(doc(db, "settings", "office")), READ_TIMEOUT_MS, "Reading settings");
+      if (seeded.exists()) return [];
+      return loadLocal().listings;
+    } catch {
+      return loadLocal().listings;
+    }
+  }
   return loadLocal().listings;
+}
+
+// One listing by id, for /properties/[id]. Seed first, then a Firestore
+// document read (public read of a live listing is allowed), then the
+// local store (local test mode). Returns null when it does not exist.
+export async function getListingById(id: string): Promise<Listing | null> {
+  const seed = LISTINGS.find((l) => l.id === id);
+  if (seed) return seed;
+  if (demoMode) return null;
+  const db = await getDb();
+  if (db) {
+    const { doc, getDoc } = await fs();
+    try {
+      const snap = await withTimeout(getDoc(doc(db, "listings", id)), READ_TIMEOUT_MS, "Reading listing");
+      if (snap.exists()) return { id: snap.id, ...(snap.data() as object) } as Listing;
+      return null;
+    } catch {
+      // fall through to local store below
+    }
+  }
+  const local = loadLocal().listings.find((l) => l.id === id);
+  return local || null;
+}
+
+// True when the Firestore settings document exists, meaning the seed was
+// uploaded. Used to hide the seed button once data is already online.
+export async function isFirestoreSeeded(): Promise<boolean> {
+  if (demoMode) return false;
+  const db = await getDb();
+  if (!db) return false;
+  const { doc, getDoc } = await fs();
+  try {
+    const snap = await withTimeout(getDoc(doc(db, "settings", "office")), READ_TIMEOUT_MS, "Reading settings");
+    return snap.exists();
+  } catch {
+    return false;
+  }
 }
 
 // Only live, visible listings show on the public site.

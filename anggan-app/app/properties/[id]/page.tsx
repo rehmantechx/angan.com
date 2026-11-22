@@ -1,16 +1,45 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
 import { LISTINGS } from "../../../lib/seed";
+import { getListingById } from "../../../lib/db";
 import { EnquiryForm } from "../../../components/EnquiryForm";
-
-export function generateStaticParams() {
-  return LISTINGS.map((l) => ({ id: l.id }));
-}
+import type { Listing } from "../../../lib/seed";
 
 export default function PropertyPage({ params }: { params: { id: string } }) {
-  const l = LISTINGS.find((x) => x.id === params.id);
-  if (!l || l.liveStatus !== "live" || l.visible === false) notFound();
+  const [l, setL] = useState<Listing | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    // Seed first, then a Firestore document read by id, then the local
+    // store. A live listing created in the dashboard is not in the seed,
+    // so the old seed-only lookup 404ed for every new listing. The fetch
+    // runs in the browser, the same path the /properties list uses, so it
+    // sees Firestore listings and local test-mode listings alike.
+    getListingById(params.id).then((row) => {
+      if (cancelled) return;
+      setL(row && row.liveStatus === "live" && row.visible !== false ? row : null);
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [params.id]);
+
+  if (loading) return <p>Loading property...</p>;
+  if (!l) {
+    return (
+      <div>
+        <h1 className="text-3xl font-bold text-navy">Property not found</h1>
+        <p className="mt-2 text-gray-600">This property does not exist, or it is not live yet.</p>
+        <p className="mt-4">
+          <Link href="/properties" className="text-anngan-dark font-semibold underline">Back to all properties</Link>
+        </p>
+      </div>
+    );
+  }
   const others = LISTINGS.filter((x) => x.id !== l.id && x.city === l.city).slice(0, 3);
 
   return (
