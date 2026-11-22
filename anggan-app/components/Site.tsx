@@ -213,6 +213,7 @@ export function Footer() {
           <span className="inline-block bg-white rounded-lg px-3 py-2 shadow">
             <Image src="/img/logo.png" alt="anngan.com logo, banay khawab haqiqat" width={1200} height={231} className="w-[230px] max-w-full h-auto" />
           </span>
+          <p className="urdu-tagline urdu-tagline-light mt-3" lang="ur">بنائے خواب حقیقت</p>
           <p className="mt-4 leading-relaxed">
             Pakistan's trusted real estate service provider. Projects and property in Karachi, Islamabad, Lahore and Peshawar.
           </p>

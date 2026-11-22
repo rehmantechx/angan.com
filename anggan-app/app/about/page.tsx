@@ -40,7 +40,7 @@ export default function AboutPage() {
     <div>
       <h1 className="text-3xl font-bold text-navy">About Anngan</h1>
       <p className="text-gray-600 mt-1">
-        Pakistan's most trusted real estate service provider. banay khawab haqiqat.
+        Pakistan's most trusted real estate service provider. <span className="urdu-tagline" lang="ur">بنائے خواب حقیقت</span>
       </p>
 
       <figure className="mt-5 rounded-lg overflow-hidden border border-gray-200 shadow-sm">

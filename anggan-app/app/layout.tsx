@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
+import { Noto_Nastaliq_Urdu } from "next/font/google";
 import "./globals.css";
 import { Header, Footer } from "../components/Site";
 import { Providers } from "../components/Providers";
+
+// Urdu tagline font, self-hosted by Next.js (downloaded at build time,
+// no Google Fonts request at runtime). Nastaliq is the premium Urdu
+// script style, as on the original Anngan logo tagline.
+const urduFont = Noto_Nastaliq_Urdu({ subsets: ["arabic"], weight: ["400", "700"], variable: "--font-urdu" });
 
 export const metadata: Metadata = {
   title: "Anngan | Homes, Plots and Projects in Pakistan",
@@ -15,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={urduFont.variable}>
       <body>
         <Providers>
           <Header />

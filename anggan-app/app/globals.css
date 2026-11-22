@@ -55,3 +55,17 @@ select:focus-visible {
 .card:hover {
   box-shadow: 0 6px 18px rgba(0, 66, 116, 0.12);
 }
+
+/* Urdu tagline, بنائے خواب حقیقت: Noto Nastaliq Urdu, gold like the
+   original Anngan logo tagline. No highlight, no background, no blue.
+   Nastaliq is tall, so it gets a tall line height. On navy (footer)
+   the light gold is used instead, so it stays readable. */
+.urdu-tagline {
+  font-family: var(--font-urdu), "Noto Nastaliq Urdu", "Noto Naskh Arabic", serif;
+  color: #a67c2e;
+  font-size: 1.25rem;
+  line-height: 2.2;
+}
+.urdu-tagline-light {
+  color: #ddb78b;
+}
