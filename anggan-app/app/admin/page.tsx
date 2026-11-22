@@ -45,6 +45,7 @@ export default function AdminPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [settings, setSettings] = useState<OfficeSettings | null>(null);
+  const [seeded, setSeeded] = useState(false);
   const [msg, setMsg] = useState("");
   const [edit, setEdit] = useState<Listing | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -63,6 +64,7 @@ export default function AdminPage() {
     setServices(await getServices());
     setEnquiries(await getEnquiries());
     setSettings(await getSettings());
+    setSeeded(await isFirestoreSeeded());
   }
 
   useEffect(() => {
@@ -233,7 +235,7 @@ export default function AdminPage() {
             <p className="text-sm mt-1">
               {["Lahore", "Rawalpindi", "Multan", "Islamabad", "Karachi"].map((c) => `${c}: ${listings.filter((l) => l.city === c).length}`).join(" | ")}
             </p>
-            {firebaseOn() && !isDemo ? (
+            {firebaseOn() && !isDemo && !seeded ? (
               <button className={btnNavy + " mt-3"} onClick={async () => { setMsg(await seedFirestore()); await reload(); }}>
                 Upload seed data to Firestore
               </button>
