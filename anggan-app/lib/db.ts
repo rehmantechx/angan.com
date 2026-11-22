@@ -3,6 +3,7 @@
 // and writes Firestore. When it is not configured it reads the real seed
 // data and saves changes in the browser (localStorage), with a clear notice.
 import { getDb, isFirebaseConfigured } from "./firebase";
+import type { Firestore } from "firebase/firestore";
 
 // The Firestore SDK is loaded only when a read or write actually runs,
 // so public pages never download it. All callers below are async.
@@ -212,16 +213,56 @@ export async function getListingById(id: string): Promise<Listing | null> {
   return local || null;
 }
 
-// True when the Firestore settings document exists, meaning the seed was
+// True when Firestore already has seed data, meaning the seed was
 // uploaded. Used to hide the seed button once data is already online.
+// Fixed 2026-11-22: the old version read ONLY the settings/office
+// document, but that document does not exist in live Firestore (REST
+// check 22 Nov: 404) even though listings, projects, blogs, services
+// and agencies are all live there and the seed upload reported success,
+// so the button never hid. A settings read that is denied or times out
+// also used to read as "not seeded". Now seeded is true when the
+// settings document exists OR any seed collection has at least one
+// document. Each collection read runs in parallel and a failure of one
+// read counts as "no data from that collection", never as proof the
+// database is empty, so the button only shows when nothing is found.
+export async function firestoreHasSeedData(
+  db: Firestore,
+  fns: typeof import("firebase/firestore")
+): Promise<boolean> {
+  const { collection, doc, getDoc, getDocs, query, where } = fns;
+  const one = async <T>(p: Promise<T>, ok: (v: T) => boolean): Promise<boolean> => {
+    try {
+      return ok(await withTimeout(p, READ_TIMEOUT_MS, "Reading seed data"));
+    } catch {
+      return false;
+    }
+  };
+  const checks: Promise<boolean>[] = [
+    one(getDoc(doc(db, "settings", "office")), (s) => s.exists()),
+    // Listings use the same by-liveStatus queries as getListings, because
+    // the Firestore rules deny an unfiltered listings list whenever any
+    // document is not live (rules are not filters).
+    ...(["live", "pending", "hidden"] as const).map((s) =>
+      one(
+        getDocs(query(collection(db, "listings"), where("liveStatus", "==", s))),
+        (snap) => snap.docs.length > 0
+      )
+    ),
+    // The other seed collections allow public read in the rules.
+    ...(["projects", "blogs", "agencies", "services"] as const).map((name) =>
+      one(getDocs(collection(db, name)), (snap) => snap.docs.length > 0)
+    ),
+  ];
+  const results = await Promise.all(checks);
+  return results.some(Boolean);
+}
+
 export async function isFirestoreSeeded(): Promise<boolean> {
   if (demoMode) return false;
   const db = await getDb();
   if (!db) return false;
-  const { doc, getDoc } = await fs();
   try {
-    const snap = await withTimeout(getDoc(doc(db, "settings", "office")), READ_TIMEOUT_MS, "Reading settings");
-    return snap.exists();
+    return await firestoreHasSeedData(db, await fs());
   } catch {
     return false;
   }
