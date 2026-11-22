@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getPublicListings, getProjects, getBlogs, getSettings } from "../lib/db";
@@ -30,6 +30,19 @@ const TOOLS = [
   { n: 6, title: "Find a plot or file by city and size", note: "Pick a city and a size. No match? Nearest real ones.", href: "/tools#finder" },
 ];
 
+// Hero background slider, like the original anngan.com: the photo
+// changes every 10 seconds, crossfade, loop. Real photos only, all
+// already in the repo, no AI, no fake. No video, no new section, same
+// hero, same text, same search box. Order is fixed: Mangla lake,
+// Urban City, MGH Precinct 01, Bahria Sky, Kashmir Modern City.
+const HERO_PHOTOS = [
+  { src: "/img/mgh-lake-aerial.jpg", alt: "Mangla Lake aerial view, MGH Pakistan" },
+  { src: "/img/urban-drone.jpg", alt: "Urban City, Lahore, drone view" },
+  { src: "/img/mgh-precinct-01.jpg", alt: "MGH Pakistan, Precinct 01, Mangla" },
+  { src: "/img/chinatown-bahria-sky.jpg", alt: "Bahria Sky, where China Town is located" },
+  { src: "/img/kmc-01.jpg", alt: "Kashmir Modern City, Mirpur" },
+];
+
 function budgetOK(l: Listing, bud: string): boolean {
   if (!bud) return true;
   if (l.status === "rent") return true;
@@ -58,6 +71,48 @@ export default function Home() {
   const [searched, setSearched] = useState(false);
   const [searchNote, setSearchNote] = useState("");
   const [browse, setBrowse] = useState("homes");
+
+  // Hero slider state. heroPrev is the photo fading out underneath,
+  // hero is the one fading in, and the next photo is already rendered
+  // invisible so it is downloaded before its turn comes.
+  const [hero, setHero] = useState(0);
+  const [heroPrev, setHeroPrev] = useState<number | null>(null);
+  const [heroIn, setHeroIn] = useState(true);
+  const [heroPaused, setHeroPaused] = useState(false);
+  const heroRef = useRef(0);
+  const heroNext = (hero + 1) % HERO_PHOTOS.length;
+
+  function goToHero(i: number) {
+    if (i === heroRef.current) return;
+    setHeroPrev(heroRef.current);
+    heroRef.current = i;
+    setHero(i);
+    setHeroIn(false);
+  }
+
+  useEffect(() => {
+    // Every 10 seconds, crossfade to the next real photo, loop.
+    // Paused while the mouse is over the hero, and off entirely for
+    // reduced-motion users. No video, no autoplay sound.
+    if (heroPaused) return;
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setInterval(() => goToHero((heroRef.current + 1) % HERO_PHOTOS.length), 10000);
+    return () => clearInterval(id);
+  }, [heroPaused]);
+
+  useEffect(() => {
+    // Start the 1 second crossfade just after the new photo mounts.
+    if (heroIn) return;
+    const t = setTimeout(() => setHeroIn(true), 60);
+    return () => clearTimeout(t);
+  }, [hero, heroIn]);
+
+  useEffect(() => {
+    // Drop the faded-out photo once the crossfade is done.
+    if (heroPrev === null) return;
+    const t = setTimeout(() => setHeroPrev(null), 1200);
+    return () => clearTimeout(t);
+  }, [heroPrev]);
 
   useEffect(() => {
     // Background refresh only, after the first paint AND when the
@@ -165,17 +220,51 @@ export default function Home() {
 
   return (
     <div>
-      {/* Hero, decided static version, full width */}
-      <section className="relative left-1/2 w-screen -translate-x-1/2 -mt-6 bg-navy overflow-hidden">
+      {/* Hero, decided static version, full width. Background photo
+          changes every 10 seconds, crossfade, loop, like anngan.com.
+          Dark navy behind the photos plus a gradient keeps the white
+          hero text and the search box readable on every photo. */}
+      <section
+        className="relative left-1/2 w-screen -translate-x-1/2 -mt-6 bg-navy overflow-hidden"
+        onMouseEnter={() => setHeroPaused(true)}
+        onMouseLeave={() => setHeroPaused(false)}
+      >
+        {heroPrev !== null ? (
+          <Image
+            key={"prev-" + heroPrev}
+            src={HERO_PHOTOS[heroPrev].src}
+            alt=""
+            aria-hidden="true"
+            fill
+            quality={75}
+            sizes="100vw"
+            className="absolute inset-0 w-full h-full object-cover opacity-45"
+          />
+        ) : null}
         <Image
-          src="/img/mgh-lake-aerial.jpg"
-          alt="Mangla Lake aerial view, MGH Pakistan"
+          key={"cur-" + hero}
+          src={HERO_PHOTOS[hero].src}
+          alt={HERO_PHOTOS[hero].alt}
           fill
-          priority
+          priority={hero === 0}
           quality={75}
           sizes="100vw"
-          className="absolute inset-0 w-full h-full object-cover opacity-45"
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+          style={{ opacity: heroIn ? 0.45 : 0 }}
         />
+        {/* Next photo, invisible, downloaded early so its turn is instant. */}
+        <Image
+          key={"next-" + heroNext}
+          src={HERO_PHOTOS[heroNext].src}
+          alt=""
+          aria-hidden="true"
+          fill
+          quality={75}
+          sizes="100vw"
+          loading="eager"
+          className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/20 to-navy/60 pointer-events-none" aria-hidden="true" />
         <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-10">
           <h1 className="text-white text-3xl md:text-4xl font-extrabold max-w-[22ch] leading-tight">
             Property for sale and rent in Pakistan
@@ -226,6 +315,20 @@ export default function Home() {
             </button>
             {searchNote ? <p className="text-sm font-semibold text-navy mt-2" role="status">{searchNote}</p> : null}
           </div>
+        </div>
+        <div className="absolute bottom-2 right-4 flex gap-1" aria-label="Hero photos">
+          {HERO_PHOTOS.map((p, i) => (
+            <button
+              key={p.src}
+              type="button"
+              aria-label={"Show hero photo " + (i + 1) + ": " + p.alt}
+              aria-current={hero === i}
+              onClick={() => goToHero(i)}
+              className="min-w-[24px] min-h-[24px] flex items-center justify-center"
+            >
+              <span className={"block w-2.5 h-2.5 rounded-full " + (hero === i ? "bg-white" : "bg-white/50")} />
+            </button>
+          ))}
         </div>
       </section>
 
