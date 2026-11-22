@@ -91,7 +91,8 @@ export function Header() {
               className="btn btn-navy text-xs sm:text-sm px-2 sm:px-3 whitespace-nowrap"
               aria-label="Call Anngan on +92 304 1111 698"
             >
-              Call<span className="hidden sm:inline">&nbsp;+92 304 1111 698</span>
+              <span className="sm:hidden">Call</span>
+              <span className="hidden sm:inline">Call +92 304 1111 698</span>
             </a>
             <a
               href="https://wa.me/923041111698"
