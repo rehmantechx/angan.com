@@ -2,33 +2,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getPublicListings, getProjects, getBlogs, getSettings } from "../lib/db";
-import { Listing, Project, Blog, OfficeSettings, LISTINGS, PROJECTS, BLOGS, SETTINGS } from "../lib/seed";
+import { getPublicListings, getProjects, getSettings } from "../lib/db";
+import { Listing, Project, OfficeSettings, LISTINGS, PROJECTS, SETTINGS } from "../lib/seed";
 import { ListingCard } from "../components/ListingCard";
 
 const CITIES = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Multan", "Mangla", "Kashmir"];
-
-const CITY_CARDS = [
-  { city: "Karachi", href: "/properties?city=Karachi", note: "Shamsi Society flat. 1 real listing." },
-  { city: "Lahore", href: "/properties?city=Lahore", note: "Head Office. Most listings and projects." },
-  { city: "Islamabad", href: "/properties?city=Islamabad", note: "Kuri Road. 1 real listing." },
-  { city: "Rawalpindi", href: "/properties?city=Rawalpindi", note: "Bahria Town. 2 real listings." },
-  { city: "Multan", href: "/properties?city=Multan", note: "Citi Housing house. Pak China Grain Market." },
-  { city: "Mangla", href: "/projects/proj-1", note: "MGH Pakistan. Lake view housing." },
-  { city: "Kashmir", href: "/projects/proj-7", note: "Kashmir Modern City. Sold Out." },
-  { city: "Peshawar", href: "/properties", note: "No listing yet. Call to ask." },
-];
-
-const SOCIETY_LINKS = ["DHA", "Bahria", "Paragon", "Al Kabir", "Lake City", "Citi Housing", "Shamsi"];
-
-const TOOLS = [
-  { n: 1, title: "Work out your building cost", note: "Area x rate, plus 10% if you tick it.", href: "/tools#cost" },
-  { n: 2, title: "Work out your monthly loan payment", note: "Loan, years and markup in, monthly payment out.", href: "/tools#loan" },
-  { n: 3, title: "Marla, Kanal and sqft, changed around", note: "1 Marla is 272.25 sqft. Change any size.", href: "/tools#area" },
-  { n: 4, title: "What Anngan is asking, city by city", note: "Lowest, highest and middle price, by city.", href: "/tools#index" },
-  { n: 5, title: "Know the area before you buy", note: "Short notes on DHA, Bahria, Paragon, Mangla, Multan, Karachi.", href: "/tools#guides" },
-  { n: 6, title: "Find a plot or file by city and size", note: "Pick a city and a size. No match? Nearest real ones.", href: "/tools#finder" },
-];
 
 // Hero background slider, like the original anngan.com: the photo
 // changes every 10 seconds, crossfade, loop. Real photos only, all
@@ -59,7 +37,6 @@ export default function Home() {
   // at once instead of after a network round trip.
   const [listings, setListings] = useState<Listing[]>(LISTINGS.filter((l) => l.liveStatus === "live" && l.visible !== false));
   const [projects, setProjects] = useState<Project[]>(PROJECTS);
-  const [blogs, setBlogs] = useState<Blog[]>(BLOGS);
   const [settings, setSettings] = useState<OfficeSettings | null>(SETTINGS);
 
   const [status, setStatus] = useState("all");
@@ -134,7 +111,6 @@ export default function Home() {
     const refresh = () => {
       getPublicListings().then((rows) => { if (rows.length > 0) setListings(rows); });
       getProjects().then((rows) => { if (rows.length > 0) setProjects(rows); });
-      getBlogs().then((rows) => { if (rows.length > 0) setBlogs(rows); });
       getSettings().then(setSettings);
     };
     if (typeof window !== "undefined" && "requestIdleCallback" in window) {
@@ -484,61 +460,16 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-10">
-        <div className="flex items-baseline justify-between flex-wrap gap-2">
-          <h2 className="text-2xl font-bold text-navy">Ask Anngan before you buy</h2>
-          <Link href="/tools" className="text-anngan-dark font-semibold text-sm">All six, on one page &rarr;</Link>
-        </div>
-        <p className="text-gray-600 mt-1">Six tools, in your browser. No account, no payment.</p>
-        <div className="mt-4 space-y-3">
-          {TOOLS.map((t) => (
-            <div key={t.n} className="flex gap-4 items-start border-b border-gray-100 pb-3">
-              <span className="bg-navy text-white font-bold rounded-full w-8 h-8 flex items-center justify-center shrink-0">{t.n}</span>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-navy">{t.title}</h3>
-                <p className="text-sm text-gray-600">{t.note}</p>
-              </div>
-              <Link href={t.href} className="btn btn-outline-red shrink-0">Open it</Link>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-10">
-        <h2 className="text-2xl font-bold text-navy">Where we work</h2>
-        <p className="text-gray-600 mt-1">Tap a city to see what Anngan has there.</p>
-        <div className="grid gap-3 mt-4 sm:grid-cols-2">
-          {CITY_CARDS.map((c) => (
-            <Link key={c.city} href={c.href} className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:border-anngan">
-              <p className="font-bold text-navy">{c.city}</p>
-              <p className="text-sm text-gray-600">{c.note}</p>
-            </Link>
-          ))}
-        </div>
-        <h2 className="text-xl font-bold text-navy mt-8">By society</h2>
-        <p className="mt-2 text-sm flex flex-wrap gap-x-4 gap-y-1">
-          {SOCIETY_LINKS.map((s) => (
-            <Link key={s} href={`/properties?q=${encodeURIComponent(s)}`} className="text-anngan-dark font-semibold hover:underline">{s === "DHA" ? "DHA Lahore" : s === "Bahria" ? "Bahria Town" : s === "Paragon" ? "Paragon City" : s === "Al Kabir" ? "Al Kabir Town" : s === "Lake City" ? "Lake City" : s === "Citi Housing" ? "Citi Housing" : s === "Shamsi" ? "Shamsi Society" : s}</Link>
-          ))}
-        </p>
-      </section>
-
-      <section className="mt-10 bg-slate-50 -mx-4 px-4 py-8">
-        <div className="flex items-baseline justify-between flex-wrap gap-2">
-          <h2 className="text-2xl font-bold text-navy">From the Anngan blog</h2>
-          <Link href="/blogs" className="text-anngan-dark font-semibold text-sm">All 23 articles &rarr;</Link>
-        </div>
-        <p className="text-gray-600 mt-1">Latest real articles from anngan.com, newest first. Newest: 27 Feb 2023.</p>
-        <div className="mt-4 space-y-3">
-          {blogs.slice(0, 6).map((b) => (
-            <article key={b.id} className="border border-gray-200 rounded-lg bg-white p-4 flex gap-4 items-start justify-between">
-              <div className="min-w-0">
-                <p className="text-sm text-gray-600">{b.date}</p>
-                <h3 className="font-semibold text-navy">{b.title}</h3>
-              </div>
-              <a href={b.url} target="_blank" rel="noopener" className="btn btn-outline-navy shrink-0">Read it</a>
-            </article>
-          ))}
+      <section className="mt-10" aria-label="More from Anngan">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Link href="/tools" className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:border-anngan flex items-baseline justify-between gap-2">
+            <span><span className="font-bold text-navy">Ask Anngan</span><span className="text-sm text-gray-600 block">Six tools: building cost, loan, area, prices, guides, finder.</span></span>
+            <span className="text-anngan-dark font-semibold text-sm shrink-0">Open tools &rarr;</span>
+          </Link>
+          <Link href="/blogs" className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:border-anngan flex items-baseline justify-between gap-2">
+            <span><span className="font-bold text-navy">From the Anngan blog</span><span className="text-sm text-gray-600 block">23 real articles from anngan.com, newest first.</span></span>
+            <span className="text-anngan-dark font-semibold text-sm shrink-0">All articles &rarr;</span>
+          </Link>
         </div>
       </section>
 
@@ -549,11 +480,10 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-navy">Who we are</h2>
             <p className="text-gray-600 mt-2">Real estate solutions under one roof, from Pakistan's trusted source.</p>
             <p className="text-gray-600 mt-2"><b>Muhammad Mahmood Cheema</b>, Chairman and Chief Executive Officer</p>
-            <p className="font-bold text-anngan-dark mt-2">banay khawab haqiqat</p>
-            <p className="text-sm text-gray-600 mt-2">Office: {settings?.address || "57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore"}. Phone {settings?.phone || "+92 304 1111 698"}, email info@anngan.com.</p>
+            <p className="urdu-tagline mt-2" lang="ur">بنائے خواب حقیقت</p>
+            <p className="text-sm text-gray-600 mt-2">Office: Paragon City, Lahore. Call {settings?.phone || "+92 304 1111 698"}.</p>
             <div className="flex gap-2 mt-4 flex-wrap">
               <Link href="/about" className="btn btn-red">Read our story</Link>
-              <Link href="/projects" className="btn btn-outline-navy">See the projects</Link>
             </div>
           </div>
         </div>
