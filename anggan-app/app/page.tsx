@@ -451,7 +451,7 @@ export default function Home() {
       <section className="mt-10">
         <div className="grid gap-6 md:grid-cols-2 items-center">
           <div className="flex justify-center md:justify-start">
-            <Image src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full md:w-auto md:max-h-[300px] h-auto object-contain rounded-lg" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+            <Image src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full md:w-auto md:max-h-[300px] h-auto object-contain rounded-lg bg-white p-2 pt-3" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>

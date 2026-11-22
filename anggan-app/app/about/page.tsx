@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const WORK = [
-  { title: "Project marketing", img: "mgh-lake-aerial.jpg", alt: "Mangla Lake, MGH Pakistan", note: "MGH Pakistan, Zam Zam City, Al Ghani Phase 7, Urban City, China Town, Pak China Grain Market, Kashmir Modern City." },
+  { title: "Project marketing", img: "mgh-lake-aerial.jpg", alt: "Mangla Lake, MGH Pakistan", note: "MGH Pakistan, Global Homes Lahore, Al Ghani Phase 7, Urban City, China Town, Pak China Grain Market, Kashmir Modern City." },
   { title: "For sale", img: "lst-dha-stunning.jpg", alt: "House in DHA Lahore", note: "Houses, flats and portions in Lahore, Karachi, Rawalpindi, Multan and Islamabad. Real photos, real prices." },
   { title: "For rent", img: "lst-orchard-rent.jpg", alt: "House for rent in Bahria Orchard, Lahore", note: "Houses and portions in Lahore, Rawalpindi and Islamabad. Monthly rent shown." },
   // Files have no real site photo, only the paper file itself, so this
@@ -62,12 +62,11 @@ export default function AboutPage() {
             alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan"
             width={1024}
             height={683}
-            className="w-full h-auto object-contain"
+            className="w-full h-auto object-contain bg-white pt-3 px-2"
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
           <figcaption className="text-sm text-gray-600 mt-2">
             Muhammad Mahmood Cheema, Chairman and Chief Executive Officer.
-            Photo shown in full, no crop.
           </figcaption>
         </figure>
 
@@ -80,7 +79,7 @@ export default function AboutPage() {
           </p>
           <p className="mt-2 text-sm leading-relaxed">
             Our landmark projects are MGH Pakistan at Mangla, Kashmir Modern City
-            and Zam Zam City, Lahore.
+            and Global Homes Lahore.
           </p>
 
           <h2 className="text-xl font-bold text-navy mt-6">Anngan in numbers</h2>
@@ -90,11 +89,11 @@ export default function AboutPage() {
               <dd className="text-2xl font-bold text-navy">7</dd>
             </div>
             <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white">
-              <dt className="text-xs sm:text-sm text-gray-600">Real listings with photos and prices</dt>
+              <dt className="text-xs sm:text-sm text-gray-600">Listings with photos and prices</dt>
               <dd className="text-2xl font-bold text-navy">12</dd>
             </div>
             <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white">
-              <dt className="text-xs sm:text-sm text-gray-600">Real news and blog articles</dt>
+              <dt className="text-xs sm:text-sm text-gray-600">News and blog articles</dt>
               <dd className="text-2xl font-bold text-navy">23</dd>
             </div>
           </dl>

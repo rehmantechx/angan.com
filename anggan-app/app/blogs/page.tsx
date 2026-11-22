@@ -11,7 +11,7 @@ export default function BlogsPage() {
   return (
     <div>
       <h1 className="text-3xl font-bold text-navy">Blogs</h1>
-      <p className="text-gray-600 mt-1">News from anngan.com, newest first. {BLOGS.length} articles, 21 Dec 2022 to 27 Feb 2023.</p>
+      <p className="text-gray-600 mt-1">News from anngan.com, newest first. {BLOGS.length} articles, 21 Dec 2022 to 27 Feb 2023. Each title opens the original article on anngan.com in a new tab.</p>
       {BLOGS.length === 0 ? (
         <p className="mt-4 border border-gray-200 rounded-lg p-4 bg-white text-sm">
           No articles are showing right now. Call the office on +92 304 1111 698 and ask for the latest news.
@@ -22,8 +22,9 @@ export default function BlogsPage() {
             <li key={b.id} className="border border-gray-200 rounded-lg p-4 bg-white">
               <p className="text-sm text-gray-600">{b.date}</p>
               <a href={b.url} target="_blank" rel="noopener" className="font-semibold text-navy hover:text-anngan-dark">
-                {b.title}
+                {b.title} <span className="text-anngan-dark" aria-label="Opens on anngan.com in a new tab">&#8599;</span>
               </a>
+              <p className="text-xs text-gray-500 mt-1">Opens on anngan.com in a new tab</p>
             </li>
           ))}
         </ul>

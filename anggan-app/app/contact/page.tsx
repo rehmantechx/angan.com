@@ -64,8 +64,7 @@ export default function ContactPage() {
             <div className="px-4 py-3">
               <dt className="font-semibold text-navy">Office hours</dt>
               <dd className="mt-1">
-                No office hours are published on the Anngan site. Call the office
-                before you visit.
+                Call the office before you visit.
               </dd>
             </div>
           </dl>

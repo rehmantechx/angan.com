@@ -29,7 +29,7 @@ export const SERVICE_DETAILS: Record<string, ServiceDetails> = {
       { title: "Pages, not a landing page", text: "Home, About, Projects, Properties, Blogs, Societies Guide and Contact, each a real page." },
       { title: "Search that works", text: "City, type, beds and budget filters on your real listings and projects, never a blank page." },
       { title: "Real photos first", text: "Your real project and listing photos, resized for fast loading. No AI images, no stock renders." },
-      { title: "Your logo and colours", text: "Your original logo on white, red #DD3333 and dark blue #004274, on every page." },
+      { title: "Your logo and colours", text: "Your original logo on white, in your red and dark blue brand colours, on every page." },
       { title: "Call and WhatsApp on every page", text: "Call and WhatsApp buttons in the header, in every listing card and on every project page." },
       { title: "Google ranking built in", text: "Title, description, geo tags and RealEstateAgent schema in the page head, clean page names." },
     ],
