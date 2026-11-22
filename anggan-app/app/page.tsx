@@ -60,12 +60,22 @@ export default function Home() {
   const [browse, setBrowse] = useState("homes");
 
   useEffect(() => {
-    // Background refresh only, after the first paint. Nothing here
-    // blocks the hero or the listings, which already show from seed.
-    getPublicListings().then((rows) => { if (rows.length > 0) setListings(rows); });
-    getProjects().then((rows) => { if (rows.length > 0) setProjects(rows); });
-    getBlogs().then((rows) => { if (rows.length > 0) setBlogs(rows); });
-    getSettings().then(setSettings);
+    // Background refresh only, after the first paint AND when the
+    // browser is idle, so the Firestore round trip never competes
+    // with the hero, the listings or the images. Listings already
+    // show from seed; live data replaces them only if it differs.
+    const refresh = () => {
+      getPublicListings().then((rows) => { if (rows.length > 0) setListings(rows); });
+      getProjects().then((rows) => { if (rows.length > 0) setProjects(rows); });
+      getBlogs().then((rows) => { if (rows.length > 0) setBlogs(rows); });
+      getSettings().then(setSettings);
+    };
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const id = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(refresh, { timeout: 3000 });
+      return () => (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(refresh, 2000);
+    return () => clearTimeout(t);
   }, []);
 
   const sale = listings.filter((l) => l.status === "sale");
