@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../lib/auth";
@@ -9,7 +9,7 @@ import { useAuth } from "../../lib/auth";
 // a public seller to /admin/login. A signed-in seller creates a listing
 // as pending, the office approves it, and nothing goes live without
 // that approval. Office staff use /admin/login instead.
-export default function SignInPage() {
+function SignInInner() {
   const { user, loading, signInGoogle } = useAuth();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -54,5 +54,13 @@ export default function SignInPage() {
         <Link href="/properties" className="text-anngan-dark font-semibold text-sm text-center">Browse properties without signing in</Link>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <SignInInner />
+    </Suspense>
   );
 }
