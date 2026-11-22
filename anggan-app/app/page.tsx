@@ -317,7 +317,7 @@ export default function Home() {
             {searchResults.listings.map((l) => <ListingCard key={l.id} l={l} />)}
             {searchResults.projects.map((p) => (
               <article key={p.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
-                {p.img ? <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover" loading="lazy" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" /> : (
+                {p.img ? <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover bg-navy" loading="lazy" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" /> : (
                   <div className="w-full h-48 bg-navy flex flex-col items-center justify-center text-white px-4 text-center">
                     <span className="font-bold text-base">{p.name}</span>
                     <span className="text-sm text-white/80 mt-1">No photo yet</span>
@@ -398,7 +398,7 @@ export default function Home() {
         {mgh ? (
           <article className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm mt-4 md:flex">
             <div className="relative md:w-1/2">
-              <Image src={`/img/${mgh.img}`} alt="Mangla Lake aerial view, MGH Pakistan" width={1200} height={675} className="w-full h-56 md:h-full object-cover" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+              <Image src={`/img/${mgh.img}`} alt="Mangla Lake aerial view, MGH Pakistan" width={1200} height={675} className="w-full h-56 md:h-full object-cover bg-navy" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
               <span className="absolute top-3 left-3 bg-anngan text-white text-xs font-bold px-2 py-1 rounded">Our main project</span>
             </div>
             <div className="p-5 md:w-1/2">

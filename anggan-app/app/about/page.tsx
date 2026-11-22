@@ -147,7 +147,13 @@ export default function AboutPage() {
         {VIDEOS.map((v) => (
           <article key={v.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
             <a href={`https://www.youtube.com/watch?v=${v.id}`} target="_blank" rel="noopener" aria-label={`Watch on YouTube: ${v.title}`} className="relative block w-full aspect-video bg-navy group">
-              <img src={`/img/yt-${v.id}.jpg`} alt={v.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+              {/* Plain <img> with loading="lazy" left a blank white box
+                  for the below-fold videos until they scrolled into view
+                  and loaded. These thumbnails are small local files
+                  (11 to 37 KB each, about 130 KB for all six), so load
+                  them all eagerly on a navy background with the play
+                  button always visible, never a blank white box. */}
+              <Image src={`/img/yt-${v.id}.jpg`} alt={v.title} width={480} height={360} loading="eager" className="absolute inset-0 w-full h-full object-cover bg-navy" />
               <span className="absolute inset-0 flex items-center justify-center">
                 <span className="bg-anngan text-white rounded-full w-14 h-14 flex items-center justify-center text-2xl shadow-lg group-hover:bg-[#C81E1E]" aria-hidden="true">&#9654;</span>
               </span>

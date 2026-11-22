@@ -17,7 +17,7 @@ export default function SocietiesPage() {
       <h1 className="text-3xl font-bold text-navy mt-1">Societies guide</h1>
       <p className="text-gray-600 mt-1">Guides for the societies Anngan covers.</p>
       <div className="grid gap-4 mt-6 sm:grid-cols-2">
-        {GUIDES.map((g) => (
+        {GUIDES.map((g, i) => (
           <article key={g.name} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
             <figure>
               <Image
@@ -25,8 +25,9 @@ export default function SocietiesPage() {
                 alt={g.caption}
                 width={1200}
                 height={675}
-                className={g.contain ? "w-full h-40 object-contain bg-white p-4" : "w-full h-40 object-cover"}
-                loading="lazy"
+                className={g.contain ? "w-full h-40 object-contain bg-white p-4" : "w-full h-40 object-cover bg-navy"}
+                loading={i < 2 ? "eager" : "lazy"}
+                priority={i < 2}
                 sizes="(max-width: 640px) 100vw, 50vw"
               />
               <figcaption className="text-xs text-gray-600 px-4 pt-2">{g.caption}</figcaption>

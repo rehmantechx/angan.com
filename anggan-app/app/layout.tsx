@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="flex min-h-screen flex-col">
         <Providers>
           <Header />
-          <main className="w-full flex-1">{children}</main>
+          <main className="flex w-full flex-1 flex-col">{children}</main>
           <Footer />
         </Providers>
       </body>

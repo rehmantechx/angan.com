@@ -16,10 +16,10 @@ export default function ProjectsPage() {
       <h1 className="text-3xl font-bold text-navy">Projects</h1>
       <p className="text-gray-600 mt-1">7 real projects. Call +92 304 1111 698 for files, prices and payment plans.</p>
       <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
-        {projects.map((p) => (
+        {projects.map((p, i) => (
           <article key={p.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
             {p.img ? (
-              <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover" loading="lazy" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+              <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover bg-navy" loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
             ) : (
               <div className="w-full h-48 bg-navy flex flex-col items-center justify-center text-white px-4 text-center">
                 <span className="font-bold text-base">{p.name}</span>

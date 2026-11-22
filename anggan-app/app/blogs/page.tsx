@@ -1,12 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
 import { getBlogs } from "../../lib/db";
-import { Blog } from "../../lib/seed";
+import { Blog, BLOGS } from "../../lib/seed";
 
 export default function BlogsPage() {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
+  // Show the real seed articles on the first paint. The old code started
+  // empty and waited for Firestore, so the page was a blank white list
+  // for about 5 seconds. Live data only replaces the seed when it
+  // actually returns rows.
+  const [blogs, setBlogs] = useState<Blog[]>(BLOGS);
   useEffect(() => {
-    getBlogs().then(setBlogs);
+    getBlogs().then((rows) => { if (rows.length > 0) setBlogs(rows); });
   }, []);
 
   return (

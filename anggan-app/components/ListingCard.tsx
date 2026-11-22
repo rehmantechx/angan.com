@@ -11,7 +11,7 @@ export function ListingCard({ l }: { l: Listing }) {
           alt={l.title}
           width={592}
           height={444}
-          className="w-full h-48 object-cover"
+          className="w-full h-48 object-cover bg-navy"
           loading="lazy"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
