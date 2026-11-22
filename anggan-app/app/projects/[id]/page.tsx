@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { PROJECTS, GRAIN_MARKET } from "../../../lib/seed";
 import { PROJECT_DETAILS } from "../../../lib/projectDetails";
 import { EnquiryForm } from "../../../components/EnquiryForm";
+import { ProjectFallback } from "../../../components/ProjectFallback";
 
 export function generateStaticParams() {
   return PROJECTS.map((p) => ({ id: p.id }));
@@ -25,7 +26,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
       </p>
       <h1 className="text-3xl font-bold text-navy mt-2">{project.name}</h1>
       <p className="text-gray-600 mt-1">
-        {project.loc}, {project.city}
+        {project.loc && project.loc !== project.city ? `${project.loc}, ${project.city}` : project.city}
       </p>
       <p className="mt-3">{d.intro}</p>
 
@@ -38,7 +39,11 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                 alt={ph.caption}
                 width={1200}
                 height={675}
-                className="w-full rounded-lg object-cover"
+                className={
+                  ph.file === "mgh-zamindar-file.jpg"
+                    ? "w-full rounded-lg object-contain bg-white border border-gray-200 aspect-[4/3]"
+                    : "w-full rounded-lg object-cover bg-navy aspect-[16/10]"
+                }
                 loading={i === 0 ? "eager" : "lazy"}
                 sizes="(max-width: 768px) 100vw, 60vw"
               />
@@ -47,12 +52,8 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           ))}
         </div>
       ) : (
-        <div className="bg-navy rounded-lg p-4 mt-5">
-          <p className="font-semibold text-white">No photo exists for this project yet</p>
-          <p className="text-sm text-white/80 mt-1">
-            No real photo of Pak China Grain Market was available to download. The shop
-            plan below is shown instead of an empty box or a generic render.
-          </p>
+        <div className="mt-5 rounded-lg overflow-hidden">
+          <ProjectFallback name={project.name} loc={project.loc} className="w-full h-56" />
         </div>
       )}
 
@@ -170,7 +171,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             </p>
           </div>
           <div className="mt-4">
-            <EnquiryForm asked={project.name} compact />
+            <EnquiryForm asked={project.name} heading="Ask about this project" compact />
           </div>
           <p className="mt-4 text-sm">
             <Link href="/projects" className="text-anngan-dark font-semibold underline">

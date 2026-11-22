@@ -140,7 +140,7 @@ export const PROJECT_DETAILS: Record<string, ProjectDetails> = {
       { label: "Status", value: "Coming Soon" },
       { label: "Down payment", value: "25% down payment, 3-year easy installment plan" },
     ],
-    note: "No real photo of the market was available to download, so the shop plan below is shown instead of an empty box or a generic render. Shop sizes, prices and rent are from the project's 2026 marketing posts.",
+    note: "Shop sizes, prices and rent are from the project's 2026 marketing posts.",
   },
   "proj-7": {
     intro:

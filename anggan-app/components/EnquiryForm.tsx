@@ -14,7 +14,7 @@ export function isValidPakPhone(raw: string): boolean {
   return d.length === 10 && d.startsWith("3");
 }
 
-export function EnquiryForm({ asked, compact }: { asked: string; compact?: boolean }) {
+export function EnquiryForm({ asked, compact, heading }: { asked: string; compact?: boolean; heading?: string }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
@@ -56,7 +56,7 @@ export function EnquiryForm({ asked, compact }: { asked: string; compact?: boole
   const isGeneral = asked === "General enquiry";
   return (
     <form onSubmit={submit} noValidate className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
-      <h3 className="font-bold">{isGeneral ? "Send an enquiry" : "Ask about this property"}</h3>
+      <h3 className="font-bold">{heading || (isGeneral ? "Send an enquiry" : "Ask about this property")}</h3>
       <p className="text-sm text-gray-600 mt-1">{isGeneral ? "General enquiry" : `Asking about: ${asked}`}</p>
       <div className={compact ? "grid gap-2 mt-3" : "grid gap-2 mt-3 sm:grid-cols-2"}>
         <div>
@@ -64,7 +64,7 @@ export function EnquiryForm({ asked, compact }: { asked: string; compact?: boole
           {nameErr ? <p id="name-error" role="alert" className="text-red-700 text-sm mt-1">{nameErr}</p> : null}
         </div>
         <div>
-          <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number, for example 0304 1111698" aria-label="Your phone number" aria-invalid={!!phoneErr} aria-describedby={phoneErr ? "phone-error" : undefined} className="border border-gray-300 rounded px-3 py-2 w-full min-h-[48px]" />
+          <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone (e.g. 0304 1111698)" aria-label="Your phone number" aria-invalid={!!phoneErr} aria-describedby={phoneErr ? "phone-error" : undefined} className="border border-gray-300 rounded px-3 py-2 w-full min-h-[48px]" />
           {phoneErr ? <p id="phone-error" role="alert" className="text-red-700 text-sm mt-1">{phoneErr}</p> : null}
         </div>
         <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything else (optional)" aria-label="Anything else, optional" className="border border-gray-300 rounded px-3 py-2 w-full sm:col-span-2 min-h-[48px]" />

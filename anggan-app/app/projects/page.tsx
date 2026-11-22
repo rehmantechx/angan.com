@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getProjects } from "../../lib/db";
 import { Project, PROJECTS } from "../../lib/seed";
+import { ProjectFallback } from "../../components/ProjectFallback";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>(PROJECTS);
@@ -21,10 +22,7 @@ export default function ProjectsPage() {
             {p.img ? (
               <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover bg-navy" loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
             ) : (
-              <div className="w-full h-48 bg-navy flex flex-col items-center justify-center text-white px-4 text-center">
-                <span className="font-bold text-base">{p.name}</span>
-                <span className="text-sm text-white/80 mt-1">No photo yet</span>
-              </div>
+              <ProjectFallback name={p.name} loc={p.loc} />
             )}
             <div className="p-4 flex flex-col flex-1">
               <h3 className="font-semibold text-lg">
