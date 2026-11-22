@@ -384,11 +384,11 @@ export default function AdminPage() {
       )}
 
       {tab === "Agencies" && (
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 w-full max-w-full min-w-0">
           {agencies.map((a) => (
-            <div key={a.id} className="border rounded p-3 flex items-center gap-3">
-              <img src={`/img/${a.logo}`} alt={a.name} width={500} height={438} className="max-h-10 w-auto" />
-              <span className="font-semibold">{a.name}</span>
+            <div key={a.id} className="border rounded p-3 flex items-center gap-3 min-w-0">
+              <AgencyAvatar agency={a} />
+              <span className="font-semibold min-w-0 break-words">{a.name}</span>
             </div>
           ))}
         </div>
@@ -462,6 +462,30 @@ export default function AdminPage() {
       ) : null}
     </div>
   );
+}
+
+function agencyInitials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  const first = words[0] ? words[0][0] : "";
+  const second = words.length > 1 && words[1] ? words[1][0] : "";
+  return (first + second).toUpperCase();
+}
+
+// Fixed-size agency mark. A real logo shows in a fixed 40px square box;
+// when no logo is stored, or the logo file fails to load, a navy
+// circular monogram with the agency initials shows instead, so every
+// row aligns. No fake logos are invented.
+function AgencyAvatar({ agency }: { agency: Agency }) {
+  const [failed, setFailed] = useState(false);
+  const src = agency.logoUrl || (agency.logo ? `/img/${agency.logo}` : "");
+  if (!src || failed) {
+    return (
+      <span aria-hidden="true" className="w-10 h-10 shrink-0 rounded-full bg-navy text-white inline-flex items-center justify-center text-sm font-bold">
+        {agencyInitials(agency.name)}
+      </span>
+    );
+  }
+  return <img src={src} alt="" width={40} height={40} onError={() => setFailed(true)} className="w-10 h-10 shrink-0 rounded object-contain bg-white" />;
 }
 
 function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCancel: () => void; onSave: (l: Listing) => void }) {

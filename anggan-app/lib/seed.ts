@@ -8,7 +8,7 @@
 export type Listing = { id: string; title: string; price: string; n: number; beds: number; baths: number; size: string; city: string; loc: string; type: string; status: "sale" | "rent"; img: string; badge: string; url: string; liveStatus: "live" | "pending" | "hidden"; visible: boolean; createdAt: string; submittedBy?: string };
 export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string };
 export type Blog = { id: string; date: string; title: string; url: string };
-export type Agency = { id: string; name: string; logo: string };
+export type Agency = { id: string; name: string; logo: string; logoUrl?: string };
 export type Service = { id: string; name: string; note: string; page: string };
 export type Enquiry = { id: string; name: string; phone: string; asked: string; how: string; stage: "New" | "Called" | "Visit" | "Deal Done"; next: string; date: string };
 export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string };
