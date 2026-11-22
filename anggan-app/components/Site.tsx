@@ -114,7 +114,7 @@ export function Header() {
           >
             MENU &#9776;
           </button>
-          <div className="hidden xl:flex items-center gap-3 text-xs font-bold whitespace-nowrap max-w-6xl mx-auto px-4 py-1">
+          <div className="hidden xl:flex items-center gap-2 text-xs font-bold whitespace-nowrap max-w-7xl mx-auto px-4 py-1">
             {NAV_LINKS.map((l) => (
               <Link key={l.href} href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)}>
                 {l.label}
