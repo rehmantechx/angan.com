@@ -364,7 +364,9 @@ export default function AdminPage() {
       )}
 
       {tab === "Projects" && (
-        <div className="mt-4 grid gap-3">
+        <div className="mt-4">
+          <h2 className="font-bold text-lg">Projects ({projects.length})</h2>
+          <div className="grid gap-3 mt-2">
           {projects.map((p) => (
             <div key={p.id} className="border rounded p-3">
               <p className="font-semibold">{p.name} : {p.loc}</p>
@@ -372,10 +374,13 @@ export default function AdminPage() {
             </div>
           ))}
         </div>
+        </div>
       )}
 
       {tab === "Blogs" && (
-        <div className="mt-4 grid gap-2">
+        <div className="mt-4">
+          <h2 className="font-bold text-lg">Blogs ({blogs.length})</h2>
+          <div className="grid gap-2 mt-2">
           {blogs.map((b) => (
             <div key={b.id} className="border rounded p-3 text-sm">
               <span className="text-gray-600">{b.date} : </span>
@@ -383,10 +388,13 @@ export default function AdminPage() {
             </div>
           ))}
         </div>
+        </div>
       )}
 
       {tab === "Agencies" && (
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 w-full max-w-full min-w-0">
+        <div className="mt-4">
+          <h2 className="font-bold text-lg">Agencies ({agencies.length})</h2>
+          <div className="grid gap-3 mt-2 sm:grid-cols-2 w-full max-w-full min-w-0">
           {agencies.map((a) => (
             <div key={a.id} className="border rounded p-3 flex items-center gap-3 min-w-0">
               <AgencyAvatar agency={a} />
@@ -394,16 +402,20 @@ export default function AdminPage() {
             </div>
           ))}
         </div>
+        </div>
       )}
 
       {tab === "Services" && (
-        <div className="mt-4 grid gap-3">
+        <div className="mt-4">
+          <h2 className="font-bold text-lg">Services ({services.length})</h2>
+          <div className="grid gap-3 mt-2">
           {services.map((s) => (
             <div key={s.id} className="border rounded p-3">
               <p className="font-semibold">{s.name}</p>
               <p className="text-sm text-gray-600">{s.note}</p>
             </div>
           ))}
+        </div>
         </div>
       )}
 
