@@ -29,7 +29,6 @@ type AuthCtx = {
   loading: boolean;
   firebaseOn: boolean;
   signInGoogle: () => Promise<string | null>;
-  signInEmail: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
 };
 
@@ -38,7 +37,6 @@ const Ctx = createContext<AuthCtx>({
   loading: true,
   firebaseOn: false,
   signInGoogle: async () => "Firebase is not connected.",
-  signInEmail: async () => "Firebase is not connected.",
   signOut: async () => {},
 });
 

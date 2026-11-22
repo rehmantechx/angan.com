@@ -99,22 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function signInEmail(email: string, password: string): Promise<string | null> {
-    const auth = await getFirebaseAuth();
-    if (!auth) return "Firebase is not connected. Fill in .env.local first.";
-    try {
-      const { signInWithEmailAndPassword } = await import("firebase/auth");
-      await signInWithEmailAndPassword(auth, email.trim(), password);
-      return null;
-    } catch (e) {
-      const err = e as { message?: string; code?: string };
-      // Show the real Firebase error, not a generic line, so a missing
-      // provider (auth/operation-not-allowed) or a wrong password
-      // (auth/invalid-credential) is diagnosable on the page.
-      return err.message || "Email sign-in failed.";
-    }
-  }
-
   async function signOut() {
     const auth = await getFirebaseAuth();
     if (auth) {
@@ -129,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <Ctx.Provider value={{ user, loading, firebaseOn, signInGoogle, signInEmail, signOut }}>
+    <Ctx.Provider value={{ user, loading, firebaseOn, signInGoogle, signOut }}>
       {children}
     </Ctx.Provider>
   );
