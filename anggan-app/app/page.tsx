@@ -421,7 +421,7 @@ export default function Home() {
               {p.img ? (
                 <Image src={`/img/${p.img}`} alt={p.name} width={256} height={192} className="w-28 h-24 object-cover rounded shrink-0" loading="lazy" sizes="112px" />
               ) : (
-                <ProjectFallback name={p.name} loc={p.loc} className="w-28 h-24 rounded shrink-0" />
+                <ProjectFallback name={p.name} loc={p.loc} className="w-28 h-24 rounded shrink-0" compact />
               )}
               <div className="min-w-0">
                 <h3 className="font-bold text-navy">{p.name}</h3>

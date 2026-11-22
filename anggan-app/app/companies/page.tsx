@@ -14,10 +14,12 @@ export default function CompaniesPage() {
         </article>
         <article className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm h-full flex flex-col">
           <h2 className="font-bold text-navy text-lg">Anngan Construction</h2>
+          <p className="text-sm text-gray-600 mt-1">One of the three Anngan group companies. Ask the office about construction work.</p>
           <div className="mt-auto pt-3"><a href="tel:+923041111698" className="border border-navy text-navy text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center">Ask the team</a></div>
         </article>
         <article className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm h-full flex flex-col">
           <h2 className="font-bold text-navy text-lg">Corporate Angle Marketing</h2>
+          <p className="text-sm text-gray-600 mt-1">One of the three Anngan group companies. Ask the office about marketing.</p>
           <div className="mt-auto pt-3"><a href="tel:+923041111698" className="border border-navy text-navy text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center">Ask the team</a></div>
         </article>
       </div>
