@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getPublicListings } from "../../lib/db";
 import { Listing, LISTINGS } from "../../lib/seed";
 import { ListingCard } from "../../components/ListingCard";
+import { matchesKey } from "../../lib/search";
 
 const CITIES = ["", "Lahore", "Karachi", "Rawalpindi", "Multan", "Islamabad", "Mangla", "Kashmir"];
 
@@ -39,8 +40,8 @@ export default function PropertiesPage() {
       }
       if (size && l.size !== size) return false;
       if (key) {
-        const hay = (l.title + " " + l.loc + " " + l.city + " " + l.size + " " + l.type).toLowerCase();
-        if (!hay.includes(key)) return false;
+        const hay = l.title + " " + l.loc + " " + l.city + " " + l.size + " " + l.type;
+        if (!matchesKey(hay, key)) return false;
       }
       return true;
     });
@@ -86,6 +87,12 @@ export default function PropertiesPage() {
         {city === "Karachi" && results.length === 1 ? " Karachi has only 1 real listing on anngan.com, the Shamsi Society flat." : ""}
       </p>
 
+      {results.length === 0 ? (
+        <div>
+          <h2 className="text-lg font-bold text-navy mt-2">Nearest real listings in Lahore</h2>
+          <p className="text-sm text-gray-600 mt-1">These are not search results. They are the nearest real listings, shown because nothing matched your search.</p>
+        </div>
+      ) : null}
       <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
         {(results.length > 0 ? results : listings.filter((l) => l.city === "Lahore").slice(0, 3)).map((l) => (
           <ListingCard key={l.id} l={l} />

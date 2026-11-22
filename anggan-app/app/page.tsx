@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getPublicListings, getProjects, getSettings } from "../lib/db";
 import { Listing, Project, OfficeSettings, LISTINGS, PROJECTS, SETTINGS } from "../lib/seed";
 import { ListingCard } from "../components/ListingCard";
+import { searchAll, buildSearchNote, SearchFilters } from "../lib/search";
 
 const CITIES = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Multan", "Mangla", "Kashmir"];
 
@@ -21,15 +22,6 @@ const HERO_PHOTOS = [
   { src: "/img/kmc-01.jpg", alt: "Kashmir Modern City, Mirpur" },
 ];
 
-function budgetOK(l: Listing, bud: string): boolean {
-  if (!bud) return true;
-  if (l.status === "rent") return true;
-  if (bud.startsWith("Under")) return l.n < 10000000;
-  if (bud.startsWith("Rs 1 to 3")) return l.n >= 10000000 && l.n < 30000000;
-  if (bud.startsWith("Rs 3 to 5")) return l.n >= 30000000 && l.n < 50000000;
-  return l.n >= 50000000;
-}
-
 export default function Home() {
   // Speed: show the real seed data on the first paint, do not wait for
   // Firestore. The background refresh below only replaces it when the
@@ -45,8 +37,12 @@ export default function Home() {
   const [city, setCity] = useState("");
   const [beds, setBeds] = useState("");
   const [budget, setBudget] = useState("");
-  const [searched, setSearched] = useState(false);
-  const [searchNote, setSearchNote] = useState("");
+  // One search result, set once per Search click. The note and the
+  // rendered list come from this same object, so they can never disagree,
+  // and changing a filter does not silently re-run the search.
+  const [results, setResults] = useState<{ listings: Listing[]; projects: Project[]; nearest: Listing[]; note: string } | null>(null);
+  const [searchedFilters, setSearchedFilters] = useState<SearchFilters | null>(null);
+  const searched = results !== null;
   const [browse, setBrowse] = useState("homes");
 
   // Hero slider state. heroPrev is the photo fading out underneath,
@@ -124,68 +120,20 @@ export default function Home() {
   const sale = listings.filter((l) => l.status === "sale");
   const rent = listings.filter((l) => l.status === "rent");
 
-  // One search, used both for the result note and for the rendered list.
-  // The old code ran the same filter twice; this keeps one copy only.
-  function runSearch() {
-    const key = q.trim().toLowerCase();
-    const hits = listings.filter((l) => {
-      if (status === "sale" && l.status !== "sale") return false;
-      if (status === "rent" && l.status !== "rent") return false;
-      if (city && l.city !== city) return false;
-      if (type && type !== "File" && l.type !== type) return false;
-      if (type === "File") return false;
-      if (beds) {
-        if (beds === "5+") { if (l.beds < 5) return false; }
-        else if (l.beds !== parseInt(beds, 10)) return false;
-      }
-      if (!budgetOK(l, budget)) return false;
-      if (key) {
-        const hay = (l.title + " " + l.loc + " " + l.city + " " + l.size + " " + l.type).toLowerCase();
-        if (!hay.includes(key)) return false;
-      }
-      return true;
-    });
-    let phits = projects.filter((p) => {
-      if (status === "sale" || status === "rent") return false;
-      if (city && p.city !== city) return false;
-      if (key) {
-        const hay = (p.name + " " + p.loc + " " + p.city).toLowerCase();
-        if (!hay.includes(key)) return false;
-      }
-      return true;
-    });
-    if (type === "File") phits = projects.filter((p) => p.name === "MGH Pakistan");
-    return { hits, phits };
+  function currentFilters(): SearchFilters {
+    return { status, q, type, city, beds, budget };
   }
 
-  const search = useMemo(() => {
-    if (!searched) return { hits: [] as Listing[], phits: [] as Project[] };
-    return runSearch();
-  }, [searched, listings, projects, status, q, type, city, beds, budget]);
-
   function doSearch() {
-    const key = q.trim().toLowerCase();
-    setSearched(true);
-    const { hits, phits } = runSearch();
-    if (hits.length || phits.length) {
-      const parts: string[] = [];
-      if (hits.length) parts.push(hits.length + (hits.length === 1 ? " listing" : " listings"));
-      if (phits.length) parts.push(phits.length + (phits.length === 1 ? " project" : " projects"));
-      let msg = "Found " + parts.join(" and ") + ".";
-      if (city === "Karachi" && hits.length === 1) msg += " Karachi has only 1 real listing on anngan.com, the Shamsi Society flat below. Nearest other listings are in Lahore.";
-      if (key && hits.length === 0 && phits.length > 0) msg += " No listing matched that word, but these projects did.";
-      setSearchNote(msg);
-    } else {
-      let msg = "No exact match on anngan.com for that search. These are the nearest real listings, in Lahore. Call +92 304 1111 698 to ask about other cities.";
-      if (city) msg = "No listing in " + city + " on anngan.com yet. These are the nearest real listings, in Lahore. Call +92 304 1111 698 to ask.";
-      if (key && key.includes("karachi")) msg = "No Karachi listing matched that word. anngan.com has only 1 Karachi listing, the Shamsi Society flat, Rs 3,600,000. These are the nearest real listings, in Lahore.";
-      setSearchNote(msg);
-    }
+    const f = currentFilters();
+    const { hits, phits, nearest } = searchAll(listings, projects, f);
+    setResults({ listings: hits, projects: phits, nearest, note: buildSearchNote(hits, phits, f) });
+    setSearchedFilters(f);
   }
 
   function clearSearch() {
-    setSearched(false);
-    setSearchNote("");
+    setResults(null);
+    setSearchedFilters(null);
     setQ("");
     setType("");
     setCity("");
@@ -194,11 +142,27 @@ export default function Home() {
     setStatus("all");
   }
 
-  const searchResults = searched
-    ? search.hits.length > 0 || search.phits.length > 0
-      ? { listings: search.hits, projects: search.phits }
-      : { listings: listings.filter((l) => l.city === "Lahore").slice(0, 3), projects: [] as Project[] }
-    : { listings: [] as Listing[], projects: [] as Project[] };
+  function handleType(v: string) {
+    setType(v);
+    // Plots, files and shops have no bedrooms, so clear beds for them.
+    if (v === "Plot" || v === "File" || v === "Commercial") setBeds("");
+  }
+
+  // Filters changed since the last Search click: the list below is still
+  // the last searched result, not a new search.
+  const filtersChanged =
+    searchedFilters !== null &&
+    (searchedFilters.status !== status ||
+      searchedFilters.q !== q ||
+      searchedFilters.type !== type ||
+      searchedFilters.city !== city ||
+      searchedFilters.beds !== beds ||
+      searchedFilters.budget !== budget);
+  const bedsDisabled = type === "Plot" || type === "File" || type === "Commercial";
+
+  const searchResults = results
+    ? { listings: results.listings, projects: results.projects, nearest: results.nearest, note: results.note }
+    : { listings: [] as Listing[], projects: [] as Project[], nearest: [] as Listing[], note: "" };
 
   const mgh = projects.find((p) => p.id === "proj-1");
   const otherProjects = projects.filter((p) => p.id !== "proj-1");
@@ -272,11 +236,11 @@ export default function Home() {
             <div className="grid gap-3 mt-3 sm:grid-cols-2 lg:grid-cols-6 items-end">
               <div className="lg:col-span-2">
                 <label htmlFor="sKey" className="text-sm font-bold text-gray-700">Search</label>
-                <input id="sKey" type="text" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); doSearch(); } }} placeholder="Karachi, DHA, MGH, 10 Marla" autoComplete="off" className="w-full border border-gray-300 rounded px-3 py-2 mt-1" />
+                <input id="sKey" type="text" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); doSearch(); } }} placeholder="Try Karachi, DHA, MGH or 10 Marla" autoComplete="off" className="w-full border border-gray-300 rounded px-3 py-2 mt-1" />
               </div>
               <div>
                 <label htmlFor="sType" className="text-sm font-bold text-gray-700">Property type</label>
-                <select id="sType" value={type} onChange={(e) => setType(e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 mt-1">
+                <select id="sType" value={type} onChange={(e) => handleType(e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 mt-1">
                   <option value="">All types</option><option>House</option><option>Flat</option><option>Plot</option><option>Portion</option><option>Commercial</option><option>File</option>
                 </select>
               </div>
@@ -289,7 +253,7 @@ export default function Home() {
               </div>
               <div>
                 <label htmlFor="sBed" className="text-sm font-bold text-gray-700">Bedrooms</label>
-                <select id="sBed" value={beds} onChange={(e) => setBeds(e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 mt-1">
+                <select id="sBed" value={beds} disabled={bedsDisabled} onChange={(e) => setBeds(e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 mt-1 disabled:bg-gray-100 disabled:text-gray-400">
                   <option value="">Any</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option>
                 </select>
               </div>
@@ -303,7 +267,9 @@ export default function Home() {
             <button type="button" onClick={doSearch} className="btn btn-red px-8 mt-3 w-full sm:w-auto">
               Search
             </button>
-            {searchNote ? <p className="text-sm font-semibold text-navy mt-2" role="status">{searchNote}</p> : null}
+            {bedsDisabled ? <p className="text-sm text-gray-600 mt-2">Bedrooms do not apply to plots, files or shops.</p> : null}
+            {filtersChanged ? <p className="text-sm font-semibold text-navy mt-2">Filters changed. Click Search to update results.</p> : null}
+            {searchResults.note ? <p className="text-sm font-semibold text-navy mt-2" role="status">{searchResults.note}</p> : null}
           </div>
         </div>
         <div className="absolute bottom-2 right-4 flex gap-1" aria-label="Hero photos">
@@ -333,6 +299,15 @@ export default function Home() {
             </h2>
             <Link href="/properties" className="text-anngan-dark font-semibold text-sm">All properties &rarr;</Link>
           </div>
+          {searchResults.listings.length === 0 && searchResults.projects.length === 0 && searchResults.nearest.length > 0 ? (
+            <div>
+              <h3 className="text-lg font-bold text-navy mt-2">Nearest real listings in Lahore</h3>
+              <p className="text-sm text-gray-600 mt-1">These are not search results. They are the nearest real listings, shown because nothing matched your search.</p>
+              <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
+                {searchResults.nearest.map((l) => <ListingCard key={l.id} l={l} />)}
+              </div>
+            </div>
+          ) : null}
           <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
             {searchResults.listings.map((l) => <ListingCard key={l.id} l={l} />)}
             {searchResults.projects.map((p) => (
