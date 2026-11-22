@@ -70,7 +70,7 @@ export default function LoginPage() {
         </button>
       </div>
 
-      <form onSubmit={submitEmail} className="grid gap-3 mt-6 border-t pt-4">
+      <form onSubmit={submitEmail} noValidate className="grid gap-3 mt-6 border-t pt-4">
         <label className="text-sm font-semibold text-navy">
           Email
           <input
