@@ -408,11 +408,13 @@ export default function AdminPage() {
       {tab === "Services" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Services ({services.length})</h2>
+          {!canEdit ? <p className="text-sm text-gray-600 mt-1">Your role is View only. You can see services but not change them.</p> : null}
           <div className="grid gap-3 mt-2">
           {services.map((s) => (
             <div key={s.id} className="border rounded p-3">
               <p className="font-semibold">{s.name}</p>
               <p className="text-sm text-gray-600">{s.note}</p>
+              <a href={`/services/${s.id}`} target="_blank" rel="noopener noreferrer" className="text-navy underline text-sm inline-block mt-2">View service<span aria-hidden="true"> ↗</span><span className="sr-only"> (opens in a new tab)</span></a>
             </div>
           ))}
         </div>
