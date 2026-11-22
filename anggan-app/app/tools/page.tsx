@@ -85,7 +85,7 @@ export default function ToolsPage() {
   return (
     <div>
       <h1 className="text-3xl font-bold text-navy">Tools</h1>
-      <p className="text-gray-600 mt-1">Free tools. Prices come from the real listings on this site, nothing made up.</p>
+      <p className="text-gray-600 mt-1">Free tools. Prices come from the listings on this site.</p>
 
       <div className="grid gap-4 mt-4 md:grid-cols-2">
         <Tool id="cost" title="1. Building cost calculator">
@@ -120,10 +120,11 @@ export default function ToolsPage() {
               const P = parseFloat(lnAmt);
               const y = parseFloat(lnYears);
               const rate = parseFloat(lnRate);
-              if (!P || !y || !rate) { setLnOut("Enter the loan amount, years and yearly markup."); return; }
-              const m = rate / 100 / 12;
+              if (!P || !y || lnRate.trim() === "" || Number.isNaN(rate) || rate < 0) { setLnOut("Enter the loan amount, years and yearly markup."); return; }
               const n = y * 12;
-              const pay = (P * m * Math.pow(1 + m, n)) / (Math.pow(1 + m, n) - 1);
+              // 0% markup is a real rate: no markup, just split the loan
+              // over the months, never divide by zero.
+              const pay = rate === 0 ? P / n : (P * (rate / 100 / 12) * Math.pow(1 + rate / 100 / 12, n)) / (Math.pow(1 + rate / 100 / 12, n) - 1);
               setLnOut("Monthly payment: Rs " + Math.round(pay).toLocaleString("en-PK") + ". Total paid over " + y + " years: Rs " + Math.round(pay * n).toLocaleString("en-PK") + ".");
             }}
           >
@@ -170,11 +171,11 @@ export default function ToolsPage() {
             <div>
               <p className="text-sm font-semibold">For sale: {cityPrices.length} {cityPrices.length === 1 ? "listing" : "listings"}</p>
               {cityPrices.map((l) => (
-                <p key={l.id} className="text-sm mt-1">{l.title} : {l.price}</p>
+                <p key={l.id} className="text-sm mt-1">{l.title} &middot; {l.price}</p>
               ))}
               <p className="text-sm font-semibold mt-3">For rent ({rent.length}):</p>
               {rent.map((l) => (
-                <p key={l.id} className="text-sm mt-1">{l.title} : {l.price}</p>
+                <p key={l.id} className="text-sm mt-1">{l.title} &middot; {l.price}</p>
               ))}
             </div>
           ) : null}
