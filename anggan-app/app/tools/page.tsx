@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { getPublicListings } from "../../lib/db";
-import { Listing, GRAIN_MARKET } from "../../lib/seed";
+import { Listing, LISTINGS, GRAIN_MARKET } from "../../lib/seed";
 import { ListingCard } from "../../components/ListingCard";
 
 function Tool({ title, children, id }: { title: string; children: React.ReactNode; id: string }) {
@@ -17,9 +17,11 @@ const inputCls = "border border-gray-300 rounded px-3 py-2 w-full";
 const btnCls = "bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center w-fit";
 
 export default function ToolsPage() {
-  const [listings, setListings] = useState<Listing[]>([]);
+  // Seed first, like home and Properties, so the tools never show
+  // prices from 0 listings while Firestore is loading or empty.
+  const [listings, setListings] = useState<Listing[]>(LISTINGS.filter((l) => l.liveStatus === "live" && l.visible !== false));
   useEffect(() => {
-    getPublicListings().then(setListings);
+    getPublicListings().then((rows) => { if (rows.length > 0) setListings(rows); });
   }, []);
 
   // 1. Building cost

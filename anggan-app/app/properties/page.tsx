@@ -1,13 +1,17 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { getPublicListings } from "../../lib/db";
-import { Listing } from "../../lib/seed";
+import { Listing, LISTINGS } from "../../lib/seed";
 import { ListingCard } from "../../components/ListingCard";
 
 const CITIES = ["", "Lahore", "Karachi", "Rawalpindi", "Multan", "Islamabad", "Mangla", "Kashmir"];
 
 export default function PropertiesPage() {
-  const [listings, setListings] = useState<Listing[]>([]);
+  // Same as home: show the 12 real seed listings at once, and only
+  // replace them when Firestore actually returns rows. Starting empty
+  // showed "0 real properties" while Firestore was still loading or
+  // empty, even though home showed 12.
+  const [listings, setListings] = useState<Listing[]>(LISTINGS.filter((l) => l.liveStatus === "live" && l.visible !== false));
   const [q, setQ] = useState("");
   const [city, setCity] = useState("");
   const [status, setStatus] = useState("");
@@ -15,7 +19,7 @@ export default function PropertiesPage() {
   const [size, setSize] = useState("");
 
   useEffect(() => {
-    getPublicListings().then(setListings);
+    getPublicListings().then((rows) => { if (rows.length > 0) setListings(rows); });
     if (typeof window !== "undefined") {
       const qs = new URLSearchParams(window.location.search);
       if (qs.get("q")) setQ(qs.get("q") || "");

@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getProjects } from "../../lib/db";
-import { Project } from "../../lib/seed";
+import { Project, PROJECTS } from "../../lib/seed";
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<Project[]>(PROJECTS);
   useEffect(() => {
-    getProjects().then(setProjects);
+    getProjects().then((rows) => { if (rows.length > 0) setProjects(rows); });
   }, []);
 
   return (
@@ -23,7 +23,7 @@ export default function ProjectsPage() {
             ) : (
               <div className="w-full h-48 bg-navy flex flex-col items-center justify-center text-white px-4 text-center">
                 <span className="font-bold text-base">{p.name}</span>
-                <span className="text-sm text-white/80 mt-1">996 shops</span>
+                <span className="text-sm text-white/80 mt-1">No photo yet</span>
               </div>
             )}
             <div className="p-4 flex flex-col flex-1">
