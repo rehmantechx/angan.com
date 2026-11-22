@@ -126,7 +126,20 @@ export function Header() {
             </Link>
             {user ? (
               <>
-                <Link href="/admin" aria-current={isActive("/admin/login") ? "page" : undefined} className={navCls("/admin/login")}>DASHBOARD</Link>
+                {/* FIX-02: DASHBOARD is a clean white text link, not a second
+                    white block. CREATE A LISTING above stays the single
+                    white CTA button, so the two never compete. On the
+                    dashboard it reads as active with bold + underline. */}
+                <Link
+                  href="/admin"
+                  aria-current={isActive("/admin/login") ? "page" : undefined}
+                  className={
+                    "shrink-0 inline-flex items-center min-h-[40px] px-2 rounded text-white hover:bg-white/15 " +
+                    (isActive("/admin/login") ? "font-extrabold underline underline-offset-4" : "")
+                  }
+                >
+                  DASHBOARD
+                </Link>
                 <button onClick={() => signOut()} className="hover:bg-white/15 shrink-0 inline-flex items-center min-h-[40px] px-2 rounded">SIGN OUT</button>
               </>
             ) : (
@@ -237,6 +250,19 @@ function SocialIcon({ label }: { label: string }) {
 }
 
 export function Footer() {
+  // FIX-03: inside /admin the full public footer is a tall blue block
+  // under a plain dashboard, so the office area gets a compact footer:
+  // copyright strip only, no link columns.
+  const pathname = usePathname();
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    return (
+      <footer className="bg-navy text-white mt-0 border-t-4 border-anngan">
+        <div className="bg-[#00263E] text-white text-sm text-center py-3 px-4">
+          Copyright &copy; ANNGAN TECHNOLOGIES PVT. LTD. All rights reserved.
+        </div>
+      </footer>
+    );
+  }
   return (
     <footer className="bg-navy text-white mt-0 border-t-4 border-anngan">
       <div className="max-w-6xl mx-auto px-4 grid items-start gap-8 sm:grid-cols-2 lg:grid-cols-12 lg:gap-6 py-10 text-sm">
@@ -303,7 +329,10 @@ export function Footer() {
           </ul>
           <p className="font-bold text-white text-base mt-5">Angan Tech services</p>
           <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
-          <ul className="mt-3 space-y-2">
+          {/* FIX-03: 9 services in a 2-column grid (column-gap 24px),
+              5 rows instead of 9, so this column no longer makes the
+              whole footer taller than a 1080p screen. */}
+          <ul className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2">
             {SERVICES.map((s) => (
               <li key={s.id}>
                 <Link href={`/services/${s.id}`} className="inline-flex items-center min-h-[32px] hover:underline">{s.name}</Link>

@@ -177,6 +177,25 @@ export async function getListings(): Promise<Listing[]> {
           }
         }
       }
+      // Best-effort unfiltered read, merged in. A listing whose
+      // liveStatus is missing or holds some other value is invisible to
+      // the three by-status queries above, so it would silently vanish
+      // from /admin (11 instead of 12) with no clue. The published
+      // rules file now allows an office list, so when the published
+      // rules allow it this catches those rows; when they deny it the
+      // read fails and is ignored, exactly as before.
+      try {
+        const allSnap = await withTimeout(getDocs(collection(db, "listings")), READ_TIMEOUT_MS, "Reading listings");
+        for (const d of allSnap.docs) {
+          const l = { id: d.id, ...(d.data() as object) } as Listing;
+          if (!seen.has(l.id)) {
+            seen.add(l.id);
+            rows.push(l);
+          }
+        }
+      } catch {
+        // Unfiltered list denied by the published rules, ignore.
+      }
       if (rows.length > 0) return rows;
       // Firestore reachable but no listings. If the settings document
       // exists, the seed was uploaded and the empty result is real, so do
@@ -362,6 +381,69 @@ export async function getServices(): Promise<Service[]> {
   return rows && rows.length > 0 ? rows : loadLocal().services;
 }
 
+// ---- Agencies ----
+export async function saveAgency(a: Agency): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
+  const db = await getDb();
+  if (db) {
+    const { doc, setDoc } = await fs();
+    const { id, ...rest } = a;
+    await withTimeout(setDoc(doc(db, "agencies", id), rest, { merge: true }), WRITE_TIMEOUT_MS, "Saving the agency");
+    return;
+  }
+  const store = loadLocal();
+  const i = store.agencies.findIndex((x) => x.id === a.id);
+  if (i >= 0) store.agencies[i] = a;
+  else store.agencies.unshift(a);
+  saveLocal(store);
+}
+
+export async function deleteAgency(id: string): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
+  const db = await getDb();
+  if (db) {
+    const { deleteDoc, doc } = await fs();
+    await withTimeout(deleteDoc(doc(db, "agencies", id)), WRITE_TIMEOUT_MS, "Deleting the agency");
+    return;
+  }
+  const store = loadLocal();
+  store.agencies = store.agencies.filter((x) => x.id !== id);
+  saveLocal(store);
+}
+
+// FIX-01: which of the 12 real seed listings are missing from the
+// loaded list, by id. The admin page shows this, so a missing listing
+// is named instead of silently showing 11 of 12.
+export function missingSeedListings(loaded: Listing[]): Listing[] {
+  const have = new Set(loaded.map((l) => l.id));
+  return LISTINGS.filter((l) => !have.has(l.id));
+}
+
+// FIX-01: restore only the missing seed listings, by id, no duplicates.
+// Writes the canonical seed rows (LISTINGS), never the browser local
+// store, so a polluted local store cannot re-seed a short list.
+export async function restoreMissingSeedListings(missing: Listing[]): Promise<string> {
+  if (missing.length === 0) return "No real listing is missing.";
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+  const db = await getDb();
+  if (db) {
+    const { doc, setDoc } = await fs();
+    for (const l of missing) {
+      const { id, ...rest } = l;
+      await withTimeout(setDoc(doc(db, "listings", id), rest), WRITE_TIMEOUT_MS, "Restoring the listing");
+    }
+  } else {
+    const store = loadLocal();
+    for (const l of missing) {
+      if (!store.listings.some((x) => x.id === l.id)) store.listings.unshift(l);
+    }
+    saveLocal(store);
+  }
+  return "Restored " + missing.length + " missing real listing" + (missing.length > 1 ? "s" : "") + ": " + missing.map((l) => l.title).join("; ");
+}
+
 // ---- Enquiries ----
 export async function getEnquiries(): Promise<Enquiry[]> {
   if (demoMode) return demoStore().enquiries;
@@ -476,28 +558,32 @@ export async function seedFirestore(): Promise<string> {
   if (!db) return "Firebase is not connected.";
   const { doc, setDoc } = await fs();
   try {
-    const store = loadLocal();
-    for (const l of store.listings) {
+    // FIX-01: seed from the canonical seed constants, not from the
+    // browser local store. The old code seeded loadLocal(), so if the
+    // local store in the seeding browser had lost a listing (a local
+    // delete, a polluted store), the seed upload wrote only 11 listings
+    // to Firestore and the 12th was silently missing everywhere.
+    for (const l of LISTINGS) {
       const { id, ...rest } = l;
       await setDoc(doc(db, "listings", id), rest);
     }
-    for (const p of store.projects) {
+    for (const p of PROJECTS) {
       const { id, ...rest } = p;
       await setDoc(doc(db, "projects", id), rest);
     }
-    for (const b of store.blogs) {
+    for (const b of BLOGS) {
       const { id, ...rest } = b;
       await setDoc(doc(db, "blogs", id), rest);
     }
-    for (const a of store.agencies) {
+    for (const a of AGENCIES) {
       const { id, ...rest } = a;
       await setDoc(doc(db, "agencies", id), rest);
     }
-    for (const s of store.services) {
+    for (const s of SERVICES) {
       const { id, ...rest } = s;
       await setDoc(doc(db, "services", id), rest);
     }
-    await setDoc(doc(db, "settings", "office"), store.settings);
+    await setDoc(doc(db, "settings", "office"), SETTINGS);
     return "Seed data uploaded to Firestore.";
   } catch (e) {
     const err = e as { message?: string; code?: string };

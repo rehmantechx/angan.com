@@ -14,6 +14,10 @@ import {
   getSettings,
   saveListing,
   deleteListing,
+  saveAgency,
+  deleteAgency,
+  missingSeedListings,
+  restoreMissingSeedListings,
   addEnquiry,
   updateEnquiryStage,
   deleteEnquiry,
@@ -60,9 +64,19 @@ export default function AdminPage() {
   // auto-dismisses native dialogs, so confirm returned false, the delete
   // never ran, and no message ever appeared. A real dialog in the page
   // cannot be auto-dismissed, and its Yes button is a normal click.
-  const [confirmDelete, setConfirmDelete] = useState<{ kind: "listing" | "enquiry"; id: string; label: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ kind: "listing" | "enquiry" | "agency"; id: string; label: string } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [msgError, setMsgError] = useState(false);
+  // FIX-08: agency add/edit form state, same pattern as ListingForm.
+  const [agencyEdit, setAgencyEdit] = useState<Agency | null>(null);
+  const [showAgencyAdd, setShowAgencyAdd] = useState(false);
+  // FIX-07: a success toast auto-dismisses after 5 seconds. Error
+  // messages stay until closed, so a failed save is never missed.
+  useEffect(() => {
+    if (!msg || msgError) return;
+    const t = setTimeout(() => setMsg(""), 5000);
+    return () => clearTimeout(t);
+  }, [msg, msgError]);
 
   async function reload() {
     // Parallel, not sequential: the old version awaited 8 reads one after
@@ -171,20 +185,22 @@ export default function AdminPage() {
     }
     setDeletingId(target.id);
     if (target.kind === "listing") setListings((prev) => prev.filter((l) => l.id !== target.id));
+    else if (target.kind === "agency") setAgencies((prev) => prev.filter((a) => a.id !== target.id));
     else setEnquiries((prev) => prev.filter((e) => e.id !== target.id));
     setMsgError(false);
     setMsg("Deleting...");
     try {
       if (target.kind === "listing") await deleteListing(target.id);
+      else if (target.kind === "agency") await deleteAgency(target.id);
       else await deleteEnquiry(target.id);
       setMsgError(false);
-      setMsg(target.kind === "listing" ? "Deleted. It is gone from the public site too." : "Enquiry deleted.");
+      setMsg(target.kind === "listing" ? "Deleted. It is gone from the public site too." : target.kind === "agency" ? "Agency deleted." : "Enquiry deleted.");
     } catch (err) {
       const e = err as { message?: string };
       setMsgError(true);
       setMsg(
         "Could not delete " +
-          (target.kind === "listing" ? "the listing" : "the enquiry") +
+          (target.kind === "listing" ? "the listing" : target.kind === "agency" ? "the agency" : "the enquiry") +
           ": " +
           (e.message || "permission denied") +
           " The signed-in user needs the Full access or Staff role. The item is still there, try again."
@@ -194,6 +210,10 @@ export default function AdminPage() {
     }
     await reload();
   }
+
+  // FIX-01: the 12 real seed listings, by id, and any that are missing
+  // from the loaded list. Shown in the Listings tab, never auto-fixed.
+  const missing = missingSeedListings(listings);
 
   return (
     <div className="w-full max-w-full min-w-0">
@@ -231,7 +251,17 @@ export default function AdminPage() {
           Firebase is connected. Changes save to Firestore and show on the public site.
         </p>
       ) : null}
-      {msg ? <p className={msgError ? "bg-red-50 text-red-900 text-sm rounded p-3 mt-3" : "bg-green-50 text-green-900 text-sm rounded p-3 mt-3"}>{msg}</p> : null}
+      {/* FIX-07: the toast has a close button and a success toast
+          auto-dismisses after 5 seconds, so it never stacks under the
+          permanent "Firebase is connected" banner forever. */}
+      {msg ? (
+        <p role="status" className={(msgError ? "bg-red-50 text-red-900 " : "bg-green-50 text-green-900 ") + "text-sm rounded p-3 mt-3 flex gap-3 items-start"}>
+          <span className="flex-1 min-w-0 break-words">{msg}</span>
+          <button type="button" onClick={() => setMsg("")} aria-label="Close message" className="shrink-0 px-2 py-0.5 rounded hover:bg-black/10 font-bold min-h-[32px] min-w-[32px]">
+            &#10005;
+          </button>
+        </p>
+      ) : null}
 
       <div className="flex gap-2 mt-4 flex-wrap w-full max-w-full min-w-0">
         {(["Overview", "Listings", "Enquiries", "Projects", "Blogs", "Agencies", "Services", "Settings"] as Tab[]).map((t) => (
@@ -301,6 +331,33 @@ export default function AdminPage() {
             </div>
           ) : null}
           <h2 className="font-bold text-lg mt-6">All listings ({listings.length})</h2>
+          {/* FIX-01: name the missing real listing instead of silently
+              showing 11 of 12. Restore writes only that seed row, by id,
+              so no existing record is duplicated. */}
+          {missing.length > 0 ? (
+            <div className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">
+              <p className="font-semibold">{missing.length} real listing{missing.length > 1 ? "s are" : " is"} missing from Firestore: {missing.map((l) => l.title + " (" + l.id + ")").join("; ")}.</p>
+              <p className="mt-1">This is a data gap, not a filter. Nothing was duplicated.</p>
+              {canEdit ? (
+                <button
+                  className={btnNavy + " mt-2"}
+                  onClick={async () => {
+                    try {
+                      setMsg(await restoreMissingSeedListings(missing));
+                      setMsgError(false);
+                    } catch (err) {
+                      const e2 = err as { message?: string };
+                      setMsgError(true);
+                      setMsg("Could not restore the missing listing: " + (e2.message || "permission denied"));
+                    }
+                    await reload();
+                  }}
+                >
+                  Restore missing listing{missing.length > 1 ? "s" : ""}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
           <div className="flex gap-2 mt-2 flex-wrap items-center w-full max-w-full min-w-0">
             <input
               value={q}
@@ -446,14 +503,52 @@ export default function AdminPage() {
       {tab === "Agencies" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Agencies ({agencies.length})</h2>
+          {/* FIX-08: Agencies were read-only for a Full-access user.
+              They now have the same Add/Edit/Delete as Listings, wired
+              to Firestore, with the same in-app confirm dialog and
+              optimistic removal. View only sees no buttons. */}
+          {canEdit ? (
+            <div className="flex gap-2 mt-2 flex-wrap">
+              <button className={btnRed} onClick={() => { setAgencyEdit(null); setShowAgencyAdd(true); }}>Add agency</button>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600 mt-2">Your role is View only. You can see agencies but not change them.</p>
+          )}
           <div className="grid gap-3 mt-2 sm:grid-cols-2 w-full max-w-full min-w-0">
           {agencies.map((a) => (
-            <div key={a.id} className="border rounded p-3 flex items-center gap-3 min-w-0">
+            <div key={a.id} className="border rounded p-3 flex items-center gap-3 min-w-0 flex-wrap">
               <AgencyAvatar agency={a} />
-              <span className="font-semibold min-w-0 break-words">{a.name}</span>
+              <span className="font-semibold min-w-0 break-words flex-1">{a.name}</span>
+              {canEdit ? (
+                <span className="flex gap-2 shrink-0">
+                  <button className={btnLine} onClick={() => { setShowAgencyAdd(false); setAgencyEdit(a); }}>Edit</button>
+                  <button type="button" className={btnLine} disabled={deletingId === a.id} onClick={() => setConfirmDelete({ kind: "agency", id: a.id, label: a.name })}>{deletingId === a.id ? "Deleting..." : "Delete"}</button>
+                </span>
+              ) : null}
             </div>
           ))}
         </div>
+          {(showAgencyAdd || agencyEdit) && canEdit ? (
+            <AgencyForm
+              initial={agencyEdit || undefined}
+              onCancel={() => { setAgencyEdit(null); setShowAgencyAdd(false); }}
+              onSave={async (a) => {
+                if (isDemo) { setMsg("Demo mode, view only. Changes are not saved."); return; }
+                try {
+                  await saveAgency(a);
+                  setMsg("Agency saved.");
+                  setMsgError(false);
+                } catch (err) {
+                  const e2 = err as { message?: string };
+                  setMsgError(true);
+                  setMsg("Could not save the agency: " + (e2.message || "permission denied"));
+                }
+                setAgencyEdit(null);
+                setShowAgencyAdd(false);
+                await reload();
+              }}
+            />
+          ) : null}
         </div>
       )}
 
@@ -525,14 +620,16 @@ export default function AdminPage() {
       ) : null}
 
       {confirmDelete ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="alertdialog" aria-label={confirmDelete.kind === "listing" ? "Delete this listing?" : "Delete this enquiry?"}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="alertdialog" aria-label={confirmDelete.kind === "listing" ? "Delete this listing?" : confirmDelete.kind === "agency" ? "Delete this agency?" : "Delete this enquiry?"}>
           <div className="absolute inset-0 bg-black/50" onClick={() => setConfirmDelete(null)} />
           <div className="relative bg-white rounded-lg p-5 w-full max-w-sm min-w-0">
-            <h2 className="font-bold text-lg text-navy">{confirmDelete.kind === "listing" ? "Delete this listing?" : "Delete this enquiry?"}</h2>
+            <h2 className="font-bold text-lg text-navy">{confirmDelete.kind === "listing" ? "Delete this listing?" : confirmDelete.kind === "agency" ? "Delete this agency?" : "Delete this enquiry?"}</h2>
             <p className="text-sm text-gray-600 mt-2 break-words">
               {confirmDelete.kind === "listing"
                 ? "Delete listing: " + confirmDelete.label + "? It will be gone from the public site too. This cannot be undone."
-                : "Delete enquiry from " + confirmDelete.label + "? This cannot be undone."}
+                : confirmDelete.kind === "agency"
+                  ? "Delete agency: " + confirmDelete.label + "? This cannot be undone."
+                  : "Delete enquiry from " + confirmDelete.label + "? This cannot be undone."}
             </p>
             <div className="flex gap-2 mt-4 flex-wrap">
               <button type="button" className={btnRed} disabled={deletingId === confirmDelete.id} onClick={confirmDeleteNow}>Yes, delete</button>
@@ -569,6 +666,42 @@ function AgencyAvatar({ agency }: { agency: Agency }) {
   return <img src={src} alt="" width={40} height={40} onError={() => setFailed(true)} className="w-10 h-10 shrink-0 rounded object-contain bg-white" />;
 }
 
+// FIX-08: agency add/edit form. Logo is a file name from the site
+// (partner-*.png/jpg in public/img) or a photo link, both optional;
+// a missing logo shows the navy monogram, never a fake logo.
+function AgencyForm({ initial, onCancel, onSave }: { initial?: Agency; onCancel: () => void; onSave: (a: Agency) => Promise<void> | void }) {
+  const [name, setName] = useState(initial?.name || "");
+  const [logo, setLogo] = useState(initial?.logo || "");
+  const [logoUrl, setLogoUrl] = useState(initial?.logoUrl || "");
+  const [saving, setSaving] = useState(false);
+  const [newId] = useState(() => "agency-" + Date.now().toString(36));
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim() || saving) return;
+    setSaving(true);
+    Promise.resolve(onSave({ id: initial?.id || newId, name: name.trim(), logo: logo.trim(), logoUrl: logoUrl.trim() || undefined })).finally(() => setSaving(false));
+  }
+  return (
+    <form onSubmit={submit} className="border border-navy rounded-lg p-4 mt-4 bg-white grid gap-3 w-full max-w-xl min-w-0">
+      <h3 className="font-bold">{initial ? "Edit agency" : "Add agency"}</h3>
+      <label className="text-sm font-semibold">Agency name
+        <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Agency name, for example ADARSH Associates" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Logo file, optional
+        <input value={logo} onChange={(e) => setLogo(e.target.value)} placeholder="Logo file, for example partner-adarsh.png" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Logo link, optional
+        <input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="Photo link, optional, for example https://example.com/logo.png" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <p className="text-sm text-gray-600">Leave both logo fields empty and the agency shows a navy monogram with its initials.</p>
+      <div className="flex gap-2">
+        <button disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : "Save agency"}</button>
+        <button type="button" disabled={saving} className={btnLine + " disabled:opacity-50"} onClick={onCancel}>Cancel</button>
+      </div>
+    </form>
+  );
+}
+
 function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCancel: () => void; onSave: (l: Listing) => Promise<void> | void }) {
   const [title, setTitle] = useState(initial?.title || "");
   const [price, setPrice] = useState(initial ? String(initial.n) : "");
@@ -587,6 +720,9 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
   // ref guard blocks a second submit in the same tick.
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
+  // FIX-05/FIX-06 (admin form): price must be a number above zero,
+  // with an inline error instead of silently becoming "Price on call".
+  const [priceErr, setPriceErr] = useState("");
   // One id per form, fixed when the form opens. A retry overwrites the
   // same document instead of creating a second identical listing.
   const [newId] = useState(() => "admin-" + Date.now().toString(36));
@@ -609,13 +745,18 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (savingRef.current) return;
+    const n = parseInt(price.replace(/[^0-9]/g, ""), 10) || 0;
+    if (!/^[0-9][0-9, ]*$/.test(price.trim()) || n <= 0) {
+      setPriceErr("Please write a price in Rs, numbers only, above zero.");
+      return;
+    }
+    setPriceErr("");
     savingRef.current = true;
     setSaving(true);
-    const n = parseInt(price.replace(/[^0-9]/g, ""), 10) || 0;
     Promise.resolve(onSave({
       id: initial?.id || newId,
       title: title.trim(),
-      price: n > 0 ? "Rs " + n.toLocaleString("en-PK") + (status === "rent" ? " per month" : "") : "Price on call",
+      price: "Rs " + n.toLocaleString("en-PK") + (status === "rent" ? " per month" : ""),
       n,
       beds: parseInt(beds, 10),
       baths: parseInt(baths, 10),
@@ -637,37 +778,66 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
   }
 
   return (
-    <form onSubmit={submit} className="border border-navy rounded-lg p-4 mt-4 bg-white grid gap-3 w-full max-w-xl min-w-0">
+    <form onSubmit={submit} noValidate className="border border-navy rounded-lg p-4 mt-4 bg-white grid gap-3 w-full max-w-xl min-w-0">
       <h3 className="font-bold">{initial ? "Edit listing" : "Add listing"}</h3>
-      <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className={inputCls} />
-      <input required value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Price in Rs, numbers only" inputMode="numeric" className={inputCls} />
+      {/* FIX-05: every field has a persistent visible label above it,
+          so once a user types, the field is still named. Placeholders
+          are hints only, never the only label. */}
+      <label className="text-sm font-semibold">Title
+        <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" aria-label="Title" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Price (Rs)
+        <span className="flex items-center gap-1 mt-1">
+          <span aria-hidden="true" className="text-sm text-gray-600 shrink-0">Rs</span>
+          <input required value={price} onChange={(e) => { setPrice(e.target.value); if (priceErr) setPriceErr(""); }} placeholder="Price in Rs, numbers only" inputMode="numeric" aria-label="Price in Rs" aria-invalid={!!priceErr} aria-describedby={priceErr ? "admin-price-error" : undefined} className={inputCls + " font-normal"} />
+        </span>
+        {priceErr ? <span id="admin-price-error" role="alert" className="text-red-700 text-sm font-normal block mt-1">{priceErr}</span> : null}
+      </label>
       <div className="grid grid-cols-2 gap-3">
-        <input value={beds} onChange={(e) => setBeds(e.target.value)} placeholder="Beds" inputMode="numeric" className={inputCls} />
-        <input value={baths} onChange={(e) => setBaths(e.target.value)} placeholder="Baths" inputMode="numeric" className={inputCls} />
+        <label className="text-sm font-semibold">Beds
+          <input value={beds} onChange={(e) => setBeds(e.target.value)} placeholder="Beds" inputMode="numeric" aria-label="Beds" className={inputCls + " mt-1 font-normal"} />
+        </label>
+        <label className="text-sm font-semibold">Baths
+          <input value={baths} onChange={(e) => setBaths(e.target.value)} placeholder="Baths" inputMode="numeric" aria-label="Baths" className={inputCls + " mt-1 font-normal"} />
+        </label>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <select value={size} onChange={(e) => setSize(e.target.value)} className={inputCls}>
-          {["4 Marla", "5 Marla", "6 Marla", "10 Marla", "1 Kanal"].map((s) => <option key={s}>{s}</option>)}
-        </select>
-        <select value={type} onChange={(e) => setType(e.target.value)} className={inputCls}>
-          {["House", "Flat", "Portion", "Plot", "Shop"].map((t) => <option key={t}>{t}</option>)}
-        </select>
+        <label className="text-sm font-semibold">Size
+          <select value={size} onChange={(e) => setSize(e.target.value)} aria-label="Size" className={inputCls + " mt-1 font-normal"}>
+            {["4 Marla", "5 Marla", "6 Marla", "10 Marla", "1 Kanal"].map((s) => <option key={s}>{s}</option>)}
+          </select>
+        </label>
+        <label className="text-sm font-semibold">Type
+          <select value={type} onChange={(e) => setType(e.target.value)} aria-label="Type" className={inputCls + " mt-1 font-normal"}>
+            {["House", "Flat", "Portion", "Plot", "Shop"].map((t) => <option key={t}>{t}</option>)}
+          </select>
+        </label>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <select value={city} onChange={(e) => setCity(e.target.value)} className={inputCls}>
-          {["Lahore", "Karachi", "Rawalpindi", "Multan", "Islamabad"].map((c) => <option key={c}>{c}</option>)}
-        </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value as "sale" | "rent")} className={inputCls}>
-          <option value="sale">For sale</option>
-          <option value="rent">For rent</option>
-        </select>
+        <label className="text-sm font-semibold">City
+          <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="City" className={inputCls + " mt-1 font-normal"}>
+            {["Lahore", "Karachi", "Rawalpindi", "Multan", "Islamabad"].map((c) => <option key={c}>{c}</option>)}
+          </select>
+        </label>
+        <label className="text-sm font-semibold">Status
+          <select value={status} onChange={(e) => setStatus(e.target.value as "sale" | "rent")} aria-label="Status" className={inputCls + " mt-1 font-normal"}>
+            <option value="sale">For sale</option>
+            <option value="rent">For rent</option>
+          </select>
+        </label>
       </div>
-      <input required value={loc} onChange={(e) => setLoc(e.target.value)} placeholder="Area or society" className={inputCls} />
-      <select value={REAL_PHOTOS.includes(photo) ? photo : ""} onChange={(e) => setPhoto(e.target.value)} className={inputCls}>
-        <option value="">No photo, or paste a photo link below</option>
-        {REAL_PHOTOS.filter(Boolean).map((p) => <option key={p} value={p}>{p}</option>)}
-      </select>
-      <input value={REAL_PHOTOS.includes(photo) ? "" : photo} onChange={(e) => setPhoto(e.target.value)} placeholder="Photo link, optional, for example https://example.com/photo.jpg" className={inputCls} />
+      <label className="text-sm font-semibold">Area or society
+        <input required value={loc} onChange={(e) => setLoc(e.target.value)} placeholder="Area or society" aria-label="Area or society" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Photo
+        <select value={REAL_PHOTOS.includes(photo) ? photo : ""} onChange={(e) => setPhoto(e.target.value)} aria-label="Photo" className={inputCls + " mt-1 font-normal"}>
+          <option value="">No photo, or paste a photo link below</option>
+          {REAL_PHOTOS.filter(Boolean).map((p) => <option key={p} value={p}>{p}</option>)}
+        </select>
+      </label>
+      <label className="text-sm font-semibold">Photo link, optional
+        <input value={REAL_PHOTOS.includes(photo) ? "" : photo} onChange={(e) => setPhoto(e.target.value)} placeholder="Photo link, optional, for example https://example.com/photo.jpg" aria-label="Photo link, optional" className={inputCls + " mt-1 font-normal"} />
+      </label>
       <p className="text-sm text-gray-600">Photo upload is not built yet, because Firebase Storage is not enabled. Pick a real photo from the site, or paste a photo link.</p>
       <div className="flex gap-2">
         <button disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : "Save listing"}</button>
