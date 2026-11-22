@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getProjects } from "../../lib/db";
-import { Project, GRAIN_MARKET } from "../../lib/seed";
+import { Project } from "../../lib/seed";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -21,11 +21,9 @@ export default function ProjectsPage() {
             {p.img ? (
               <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover" loading="lazy" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
             ) : (
-              <div className="w-full h-44 bg-gold/40 flex flex-col items-center justify-center text-navy text-sm font-semibold px-4 text-center">
-                <span>{p.name}</span>
-                <span>{GRAIN_MARKET.acres} acres, {GRAIN_MARKET.road}. {GRAIN_MARKET.shops} shops.</span>
-                {GRAIN_MARKET.prices.map((x) => <span key={x.size}>{x.size} {x.price}</span>)}
-                <span>No photo for this project yet</span>
+              <div className="w-full h-48 bg-navy flex flex-col items-center justify-center text-white px-4 text-center">
+                <span className="font-bold text-base">{p.name}</span>
+                <span className="text-sm text-white/80 mt-1">996 shops</span>
               </div>
             )}
             <div className="p-4 flex flex-col flex-1">

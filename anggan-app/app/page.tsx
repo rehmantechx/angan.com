@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getPublicListings, getProjects, getBlogs, getSettings } from "../lib/db";
-import { Listing, Project, Blog, OfficeSettings, GRAIN_MARKET, LISTINGS, PROJECTS, BLOGS, SETTINGS } from "../lib/seed";
+import { Listing, Project, Blog, OfficeSettings, LISTINGS, PROJECTS, BLOGS, SETTINGS } from "../lib/seed";
 import { ListingCard } from "../components/ListingCard";
 
 const CITIES = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Multan", "Mangla", "Kashmir"];
@@ -79,6 +79,10 @@ export default function Home() {
   const [heroPrev, setHeroPrev] = useState<number | null>(null);
   const [heroIn, setHeroIn] = useState(true);
   const [heroPaused, setHeroPaused] = useState(false);
+  // Speed: only the first hero photo loads on first paint. The next
+  // photo starts downloading 5 seconds in, halfway to its turn, so it
+  // is ready for the crossfade but never competes with first paint.
+  const [heroPreload, setHeroPreload] = useState(false);
   const heroRef = useRef(0);
   const heroNext = (hero + 1) % HERO_PHOTOS.length;
 
@@ -106,6 +110,14 @@ export default function Home() {
     const t = setTimeout(() => setHeroIn(true), 60);
     return () => clearTimeout(t);
   }, [hero, heroIn]);
+
+  useEffect(() => {
+    // Download the next hero photo 5 seconds after this one appears,
+    // halfway to its turn, so first paint only ever downloads one.
+    setHeroPreload(false);
+    const t = setTimeout(() => setHeroPreload(true), 5000);
+    return () => clearTimeout(t);
+  }, [hero]);
 
   useEffect(() => {
     // Drop the faded-out photo once the crossfade is done.
@@ -252,18 +264,20 @@ export default function Home() {
           className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
           style={{ opacity: heroIn ? 0.45 : 0 }}
         />
-        {/* Next photo, invisible, downloaded early so its turn is instant. */}
-        <Image
-          key={"next-" + heroNext}
-          src={HERO_PHOTOS[heroNext].src}
-          alt=""
-          aria-hidden="true"
-          fill
-          quality={75}
-          sizes="100vw"
-          loading="eager"
-          className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
-        />
+        {/* Next photo, invisible, downloaded 5 seconds in so its turn is instant. */}
+        {heroPreload ? (
+          <Image
+            key={"next-" + heroNext}
+            src={HERO_PHOTOS[heroNext].src}
+            alt=""
+            aria-hidden="true"
+            fill
+            quality={70}
+            sizes="100vw"
+            loading="eager"
+            className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
+          />
+        ) : null}
         <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/20 to-navy/60 pointer-events-none" aria-hidden="true" />
         <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-10">
           <h1 className="text-white text-3xl md:text-4xl font-extrabold max-w-[22ch] leading-tight">
@@ -348,10 +362,9 @@ export default function Home() {
             {searchResults.projects.map((p) => (
               <article key={p.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
                 {p.img ? <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover" loading="lazy" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" /> : (
-                  <div className="w-full h-48 bg-amber-100 flex flex-col items-center justify-center text-navy text-sm font-semibold px-4 text-center">
-                    <span>{p.name}</span>
-                    {GRAIN_MARKET.prices.map((x) => <span key={x.size}>{x.size} {x.price}</span>)}
-                    <span>No photo for this project yet</span>
+                  <div className="w-full h-48 bg-navy flex flex-col items-center justify-center text-white px-4 text-center">
+                    <span className="font-bold text-base">{p.name}</span>
+                    <span className="text-sm text-white/80 mt-1">996 shops</span>
                   </div>
                 )}
                 <div className="p-4">
@@ -454,19 +467,15 @@ export default function Home() {
               {p.img ? (
                 <Image src={`/img/${p.img}`} alt={p.name} width={256} height={192} className="w-28 h-24 object-cover rounded shrink-0" loading="lazy" sizes="112px" />
               ) : (
-                <div className="w-28 h-24 bg-amber-100 rounded shrink-0 flex flex-col items-center justify-center text-navy text-xs font-bold px-2 text-center">
-                  <span>Pak China Grain Market</span>
-                  <span>2 Marla Rs 56 Lac</span>
-                  <span>3 Marla Rs 84 Lac</span>
-                  <span>4 Marla Rs 112 Lac</span>
-                  <span>996 shops, 54 acres, Shujabad Road</span>
+                <div className="w-28 h-24 bg-navy rounded shrink-0 flex flex-col items-center justify-center text-white px-2 text-center">
+                  <span className="text-xs font-bold">Pak China Grain Market</span>
+                  <span className="text-xs text-white/80 mt-1">996 shops</span>
                 </div>
               )}
               <div className="min-w-0">
                 <h3 className="font-bold text-navy">{p.name}</h3>
                 <p className="text-gray-600 text-sm">{p.loc}</p>
                 <p className="text-sm mt-1">{p.note}</p>
-                {p.id === "proj-6" ? <p className="text-sm mt-1">54-acre site, Shujabad Road, Multan. 996 shops. No real photo exists yet, so the shop sizes and prices are shown here instead of a picture.</p> : null}
                 {p.id === "proj-5" ? <p className="text-sm mt-1">Photo shows Bahria Sky.</p> : null}
                 <Link href={`/projects/${p.id}`} className="btn btn-outline-navy mt-2">Open project</Link>
               </div>

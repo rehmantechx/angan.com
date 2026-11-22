@@ -47,9 +47,9 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           ))}
         </div>
       ) : (
-        <div className="border border-gold bg-amber-50 rounded-lg p-4 mt-5">
-          <p className="font-semibold text-navy">No photo exists for this project yet</p>
-          <p className="text-sm text-gray-700 mt-1">
+        <div className="bg-navy rounded-lg p-4 mt-5">
+          <p className="font-semibold text-white">No photo exists for this project yet</p>
+          <p className="text-sm text-white/80 mt-1">
             No real photo of Pak China Grain Market was available to download. The shop
             plan below is shown instead of an empty box or a generic render.
           </p>
