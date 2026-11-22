@@ -267,7 +267,7 @@ export const PROJECTS: Project[] = [
     "loc": "Lahore",
     "city": "Lahore",
     "page": "project-alghani.html",
-    "img": "",
+    "img": "alghani-hero.jpeg",
     "note": "Bhaini Road, Lahore."
   },
   {

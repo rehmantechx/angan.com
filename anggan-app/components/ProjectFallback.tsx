@@ -1,8 +1,8 @@
 // Branded fallback for a project with no real site photo. No photo is
 // invented, no stock render, no AI image: a navy block with a gold roof
-// mark, the project name, and "Photo coming soon". Used for Al Ghani
-// Phase 7 (its detail-page images are marketing material, not a site
-// photo) and Pak China Grain Market (no photo exists at all).
+// mark, the project name, and "Photo coming soon". Used for Pak China
+// Grain Market (no photo exists at all). Al Ghani Phase 7 uses its first
+// detail-page image, alghani-hero.jpeg, as its card cover.
 export function ProjectFallback({ name, loc, className }: { name: string; loc: string; className?: string }) {
   return (
     <div className={"bg-navy flex flex-col items-center justify-center text-white px-4 text-center " + (className || "w-full h-48")}>
