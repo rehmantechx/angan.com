@@ -107,13 +107,13 @@ export function Header() {
         <div className="px-4">
           <button
             onClick={() => setMenuOpen(true)}
-            className="lg:hidden font-bold pr-2 text-sm tracking-wide min-h-[48px] inline-flex items-center"
+            className="xl:hidden font-bold pr-2 text-sm tracking-wide min-h-[48px] inline-flex items-center"
             aria-label="Open menu"
             aria-expanded={menuOpen}
           >
             MENU &#9776;
           </button>
-          <div className="hidden lg:flex items-center gap-4 text-xs font-bold whitespace-nowrap overflow-x-auto max-w-7xl mx-auto px-4">
+          <div className="hidden xl:flex items-center gap-3 text-xs font-bold whitespace-nowrap max-w-6xl mx-auto px-4">
             {NAV_LINKS.map((l) => (
               <Link key={l.href} href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)}>
                 {l.label}
@@ -134,7 +134,7 @@ export function Header() {
         </div>
       </nav>
       {menuOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-label="Site menu">
+        <div className="fixed inset-0 z-50 xl:hidden" role="dialog" aria-label="Site menu">
           <div className="absolute inset-0 bg-black/50" onClick={() => setMenuOpen(false)} />
           <div className="absolute left-0 top-0 h-full w-72 max-w-[85vw] bg-white shadow-lg overflow-y-auto">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
@@ -160,16 +160,6 @@ export function Header() {
                   {l.label} &rsaquo;
                 </Link>
               ))}
-              <p className="text-xs text-gray-600 font-bold tracking-wide pt-3">Companies</p>
-              <Link href="/companies" onClick={() => setMenuOpen(false)} aria-current={isActive("/companies") ? "page" : undefined} className={drawerCls("/companies")}>
-                Anngan Companies &rsaquo;
-              </Link>
-              <Link href="/services" onClick={() => setMenuOpen(false)} aria-current={isActive("/services") ? "page" : undefined} className={drawerCls("/services")}>
-                Angan Tech &rsaquo;
-              </Link>
-              <Link href="/services/service-7" onClick={() => setMenuOpen(false)} aria-current={pathname === "/services/service-7" ? "page" : undefined} className={drawerCls("/services/service-7")}>
-                Angan Tech CRM &rsaquo;
-              </Link>
               <Link
                 href="/create-listing"
                 onClick={() => setMenuOpen(false)}
@@ -272,7 +262,14 @@ export function Footer() {
           <ul className="mt-4 space-y-1">
             {SOCIAL_LINKS.map((s) => (
               <li key={s.href}>
-                <a href={s.href} target="_blank" rel="noopener" className="inline-flex items-center min-h-[48px] hover:underline">{s.label}</a>
+                {s.label === "YouTube" ? (
+                  <a href={s.href} target="_blank" rel="noopener" aria-label="Anngan on YouTube, @annganpk" className="inline-flex items-center gap-2 min-h-[48px] hover:underline">
+                    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className="shrink-0"><rect width="24" height="24" rx="5" fill="#FF0000" /><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#fff" /></svg>
+                    YouTube
+                  </a>
+                ) : (
+                  <a href={s.href} target="_blank" rel="noopener" className="inline-flex items-center min-h-[48px] hover:underline">{s.label}</a>
+                )}
               </li>
             ))}
           </ul>
