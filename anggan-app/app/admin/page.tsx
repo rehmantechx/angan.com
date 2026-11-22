@@ -240,7 +240,7 @@ export default function AdminPage() {
               <p className="text-sm text-gray-600">These do not show on the public site until approved.</p>
               {pending.map((l) => (
                 <div key={l.id} className="border rounded p-3 mt-2 flex gap-2 items-center flex-wrap w-full max-w-full min-w-0">
-                  <span className="font-semibold flex-1 min-w-0 break-words">{l.title} : {l.price} ({l.city})</span>
+                  <span className="font-semibold flex-1 min-w-0 break-words">{l.title} · {l.price} ({l.city})</span>
                   {canEdit ? (
                     <>
                       <button className={btnNavy} onClick={() => doSave({ ...l, liveStatus: "live", badge: "For Sale" })}>Approve and show live</button>
@@ -321,7 +321,7 @@ export default function AdminPage() {
           <div className="grid gap-3 mt-2">
             {enquiries.map((e) => (
               <div key={e.id} className="border rounded p-3">
-                <p className="font-semibold">{e.name} : {e.phone}</p>
+                <p className="font-semibold">{e.name} · {e.phone}</p>
                 <p className="text-sm text-gray-600">Asked: {e.asked} | From: {e.how} | Date: {e.date}</p>
                 <p className="text-sm">Next: {e.next || "Not set"}</p>
                 <div className="flex gap-2 mt-2 flex-wrap items-center">
@@ -369,7 +369,7 @@ export default function AdminPage() {
           <div className="grid gap-3 mt-2">
           {projects.map((p) => (
             <div key={p.id} className="border rounded p-3">
-              <p className="font-semibold">{p.name} : {p.loc}</p>
+              <p className="font-semibold">{p.name} · {p.loc}</p>
               <p className="text-sm text-gray-600">{p.note}</p>
             </div>
           ))}
@@ -383,7 +383,7 @@ export default function AdminPage() {
           <div className="grid gap-2 mt-2">
           {blogs.map((b) => (
             <div key={b.id} className="border rounded p-3 text-sm">
-              <span className="text-gray-600">{b.date} : </span>
+              <span className="text-gray-600">{b.date} · </span>
               <a href={b.url} target="_blank" rel="noopener noreferrer" className="text-navy underline">{b.title}<span aria-hidden="true"> ↗</span><span className="sr-only"> (opens in a new tab)</span></a>
             </div>
           ))}
