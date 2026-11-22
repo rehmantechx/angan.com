@@ -18,13 +18,13 @@ export default function LoginPage() {
     const em = email.trim();
     let ok = true;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
-      setEmailError("Please write a valid email address.");
+      setEmailError("Please enter a valid email address.");
       ok = false;
     } else {
       setEmailError("");
     }
     if (password.length < 6) {
-      setPasswordError("Please write your password, at least 6 characters.");
+      setPasswordError("Please enter your password, at least 6 characters.");
       ok = false;
     } else {
       setPasswordError("");
@@ -77,7 +77,10 @@ export default function LoginPage() {
             type="email"
             autoComplete="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.target.value.trim())) setEmailError("");
+            }}
             placeholder="Your office email"
             className="border border-gray-300 rounded px-3 py-2 w-full mt-1 min-h-[48px] font-normal"
           />
@@ -89,7 +92,10 @@ export default function LoginPage() {
             type="password"
             autoComplete="current-password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (e.target.value.length >= 6) setPasswordError("");
+            }}
             placeholder="Your password"
             className="border border-gray-300 rounded px-3 py-2 w-full mt-1 min-h-[48px] font-normal"
           />
