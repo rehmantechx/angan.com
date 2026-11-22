@@ -285,7 +285,7 @@ export default function AdminPage() {
               <div key={l.id} className="border rounded p-3 flex gap-2 items-center flex-wrap w-full max-w-full min-w-0">
                 <span className="flex-1 min-w-0 break-words">
                   <button type="button" onClick={() => setDetail(l)} className="font-semibold text-left text-navy underline underline-offset-2">{l.title}</button>
-                  <span className="text-sm text-gray-600 block">{l.price} | {l.city} | {l.size} | {l.status} | {l.liveStatus === "live" && l.visible !== false ? "Live" : l.liveStatus === "pending" ? "Pending" : "Hidden"}</span>
+                  <span className="text-sm text-gray-600 block">{l.price} | {l.city} | {l.size} | {l.status === "sale" ? "Sale" : "Rent"} | {l.liveStatus === "live" && l.visible !== false ? "Live" : l.liveStatus === "pending" ? "Pending" : "Hidden"}</span>
                 </span>
                 <button className={btnLine} onClick={() => setDetail(l)}>Details</button>
                 {canEdit ? (
