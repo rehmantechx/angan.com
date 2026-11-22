@@ -86,6 +86,7 @@ export default function CreateListingPage() {
       const e2 = err as { message?: string };
       setError("Could not send the listing: " + (e2.message || "please try again or call the office."));
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   }

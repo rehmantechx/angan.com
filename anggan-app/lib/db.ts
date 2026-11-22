@@ -382,6 +382,20 @@ export async function updateEnquiryStage(id: string, stage: Enquiry["stage"], ne
   saveLocal(store);
 }
 
+export async function deleteEnquiry(id: string): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
+  const db = await getDb();
+  if (db) {
+    const { deleteDoc, doc } = await fs();
+    await withTimeout(deleteDoc(doc(db, "enquiries", id)), WRITE_TIMEOUT_MS, "Deleting the enquiry");
+    return;
+  }
+  const store = loadLocal();
+  store.enquiries = store.enquiries.filter((x) => x.id !== id);
+  saveLocal(store);
+}
+
 // ---- Settings ----
 export async function getSettings(): Promise<OfficeSettings> {
   if (demoMode) return demoStore().settings;

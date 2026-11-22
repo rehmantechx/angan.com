@@ -16,8 +16,10 @@ import {
   deleteListing,
   addEnquiry,
   updateEnquiryStage,
+  deleteEnquiry,
   saveSettings,
   seedFirestore,
+  isFirestoreSeeded,
   firebaseOn,
   setDemoMode,
 } from "../../lib/db";
@@ -126,6 +128,22 @@ export default function AdminPage() {
     } catch (err) {
       const e = err as { message?: string };
       setMsg("Could not save: " + (e.message || "permission denied") + " The signed-in user needs the Full access or Staff role.");
+    }
+    await reload();
+  }
+
+  async function doDeleteEnquiry(id: string, name: string) {
+    if (isDemo) {
+      setMsg("Demo mode, view only. Changes are not saved.");
+      return;
+    }
+    if (!window.confirm("Delete this enquiry from " + name + "?")) return;
+    try {
+      await deleteEnquiry(id);
+      setMsg("Enquiry deleted.");
+    } catch (err) {
+      const e = err as { message?: string };
+      setMsg("Could not delete the enquiry: " + (e.message || "permission denied"));
     }
     await reload();
   }
@@ -350,6 +368,9 @@ export default function AdminPage() {
                     onChange={() => {}}
                     className="border border-gray-300 rounded px-2 py-1 text-sm flex-1 min-w-0 max-w-full"
                   />
+                  {canEdit ? (
+                    <button className="border border-navy text-navy px-2 py-1 rounded text-sm min-h-[40px]" onClick={() => doDeleteEnquiry(e.id, e.name)}>Delete</button>
+                  ) : null}
                 </div>
               </div>
             ))}
