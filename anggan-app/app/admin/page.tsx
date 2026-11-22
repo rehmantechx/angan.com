@@ -377,7 +377,7 @@ export default function AdminPage() {
           {blogs.map((b) => (
             <div key={b.id} className="border rounded p-3 text-sm">
               <span className="text-gray-600">{b.date} : </span>
-              <a href={b.url} target="_blank" rel="noopener" className="text-navy underline">{b.title}</a>
+              <a href={b.url} target="_blank" rel="noopener noreferrer" className="text-navy underline">{b.title}<span aria-hidden="true"> ↗</span><span className="sr-only"> (opens in a new tab)</span></a>
             </div>
           ))}
         </div>
