@@ -46,6 +46,12 @@ export default function AdminPage() {
   const [msg, setMsg] = useState("");
   const [edit, setEdit] = useState<Listing | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [q, setQ] = useState("");
+  const [cityF, setCityF] = useState("All");
+  const [typeF, setTypeF] = useState("All");
+  const [statusF, setStatusF] = useState("All");
+  const [sort, setSort] = useState("newest");
+  const [detail, setDetail] = useState<Listing | null>(null);
 
   async function reload() {
     setListings(await getListings());
@@ -84,6 +90,28 @@ export default function AdminPage() {
   const pending = listings.filter((l) => l.liveStatus === "pending");
   const hidden = listings.filter((l) => l.liveStatus === "hidden" || l.visible === false);
   const newEnq = enquiries.filter((e) => e.stage === "New").length;
+
+  // Listings search, filters and sort. Size sorts by area: 1 Kanal is 20 Marla.
+  function sizeMarla(size: string): number {
+    const n = parseFloat(size) || 0;
+    return /kanal/i.test(size) ? n * 20 : n;
+  }
+  const filtered = listings.filter((l) => {
+    const needle = q.trim().toLowerCase();
+    if (needle && (l.title + " " + l.loc + " " + l.city).toLowerCase().indexOf(needle) === -1) return false;
+    if (cityF !== "All" && l.city !== cityF) return false;
+    if (typeF !== "All" && l.type !== typeF) return false;
+    if (statusF !== "All" && l.status !== statusF) return false;
+    return true;
+  });
+  const shown = [...filtered].sort((a, b) => {
+    if (sort === "price-asc") return a.n - b.n;
+    if (sort === "price-desc") return b.n - a.n;
+    if (sort === "size") return sizeMarla(b.size) - sizeMarla(a.size);
+    return b.createdAt.localeCompare(a.createdAt) || a.title.localeCompare(b.title);
+  });
+  const cities = ["All", ...Array.from(new Set(listings.map((l) => l.city)))];
+  const types = ["All", ...Array.from(new Set(listings.map((l) => l.type)))];
 
   async function doSave(l: Listing) {
     if (isDemo) {
@@ -222,13 +250,42 @@ export default function AdminPage() {
             </div>
           ) : null}
           <h2 className="font-bold text-lg mt-6">All listings ({listings.length})</h2>
+          <div className="flex gap-2 mt-2 flex-wrap items-center w-full max-w-full min-w-0">
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search title or area"
+              aria-label="Search listings"
+              className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-0 max-w-full"
+            />
+            <select value={cityF} onChange={(e) => setCityF(e.target.value)} aria-label="Filter by city" className="border border-gray-300 rounded px-2 py-2 text-sm min-w-0 max-w-full">
+              {cities.map((c) => <option key={c} value={c}>{c === "All" ? "All cities" : c}</option>)}
+            </select>
+            <select value={typeF} onChange={(e) => setTypeF(e.target.value)} aria-label="Filter by type" className="border border-gray-300 rounded px-2 py-2 text-sm min-w-0 max-w-full">
+              {types.map((t) => <option key={t} value={t}>{t === "All" ? "All types" : t}</option>)}
+            </select>
+            <select value={statusF} onChange={(e) => setStatusF(e.target.value)} aria-label="Filter by status" className="border border-gray-300 rounded px-2 py-2 text-sm min-w-0 max-w-full">
+              <option value="All">For sale and rent</option>
+              <option value="sale">For sale</option>
+              <option value="rent">For rent</option>
+            </select>
+            <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort listings" className="border border-gray-300 rounded px-2 py-2 text-sm min-w-0 max-w-full">
+              <option value="newest">Newest first</option>
+              <option value="price-asc">Price: low to high</option>
+              <option value="price-desc">Price: high to low</option>
+              <option value="size">Size: largest first</option>
+            </select>
+          </div>
+          <p className="text-sm text-gray-600 mt-2">Showing {shown.length} of {listings.length} listings</p>
+          {shown.length === 0 ? <p className="text-sm mt-2">No listings match these filters.</p> : null}
           <div className="grid gap-3 mt-2">
-            {listings.map((l) => (
+            {shown.map((l) => (
               <div key={l.id} className="border rounded p-3 flex gap-2 items-center flex-wrap w-full max-w-full min-w-0">
                 <span className="flex-1 min-w-0 break-words">
-                  <span className="font-semibold">{l.title}</span>
+                  <button type="button" onClick={() => setDetail(l)} className="font-semibold text-left text-navy underline underline-offset-2">{l.title}</button>
                   <span className="text-sm text-gray-600 block">{l.price} | {l.city} | {l.size} | {l.status} | {l.liveStatus === "live" && l.visible !== false ? "Live" : l.liveStatus === "pending" ? "Pending" : "Hidden"}</span>
                 </span>
+                <button className={btnLine} onClick={() => setDetail(l)}>Details</button>
                 {canEdit ? (
                   <>
                     <button className={btnLine} onClick={() => { setShowAdd(false); setEdit(l); }}>Edit</button>
@@ -359,6 +416,50 @@ export default function AdminPage() {
           }}
         />
       )}
+
+      {detail ? (
+        <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-label="Listing details">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setDetail(null)} />
+          <div className="relative bg-white w-full max-w-md h-full overflow-y-auto p-4 min-w-0">
+            <div className="flex gap-2 items-start justify-between">
+              <h2 className="font-bold text-lg text-navy min-w-0 break-words">{detail.title}</h2>
+              <button className={btnLine} onClick={() => setDetail(null)}>Close</button>
+            </div>
+            {detail.img ? (
+              <img src={`/img/${detail.img}`} alt={detail.title} className="w-full rounded mt-3" />
+            ) : null}
+            <dl className="grid gap-2 mt-3 text-sm">
+              <div className="flex gap-2 flex-wrap"><dt className="font-semibold">Price:</dt><dd>{detail.price}</dd></div>
+              <div className="flex gap-2 flex-wrap"><dt className="font-semibold">City:</dt><dd>{detail.city}</dd></div>
+              <div className="flex gap-2 flex-wrap"><dt className="font-semibold">Area:</dt><dd>{detail.loc}</dd></div>
+              <div className="flex gap-2 flex-wrap"><dt className="font-semibold">Type:</dt><dd>{detail.type}</dd></div>
+              <div className="flex gap-2 flex-wrap"><dt className="font-semibold">Status:</dt><dd>{detail.status === "sale" ? "For sale" : "For rent"}</dd></div>
+              <div className="flex gap-2 flex-wrap"><dt className="font-semibold">Size:</dt><dd>{detail.size}</dd></div>
+              <div className="flex gap-2 flex-wrap"><dt className="font-semibold">Beds:</dt><dd>{detail.beds}</dd><dt className="font-semibold">Baths:</dt><dd>{detail.baths}</dd></div>
+              <div className="flex gap-2 flex-wrap"><dt className="font-semibold">Visibility:</dt><dd>{detail.liveStatus === "live" && detail.visible !== false ? "Live" : detail.liveStatus === "pending" ? "Pending" : "Hidden"}</dd></div>
+              <div className="flex gap-2 flex-wrap"><dt className="font-semibold">Added:</dt><dd>{detail.createdAt}</dd></div>
+            </dl>
+            {detail.url ? (
+              <a href={detail.url} target="_blank" rel="noopener noreferrer" className="text-navy underline text-sm block mt-3">
+                View original listing on anngan.com
+              </a>
+            ) : null}
+            {canEdit ? (
+              <div className="flex gap-2 mt-4 flex-wrap">
+                <button className={btnLine} onClick={() => { setEdit(detail); setShowAdd(false); setDetail(null); }}>Edit</button>
+                {detail.liveStatus === "live" && detail.visible !== false ? (
+                  <button className={btnLine} onClick={async () => { await doSave({ ...detail, liveStatus: "hidden", visible: false }); setDetail(null); }}>Hide</button>
+                ) : detail.liveStatus === "hidden" || detail.visible === false ? (
+                  <button className={btnNavy} onClick={async () => { await doSave({ ...detail, liveStatus: "live", visible: true }); setDetail(null); }}>Show live</button>
+                ) : null}
+                <button className={btnLine} onClick={async () => { await doDelete(detail.id, detail.title); setDetail(null); }}>Delete</button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600 mt-4">Your role is View only. You can see this listing but not change it.</p>
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
