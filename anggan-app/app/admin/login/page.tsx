@@ -34,7 +34,7 @@ export default function LoginPage() {
             setError("");
             const err = await signInGoogle();
             setBusy(false);
-            if (err) setError("Sign-in is not available right now. Please call the office.");
+            if (err) setError(err);
           }}
         >
           Continue with Google

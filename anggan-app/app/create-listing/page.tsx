@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useAuth } from "../../lib/auth";
 import { saveListing } from "../../lib/db";
+import { isValidPakPhone } from "../../components/EnquiryForm";
 import Link from "next/link";
 
 const inputCls = "border border-gray-300 rounded px-3 py-2 w-full";
@@ -31,7 +32,7 @@ export default function CreateListingPage() {
         <h1 className="text-3xl font-bold text-navy">List a property</h1>
         <p className="mt-2">You need an account to list a property. Sign in first, then your listing goes to the office for approval.</p>
         <p className="mt-2 text-sm text-gray-600">Nothing goes live without office approval.</p>
-        <Link href="/admin/login" className="inline-block bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center mt-4">Sign in</Link>
+        <Link href="/signin?return=/create-listing" className="inline-block bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center mt-4">Sign in with Google</Link>
       </div>
     );
   }
@@ -48,6 +49,8 @@ export default function CreateListingPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!title.trim() || !loc.trim()) { setError("Please write a title and an area or society for the property."); return; }
+    if (phone.trim() && !isValidPakPhone(phone.trim())) { setError("Please write a valid Pakistani mobile number, for example 0304 1111698."); return; }
     setBusy(true);
     setError("");
     const n = parseInt(price.replace(/[^0-9]/g, ""), 10) || 0;
@@ -117,7 +120,7 @@ export default function CreateListingPage() {
           </select>
         </div>
         <input required value={loc} onChange={(e) => setLoc(e.target.value)} placeholder="Area or society, for example DHA Phase 7" className={inputCls} />
-        <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number" className={inputCls} />
+        <input type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number, for example 0304 1111698" className={inputCls} />
         <input value={photo} onChange={(e) => setPhoto(e.target.value)} placeholder="Photo link, optional, for example https://example.com/photo.jpg" className={inputCls} />
         <p className="text-sm text-gray-600">Photo is optional. You can paste a photo link, or leave it empty and the office adds a real photo after approval.</p>
         <button disabled={busy} className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center w-fit">

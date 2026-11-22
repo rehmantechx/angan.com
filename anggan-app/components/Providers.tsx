@@ -18,7 +18,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const needsAuth =
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
-    pathname.startsWith("/create-listing");
+    pathname.startsWith("/create-listing") ||
+    pathname.startsWith("/signin");
   if (!needsAuth) return <>{children}</>;
   return <AuthProvider>{children}</AuthProvider>;
 }
