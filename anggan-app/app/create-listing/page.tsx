@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAuth } from "../../lib/auth";
 import { DEMO_EMAIL } from "../../lib/auth-context";
 import { saveListing } from "../../lib/db";
@@ -23,6 +23,7 @@ export default function CreateListingPage() {
   const [photo, setPhoto] = useState("");
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
+  const busyRef = useRef(false);
   const [error, setError] = useState("");
 
   if (loading) return <p>Loading...</p>;
@@ -50,9 +51,11 @@ export default function CreateListingPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (busyRef.current) return;
     if (user?.demo || user?.email === DEMO_EMAIL) { setError("Demo, view only. Sign in with an authorized office account to send a listing."); return; }
     if (!title.trim() || !loc.trim()) { setError("Please write a title and an area or society for the property."); return; }
     if (phone.trim() && !isValidPakPhone(phone.trim())) { setError("Please write a valid Pakistani mobile number, for example 0304 1111698."); return; }
+    busyRef.current = true;
     setBusy(true);
     setError("");
     const n = parseInt(price.replace(/[^0-9]/g, ""), 10) || 0;

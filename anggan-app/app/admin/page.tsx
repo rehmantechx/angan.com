@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../lib/auth";
@@ -504,7 +504,7 @@ function AgencyAvatar({ agency }: { agency: Agency }) {
   return <img src={src} alt="" width={40} height={40} onError={() => setFailed(true)} className="w-10 h-10 shrink-0 rounded object-contain bg-white" />;
 }
 
-function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCancel: () => void; onSave: (l: Listing) => void }) {
+function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCancel: () => void; onSave: (l: Listing) => Promise<void> | void }) {
   const [title, setTitle] = useState(initial?.title || "");
   const [price, setPrice] = useState(initial ? String(initial.n) : "");
   const [beds, setBeds] = useState(String(initial?.beds ?? 3));
@@ -515,6 +515,16 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
   const [type, setType] = useState(initial?.type || "House");
   const [status, setStatus] = useState(initial?.status || "sale");
   const [photo, setPhoto] = useState(initial?.img || "");
+  // In-flight submit lock. The live bug: the first save showed "Saved."
+  // but the admin list still showed 12, so the form was saved a second
+  // time and two identical listings were created. The button disables
+  // immediately on click until the Firestore write resolves, and the
+  // ref guard blocks a second submit in the same tick.
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  // One id per form, fixed when the form opens. A retry overwrites the
+  // same document instead of creating a second identical listing.
+  const [newId] = useState(() => "admin-" + Date.now().toString(36));
   const REAL_PHOTOS = [
     "",
     "lst-karachi-shamsi.jpg",
@@ -533,9 +543,12 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
     const n = parseInt(price.replace(/[^0-9]/g, ""), 10) || 0;
-    onSave({
-      id: initial?.id || "admin-" + Date.now().toString(36),
+    Promise.resolve(onSave({
+      id: initial?.id || newId,
       title: title.trim(),
       price: n > 0 ? "Rs " + n.toLocaleString("en-PK") + (status === "rent" ? " per month" : "") : "Price on call",
       n,
@@ -552,6 +565,9 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
       liveStatus: initial?.liveStatus || "live",
       visible: initial?.visible !== false,
       createdAt: initial?.createdAt || new Date().toISOString().slice(0, 10),
+    })).finally(() => {
+      savingRef.current = false;
+      setSaving(false);
     });
   }
 
@@ -589,8 +605,8 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
       <input value={REAL_PHOTOS.includes(photo) ? "" : photo} onChange={(e) => setPhoto(e.target.value)} placeholder="Photo link, optional, for example https://example.com/photo.jpg" className={inputCls} />
       <p className="text-sm text-gray-600">Photo upload is not built yet, because Firebase Storage is not enabled. Pick a real photo from the site, or paste a photo link.</p>
       <div className="flex gap-2">
-        <button className={btnRed}>Save listing</button>
-        <button type="button" className={btnLine} onClick={onCancel}>Cancel</button>
+        <button disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : "Save listing"}</button>
+        <button type="button" disabled={saving} className={btnLine + " disabled:opacity-50"} onClick={onCancel}>Cancel</button>
       </div>
     </form>
   );
