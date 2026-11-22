@@ -2,16 +2,29 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SERVICES } from "../../../lib/seed";
 import { SERVICE_DETAILS } from "../../../lib/serviceDetails";
+import { ServiceIcon } from "../../../lib/serviceIcons";
 
 export function generateStaticParams() {
   return SERVICES.map((s) => ({ id: s.id }));
 }
 
+function SectionHead({ title }: { title: string }) {
+  return (
+    <div className="mt-10">
+      <div className="w-10 h-1 bg-anngan" aria-hidden="true" />
+      <h2 className="text-2xl font-bold text-navy mt-3">{title}</h2>
+    </div>
+  );
+}
+
 export default function ServicePage({ params }: { params: { id: string } }) {
-  const service = SERVICES.find((s) => s.id === params.id);
-  if (!service) notFound();
+  const idx = SERVICES.findIndex((s) => s.id === params.id);
+  if (idx < 0) notFound();
+  const service = SERVICES[idx];
   const d = SERVICE_DETAILS[service.id];
   if (!d) notFound();
+  const num = String(idx + 1).padStart(2, "0");
+  const stepCols = d.steps.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-5";
 
   return (
     <div>
@@ -21,75 +34,114 @@ export default function ServicePage({ params }: { params: { id: string } }) {
         </Link>
         <span className="text-gray-600"> / {service.name}</span>
       </p>
-      <h1 className="text-3xl font-bold text-navy mt-2">{service.name}</h1>
-      <p className="text-gray-600 mt-1">
-        Angan Tech, Anngan Technologies Pvt. Ltd, Paragon City, Lahore.
+
+      {/* Hero: navy band, gold icon, name, one short line, Call and WhatsApp. */}
+      <section className="mt-4 rounded-xl bg-navy px-5 py-6 sm:px-8 sm:py-8 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+          <span className="shrink-0 rounded-xl border border-[#DDB78B]/60 p-3 text-[#DDB78B]">
+            <ServiceIcon id={service.id} size={56} />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold tracking-widest text-blue-200 uppercase">
+              Angan Tech &middot; {num} / 09
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mt-1 leading-tight">{service.name}</h1>
+            <p className="text-blue-100 mt-2 leading-relaxed max-w-[62ch]">{d.scope}</p>
+            <p className="text-blue-200 text-sm mt-2">
+              Angan Tech, Anngan Technologies Pvt. Ltd, Paragon City, Lahore.
+            </p>
+            <div className="flex gap-2 mt-5 flex-wrap">
+              <a href="tel:+923041111698" className="btn btn-red">
+                Call +92 304 1111 698
+              </a>
+              <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green">
+                WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What is included: numbered grid, 1 short line per item. */}
+      <SectionHead title="What is included" />
+      <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
+        {d.included.map((item, i) => (
+          <article key={item.title} className="rounded-xl border border-gray-200 bg-white shadow-sm p-5 flex flex-col h-full">
+            <span className="text-[#A67C2E] font-bold text-2xl leading-none">{String(i + 1).padStart(2, "0")}</span>
+            <h3 className="font-bold text-navy text-lg mt-2 leading-snug">{item.title}</h3>
+            <p className="text-sm text-gray-600 mt-1 leading-relaxed">{item.text}</p>
+          </article>
+        ))}
+      </div>
+
+      {/* How it works: numbered step timeline. */}
+      <SectionHead title="How it works" />
+      <ol className={`grid gap-4 mt-4 sm:grid-cols-2 ${stepCols}`}>
+        {d.steps.map((step, i) => (
+          <li key={step.title} className="rounded-xl border border-gray-200 bg-white shadow-sm p-5 border-t-4 border-t-[#DDB78B] flex flex-col h-full">
+            <span className="w-9 h-9 rounded-full bg-navy text-white font-bold inline-flex items-center justify-center">
+              {i + 1}
+            </span>
+            <p className="font-bold text-navy mt-3">
+              Step {i + 1}, {step.title}
+            </p>
+            <p className="text-sm text-gray-600 mt-1 leading-relaxed">{step.text}</p>
+          </li>
+        ))}
+      </ol>
+
+      {/* What you get: short checklist. */}
+      <SectionHead title="What you get" />
+      <ul className="grid gap-3 mt-4 sm:grid-cols-2">
+        {d.gets.map((g) => (
+          <li key={g} className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 flex gap-3 items-start">
+            <span className="shrink-0 w-6 h-6 rounded-full bg-anngan text-white text-sm font-bold inline-flex items-center justify-center mt-0.5" aria-hidden="true">
+              &#10003;
+            </span>
+            <span className="text-sm leading-relaxed">{g}</span>
+          </li>
+        ))}
+      </ul>
+
+      {/* Who it is for and Price: two short cards. */}
+      <div className="grid gap-4 mt-10 lg:grid-cols-2">
+        <section className="rounded-xl bg-slate-50 border border-gray-200 p-5">
+          <div className="w-10 h-1 bg-anngan" aria-hidden="true" />
+          <h2 className="text-xl font-bold text-navy mt-3">Who it is for</h2>
+          <p className="text-sm text-gray-600 mt-2 leading-relaxed">{d.whoFor}</p>
+        </section>
+        <section className="rounded-xl bg-navy p-5">
+          <div className="w-10 h-1 bg-anngan" aria-hidden="true" />
+          <h2 className="text-xl font-bold text-white mt-3">Price</h2>
+          <p className="text-sm text-blue-100 mt-2 leading-relaxed">{d.priceNote}</p>
+        </section>
+      </div>
+
+      {/* Closing Call and WhatsApp bar. */}
+      <section className="mt-10 rounded-xl bg-navy px-5 py-6 sm:px-8 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-white">Talk to the office about {service.name}</h2>
+          <p className="text-blue-100 text-sm mt-1">Call or WhatsApp, the office answers.</p>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <a href="tel:+923041111698" className="btn btn-red">
+            Call +92 304 1111 698
+          </a>
+          <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green">
+            WhatsApp
+          </a>
+        </div>
+      </section>
+
+      <p className="mt-6 text-sm">
+        <Link href="/services" className="text-anngan-dark font-semibold underline">
+          Back to all Angan Tech services
+        </Link>
+        {" | "}
+        <Link href="/contact" className="text-anngan-dark font-semibold underline">
+          Contact the office
+        </Link>
       </p>
-      <p className="mt-3">{d.scope}</p>
-
-      <div className="flex gap-2 mt-5 flex-wrap">
-        <a href="tel:+923041111698" className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">
-          Call +92 304 1111 698
-        </a>
-        <a
-          href="https://wa.me/923041111698"
-          target="_blank"
-          rel="noopener"
-          className="bg-green-700 text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold"
-        >
-          WhatsApp
-        </a>
-      </div>
-
-      <div className="grid gap-8 mt-8 lg:grid-cols-2">
-        <div>
-          <h2 className="text-xl font-bold text-navy">What is included</h2>
-          <ol className="mt-3 space-y-3 list-decimal list-inside">
-            {d.included.map((item) => (
-              <li key={item.title} className="border border-gray-200 rounded-lg p-3 bg-white">
-                <span className="font-semibold">{item.title}</span>
-                <span className="text-sm text-gray-600 block mt-1">{item.text}</span>
-              </li>
-            ))}
-          </ol>
-
-          <h2 className="text-xl font-bold text-navy mt-8">What you get</h2>
-          <ul className="mt-3 space-y-2 list-disc list-inside text-sm">
-            {d.gets.map((g) => (
-              <li key={g}>{g}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h2 className="text-xl font-bold text-navy">How it works</h2>
-          <ol className="mt-3 space-y-3">
-            {d.steps.map((step, i) => (
-              <li key={step.title} className="border border-gray-200 rounded-lg p-3 bg-white">
-                <p className="font-semibold">
-                  Step {i + 1}, {step.title}
-                </p>
-                <p className="text-sm text-gray-600 mt-1">{step.text}</p>
-              </li>
-            ))}
-          </ol>
-
-          <h2 className="text-xl font-bold text-navy mt-8">Who it is for</h2>
-          <p className="mt-2 text-sm">{d.whoFor}</p>
-
-          <h2 className="text-xl font-bold text-navy mt-8">Price</h2>
-          <p className="mt-2 text-sm">{d.priceNote}</p>
-          <p className="mt-4 text-sm">
-            <Link href="/services" className="text-anngan-dark font-semibold underline">
-              Back to all Angan Tech services
-            </Link>
-            {" | "}
-            <Link href="/contact" className="text-anngan-dark font-semibold underline">
-              Contact the office
-            </Link>
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
