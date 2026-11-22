@@ -12,7 +12,24 @@ export type { Role, SessionUser };
 export { useAuth };
 export const Ctx = AuthContext;
 
-const DEMO_KEY = "anngan-demo-session";
+const DEMO_KEY = "anngan-demo";
+const DEMO_VALUE = "1";
+
+export const DEMO_USER: SessionUser = {
+  uid: "demo",
+  email: "demo@anngan.test",
+  name: "Demo user",
+  role: "View only",
+  demo: true,
+};
+
+function isDemoSession(): boolean {
+  try {
+    return window.sessionStorage.getItem(DEMO_KEY) === DEMO_VALUE;
+  } catch {
+    return false;
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SessionUser | null>(null);
@@ -20,13 +37,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const firebaseOn = isFirebaseConfigured();
 
   useEffect(() => {
+    // Demo first, before Firebase: one tap, no Google sign-in, no password.
+    // sessionStorage only, so closing the tab ends the demo. Demo is
+    // View only and never touches Firestore (see lib/db.ts demo mode).
+    if (isDemoSession()) {
+      setUser(DEMO_USER);
+      setLoading(false);
+      return;
+    }
+    // Remove any demo session left by the old localStorage demo.
+    try {
+      window.localStorage.removeItem("anngan-demo-session");
+    } catch {
+      // ignore
+    }
     if (!firebaseOn) {
-      try {
-        const raw = window.localStorage.getItem(DEMO_KEY);
-        if (raw) setUser(JSON.parse(raw));
-      } catch {
-        // no demo session
-      }
       setLoading(false);
       return;
     }
@@ -107,19 +132,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function signInEmail(email: string, password: string): Promise<string | null> {
+    const auth = await getFirebaseAuth();
+    if (!auth) return "Firebase is not connected. Fill in .env.local first.";
+    try {
+      const { signInWithEmailAndPassword } = await import("firebase/auth");
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      return null;
+    } catch (e) {
+      const err = e as { message?: string; code?: string };
+      // Show the real Firebase error, not a generic line, so a missing
+      // provider (auth/operation-not-allowed) or a wrong password
+      // (auth/invalid-credential) is diagnosable on the page.
+      return err.message || "Email sign-in failed.";
+    }
+  }
+
   function signInDemo() {
-    const demo: SessionUser = {
-      uid: "demo-office",
-      email: "office@anngan.com",
-      name: "Demo office user",
-      role: "Full access",
-      demo: true,
-    };
-    window.localStorage.setItem(DEMO_KEY, JSON.stringify(demo));
-    setUser(demo);
+    try {
+      window.sessionStorage.setItem(DEMO_KEY, DEMO_VALUE);
+    } catch {
+      // sessionStorage unavailable, demo still works for this page load
+    }
+    setUser(DEMO_USER);
   }
 
   async function signOut() {
+    try {
+      window.sessionStorage.removeItem(DEMO_KEY);
+    } catch {
+      // ignore
+    }
+    try {
+      window.localStorage.removeItem("anngan-demo-session");
+    } catch {
+      // ignore
+    }
     const auth = await getFirebaseAuth();
     if (auth) {
       try {
@@ -129,12 +177,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // ignore
       }
     }
-    window.localStorage.removeItem(DEMO_KEY);
     setUser(null);
   }
 
   return (
-    <Ctx.Provider value={{ user, loading, firebaseOn, signInGoogle, signInDemo, signOut }}>
+    <Ctx.Provider value={{ user, loading, firebaseOn, signInGoogle, signInEmail, signInDemo, signOut }}>
       {children}
     </Ctx.Provider>
   );

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../lib/auth";
+import { DEMO_EMAIL } from "../../lib/auth-context";
 import {
   getListings,
   getProjects,
@@ -18,6 +19,7 @@ import {
   saveSettings,
   seedFirestore,
   firebaseOn,
+  setDemoMode,
 } from "../../lib/db";
 import { Listing, Project, Blog, Agency, Service, Enquiry, OfficeSettings } from "../../lib/seed";
 
@@ -31,7 +33,7 @@ const btnLine = "border border-navy text-navy px-3 py-2.5 rounded min-h-[48px] i
 const STAGES: Enquiry["stage"][] = ["New", "Called", "Visit", "Deal Done"];
 
 export default function AdminPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("Overview");
   const [listings, setListings] = useState<Listing[]>([]);
@@ -60,21 +62,34 @@ export default function AdminPage() {
   }, [loading, user, router]);
 
   useEffect(() => {
+    setDemoMode(user?.demo === true);
+    return () => setDemoMode(false);
+  }, [user]);
+
+  useEffect(() => {
+    if (loading || !user) return;
     reload();
     const h = () => reload();
     window.addEventListener("anngan-data", h);
     return () => window.removeEventListener("anngan-data", h);
-  }, []);
+  }, [loading, user]);
 
   if (loading || !user) return <p>Loading...</p>;
 
   const canEdit = user.role === "Full access" || user.role === "Staff";
+  // Temporary demo credential (demo@anngan.com, created in the Firebase
+  // console, role View only). Remove it from Firebase when testing is done.
+  const isDemo = user.demo === true || user.email === DEMO_EMAIL;
   const live = listings.filter((l) => l.liveStatus === "live" && l.visible !== false);
   const pending = listings.filter((l) => l.liveStatus === "pending");
   const hidden = listings.filter((l) => l.liveStatus === "hidden" || l.visible === false);
   const newEnq = enquiries.filter((e) => e.stage === "New").length;
 
   async function doSave(l: Listing) {
+    if (isDemo) {
+      setMsg("Demo mode, view only. Changes are not saved.");
+      return;
+    }
     try {
       await saveListing(l);
       setEdit(null);
@@ -88,6 +103,10 @@ export default function AdminPage() {
   }
 
   async function doDelete(id: string, title: string) {
+    if (isDemo) {
+      setMsg("Demo mode, view only. Changes are not saved.");
+      return;
+    }
     if (!window.confirm("Delete this listing: " + title + "?")) return;
     try {
       await deleteListing(id);
@@ -105,26 +124,38 @@ export default function AdminPage() {
         <h1 className="text-3xl font-bold text-navy">Dashboard</h1>
         <span className="text-sm text-gray-600">
           Signed in as {user.name} ({user.email}) : {user.role}
-          {user.demo ? " : demo login, local test only" : ""}
+          {isDemo ? " : Demo user, view only" : ""}
         </span>
         <span className="text-xs text-gray-600">Your user id: {user.uid}</span>
       </div>
-      {user.role === "View only" && firebaseOn() ? (
+      {isDemo ? (
+        <div className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3 flex gap-3 items-center flex-wrap">
+          <span className="flex-1 min-w-[220px]">Demo mode, view only. Changes are not saved. Sign in with Google for the real office dashboard.</span>
+          <button
+            className="bg-navy text-white px-3 py-2 rounded min-h-[48px] inline-flex items-center text-sm"
+            onClick={async () => { await signOut(); router.push("/admin/login"); }}
+          >
+            Exit demo
+          </button>
+        </div>
+      ) : null}
+      {user.role === "View only" && !isDemo && firebaseOn() ? (
         <p className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">
           Your role is View only. To change listings, the owner must raise your role in the Firebase console:
           Firestore, collection users, document {user.uid}, field role, set to Full access or Staff.
         </p>
       ) : null}
-      {!firebaseOn() ? (
+      {!isDemo && !firebaseOn() ? (
         <p className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">
           Firebase is not connected. Changes are saved in this browser only (local test mode).
           Connect Firebase with .env.local to save online.
         </p>
-      ) : (
+      ) : null}
+      {!isDemo && firebaseOn() ? (
         <p className="bg-green-50 text-green-900 text-sm rounded p-3 mt-3">
           Firebase is connected. Changes save to Firestore and show on the public site.
         </p>
-      )}
+      ) : null}
       {msg ? <p className="bg-green-50 text-green-900 text-sm rounded p-3 mt-3">{msg}</p> : null}
 
       <div className="flex gap-2 mt-4 flex-wrap">
@@ -156,7 +187,7 @@ export default function AdminPage() {
             <p className="text-sm mt-1">
               {["Lahore", "Rawalpindi", "Multan", "Islamabad", "Karachi"].map((c) => `${c}: ${listings.filter((l) => l.city === c).length}`).join(" | ")}
             </p>
-            {firebaseOn() ? (
+            {firebaseOn() && !isDemo ? (
               <button className={btnNavy + " mt-3"} onClick={async () => { setMsg(await seedFirestore()); await reload(); }}>
                 Upload seed data to Firestore
               </button>

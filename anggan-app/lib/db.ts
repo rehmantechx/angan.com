@@ -29,6 +29,20 @@ import {
 
 export const firebaseOn = () => isFirebaseConfigured();
 
+// Demo mode: read-only, View only, seed data only, no Firestore at all.
+// Set by the dashboard when the signed-in user is a demo user. Reads
+// return the pure seed data (no local test edits), writes throw.
+let demoMode = false;
+export function setDemoMode(v: boolean) {
+  demoMode = v;
+}
+export function isDemoMode() {
+  return demoMode;
+}
+function demoStore(): LocalStore {
+  return seedStore();
+}
+
 const LOCAL_KEY = "anngan-local-v1";
 
 type LocalStore = {
@@ -129,6 +143,8 @@ async function readCollection<T>(name: string): Promise<T[] | null> {
 
 // ---- Listings ----
 export async function getListings(): Promise<Listing[]> {
+  if (demoMode) return demoStore().listings;
+
   const rows = await readCollection<Listing>("listings");
   if (rows && rows.length > 0) return rows;
   if (rows && rows.length === 0) return loadLocal().listings;
@@ -140,6 +156,8 @@ export async function getListings(): Promise<Listing[]> {
 // allow public reads of live listings. An unfiltered read is denied even
 // when the collection is empty, so the filter is required, not optional.
 export async function getPublicListings(): Promise<Listing[]> {
+  if (demoMode) return demoStore().listings.filter((l) => l.liveStatus === "live" && l.visible !== false);
+
   const db = await getDb();
   if (db) {
     const { collection, doc, getDoc, getDocs, query, where } = await fs();
@@ -168,6 +186,8 @@ export async function getPublicListings(): Promise<Listing[]> {
 }
 
 export async function saveListing(l: Listing): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
   const db = await getDb();
   if (db) {
     const { doc, setDoc } = await fs();
@@ -183,6 +203,8 @@ export async function saveListing(l: Listing): Promise<void> {
 }
 
 export async function deleteListing(id: string): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
   const db = await getDb();
   if (db) {
     const { deleteDoc, doc } = await fs();
@@ -196,27 +218,37 @@ export async function deleteListing(id: string): Promise<void> {
 
 // ---- Projects, blogs, agencies, services ----
 export async function getProjects(): Promise<Project[]> {
+  if (demoMode) return demoStore().projects;
+
   const rows = await readCollection<Project>("projects");
   return rows && rows.length > 0 ? rows : loadLocal().projects;
 }
 
 export async function getBlogs(): Promise<Blog[]> {
+  if (demoMode) return demoStore().blogs;
+
   const rows = await readCollection<Blog>("blogs");
   return rows && rows.length > 0 ? rows : loadLocal().blogs;
 }
 
 export async function getAgencies(): Promise<Agency[]> {
+  if (demoMode) return demoStore().agencies;
+
   const rows = await readCollection<Agency>("agencies");
   return rows && rows.length > 0 ? rows : loadLocal().agencies;
 }
 
 export async function getServices(): Promise<Service[]> {
+  if (demoMode) return demoStore().services;
+
   const rows = await readCollection<Service>("services");
   return rows && rows.length > 0 ? rows : loadLocal().services;
 }
 
 // ---- Enquiries ----
 export async function getEnquiries(): Promise<Enquiry[]> {
+  if (demoMode) return demoStore().enquiries;
+
   const db = await getDb();
   if (db) {
     const { collection, getDocs, orderBy, query } = await fs();
@@ -236,6 +268,7 @@ export async function getEnquiries(): Promise<Enquiry[]> {
 }
 
 export async function addEnquiry(e: Omit<Enquiry, "id" | "date" | "stage"> & { stage?: Enquiry["stage"] }): Promise<Enquiry> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
   const full: Enquiry = {
     ...e,
     id: "enq-" + Date.now().toString(36),
@@ -256,6 +289,8 @@ export async function addEnquiry(e: Omit<Enquiry, "id" | "date" | "stage"> & { s
 }
 
 export async function updateEnquiryStage(id: string, stage: Enquiry["stage"], next: string): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
   const db = await getDb();
   if (db) {
     const { doc, updateDoc } = await fs();
@@ -273,6 +308,8 @@ export async function updateEnquiryStage(id: string, stage: Enquiry["stage"], ne
 
 // ---- Settings ----
 export async function getSettings(): Promise<OfficeSettings> {
+  if (demoMode) return demoStore().settings;
+
   const db = await getDb();
   if (db) {
     const { doc, getDoc } = await fs();
@@ -287,6 +324,8 @@ export async function getSettings(): Promise<OfficeSettings> {
 }
 
 export async function saveSettings(s: OfficeSettings): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
   const db = await getDb();
   if (db) {
     const { doc, setDoc } = await fs();
@@ -300,6 +339,8 @@ export async function saveSettings(s: OfficeSettings): Promise<void> {
 
 // ---- Seed upload helper (used once from the dashboard when Firebase is connected) ----
 export async function seedFirestore(): Promise<string> {
+  if (demoMode) return "Demo mode, view only. Changes are not saved.";
+
   const db = await getDb();
   if (!db) return "Firebase is not connected.";
   const { doc, setDoc } = await fs();

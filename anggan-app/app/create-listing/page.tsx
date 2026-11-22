@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useAuth } from "../../lib/auth";
+import { DEMO_EMAIL } from "../../lib/auth-context";
 import { saveListing } from "../../lib/db";
 import { isValidPakPhone } from "../../components/EnquiryForm";
 import Link from "next/link";
@@ -49,6 +50,7 @@ export default function CreateListingPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (user?.demo || user?.email === DEMO_EMAIL) { setError("Demo, view only. Sign in with Google to send a listing."); return; }
     if (!title.trim() || !loc.trim()) { setError("Please write a title and an area or society for the property."); return; }
     if (phone.trim() && !isValidPakPhone(phone.trim())) { setError("Please write a valid Pakistani mobile number, for example 0304 1111698."); return; }
     setBusy(true);
@@ -88,6 +90,9 @@ export default function CreateListingPage() {
   return (
     <div>
       <h1 className="text-3xl font-bold text-navy">List a property</h1>
+      {user.demo || user.email === DEMO_EMAIL ? (
+        <p className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">Demo, view only. You can see the form, but you cannot send a listing. Sign in with Google to send one.</p>
+      ) : null}
       <p className="text-gray-600 mt-1">
         Signed in as {user.email}. Your listing goes to the office for approval and does not go live until approved.
       </p>
@@ -123,7 +128,7 @@ export default function CreateListingPage() {
         <input type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Your phone number, for example 0304 1111698" className={inputCls} />
         <input value={photo} onChange={(e) => setPhoto(e.target.value)} placeholder="Photo link, optional, for example https://example.com/photo.jpg" className={inputCls} />
         <p className="text-sm text-gray-600">Photo is optional. You can paste a photo link, or leave it empty and the office adds a real photo after approval.</p>
-        <button disabled={busy} className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center w-fit">
+        <button disabled={busy || user.demo || user.email === DEMO_EMAIL} className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center w-fit disabled:opacity-50">
           {busy ? "Sending..." : "Send to office for approval"}
         </button>
         {error ? <p className="bg-red-50 text-red-800 text-sm rounded p-3">{error}</p> : null}
