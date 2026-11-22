@@ -291,7 +291,7 @@ export function Footer() {
         <div className="lg:col-span-2">
           <p className="font-bold text-white text-base">Get Connected</p>
           <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
-          <ul className="mt-3 grid grid-cols-2 gap-x-2 gap-y-2">
+          <ul className="mt-3 flex flex-col gap-2">
             {SOCIAL_LINKS.map((s) => (
               <li key={s.href}>
                 <a href={s.href} target="_blank" rel="noopener" aria-label={`Anngan on ${s.label}, @annganpk`} className="inline-flex items-center gap-2 min-h-[32px] hover:underline">
@@ -303,13 +303,14 @@ export function Footer() {
           </ul>
           <p className="font-bold text-white text-base mt-5">Angan Tech services</p>
           <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
-          <ul className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2">
-            {SERVICES.slice(0, 4).map((s) => (
+          <ul className="mt-3 space-y-2">
+            {SERVICES.map((s) => (
               <li key={s.id}>
                 <Link href={`/services/${s.id}`} className="inline-flex items-center min-h-[32px] hover:underline">{s.name}</Link>
               </li>
             ))}
           </ul>
+          <p className="mt-3"><Link href="/services" className="inline-flex items-center min-h-[32px] font-semibold hover:underline">View all 9 services &rarr;</Link></p>
         </div>
       </div>
       <div className="bg-[#00263E] text-white text-sm text-center py-3 px-4">
