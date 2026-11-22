@@ -474,11 +474,13 @@ export default function Home() {
       </section>
 
       <section className="mt-10">
-        <div className="grid gap-6 md:grid-cols-2 items-start">
-          <Image src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full h-auto object-contain rounded-lg" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+        <div className="grid gap-6 md:grid-cols-2 items-center">
+          <div className="flex justify-center md:justify-start">
+            <Image src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full md:w-auto md:max-h-[300px] h-auto object-contain rounded-lg" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+          </div>
           <div>
-            <h2 className="text-2xl font-bold text-navy">Who we are</h2>
-            <p className="text-gray-600 mt-2">Real estate solutions under one roof, from Pakistan's trusted source.</p>
+            <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>
+            <p className="text-gray-600 mt-2"><b className="text-navy">Anngan</b> is Pakistan&apos;s trusted real estate service provider.</p>
             <p className="text-gray-600 mt-2"><b>Muhammad Mahmood Cheema</b>, Chairman and Chief Executive Officer</p>
             <p className="urdu-tagline mt-2" lang="ur">بنائے خواب حقیقت</p>
             <p className="text-sm text-gray-600 mt-2">Office: Paragon City, Lahore. Call {settings?.phone || "+92 304 1111 698"}.</p>

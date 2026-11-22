@@ -208,39 +208,39 @@ export function Header() {
 export function Footer() {
   return (
     <footer className="bg-navy text-white mt-0 border-t-4 border-anngan">
-      <div className="max-w-6xl mx-auto px-4 grid gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-8 py-12 text-sm">
+      <div className="max-w-6xl mx-auto px-4 grid items-start gap-8 sm:grid-cols-2 lg:grid-cols-12 lg:gap-6 py-10 text-sm">
         <div className="lg:col-span-4">
           <span className="inline-block bg-white rounded-lg px-3 py-2 shadow">
             <Image src="/img/logo.png" alt="anngan.com logo, banay khawab haqiqat" width={1200} height={231} className="w-[230px] max-w-full h-auto" />
           </span>
           <p className="urdu-tagline urdu-tagline-light mt-3" lang="ur">بنائے خواب حقیقت</p>
-          <p className="mt-4 leading-relaxed">
+          <p className="mt-3 leading-relaxed">
             Pakistan's trusted real estate service provider. Projects and property in Karachi, Islamabad, Lahore and Peshawar.
           </p>
-          <p className="mt-4 leading-relaxed">
+          <p className="mt-3 leading-relaxed">
             57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore<br />
-            <a href="tel:+923041111698" className="inline-flex items-center min-h-[48px] font-semibold hover:underline">+92 304 1111 698</a><br />
-            <a href="mailto:info@anngan.com" className="inline-flex items-center min-h-[48px] hover:underline">info@anngan.com</a>
+            <a href="tel:+923041111698" className="inline-flex items-center min-h-[32px] font-semibold hover:underline">+92 304 1111 698</a><br />
+            <a href="mailto:info@anngan.com" className="inline-flex items-center min-h-[32px] hover:underline">info@anngan.com</a>
           </p>
         </div>
         <div className="lg:col-span-2">
           <p className="font-bold text-white text-base">Company</p>
           <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
-          <ul className="mt-4 space-y-1">
-            <li><Link href="/about" className="inline-flex items-center min-h-[48px] hover:underline">About Us</Link></li>
-            <li><Link href="/contact" className="inline-flex items-center min-h-[48px] hover:underline">Contact Us</Link></li>
-            <li><Link href="/companies" className="inline-flex items-center min-h-[48px] hover:underline">Anngan Companies</Link></li>
-            <li><Link href="/services" className="inline-flex items-center min-h-[48px] hover:underline">Angan Tech</Link></li>
-            <li><Link href="/create-listing" className="inline-flex items-center min-h-[48px] hover:underline">Create a Listing</Link></li>
+          <ul className="mt-3 space-y-2">
+            <li><Link href="/about" className="inline-flex items-center min-h-[32px] hover:underline">About Us</Link></li>
+            <li><Link href="/contact" className="inline-flex items-center min-h-[32px] hover:underline">Contact Us</Link></li>
+            <li><Link href="/companies" className="inline-flex items-center min-h-[32px] hover:underline">Anngan Companies</Link></li>
+            <li><Link href="/services" className="inline-flex items-center min-h-[32px] hover:underline">Angan Tech</Link></li>
+            <li><Link href="/create-listing" className="inline-flex items-center min-h-[32px] hover:underline">Create a Listing</Link></li>
           </ul>
         </div>
         <div className="lg:col-span-2">
           <p className="font-bold text-white text-base">Projects</p>
           <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
-          <ul className="mt-4 space-y-1">
+          <ul className="mt-3 space-y-2">
             {PROJECTS.map((p) => (
               <li key={p.id}>
-                <Link href={`/projects/${p.id}`} className="inline-flex items-center min-h-[48px] hover:underline">{p.name}</Link>
+                <Link href={`/projects/${p.id}`} className="inline-flex items-center min-h-[32px] hover:underline">{p.name}</Link>
               </li>
             ))}
           </ul>
@@ -248,44 +248,44 @@ export function Footer() {
         <div className="lg:col-span-2">
           <p className="font-bold text-white text-base">Connect</p>
           <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
-          <ul className="mt-4 space-y-1">
-            <li><Link href="/blogs" className="inline-flex items-center min-h-[48px] hover:underline">Blogs</Link></li>
-            <li><Link href="/properties" className="inline-flex items-center min-h-[48px] hover:underline">Properties</Link></li>
-            <li><Link href="/projects" className="inline-flex items-center min-h-[48px] hover:underline">Projects</Link></li>
-            <li><Link href="/societies" className="inline-flex items-center min-h-[48px] hover:underline">Societies Guide</Link></li>
-            <li><Link href="/tools" className="inline-flex items-center min-h-[48px] hover:underline">Ask Anngan</Link></li>
-            <li><a href="https://anngan.com/" target="_blank" rel="noopener" className="inline-flex items-center min-h-[48px] hover:underline">anngan.com</a></li>
+          <ul className="mt-3 space-y-2">
+            <li><Link href="/blogs" className="inline-flex items-center min-h-[32px] hover:underline">Blogs</Link></li>
+            <li><Link href="/properties" className="inline-flex items-center min-h-[32px] hover:underline">Properties</Link></li>
+            <li><Link href="/projects" className="inline-flex items-center min-h-[32px] hover:underline">Projects</Link></li>
+            <li><Link href="/societies" className="inline-flex items-center min-h-[32px] hover:underline">Societies Guide</Link></li>
+            <li><Link href="/tools" className="inline-flex items-center min-h-[32px] hover:underline">Ask Anngan</Link></li>
+            <li><a href="https://anngan.com/" target="_blank" rel="noopener" className="inline-flex items-center min-h-[32px] hover:underline">anngan.com</a></li>
           </ul>
         </div>
         <div className="lg:col-span-2">
           <p className="font-bold text-white text-base">Get Connected</p>
           <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
-          <ul className="mt-4 space-y-1">
+          <ul className="mt-3 grid grid-cols-2 gap-x-2 gap-y-2">
             {SOCIAL_LINKS.map((s) => (
               <li key={s.href}>
                 {s.label === "YouTube" ? (
-                  <a href={s.href} target="_blank" rel="noopener" aria-label="Anngan on YouTube, @annganpk" className="inline-flex items-center gap-2 min-h-[48px] hover:underline">
+                  <a href={s.href} target="_blank" rel="noopener" aria-label="Anngan on YouTube, @annganpk" className="inline-flex items-center gap-2 min-h-[32px] hover:underline">
                     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className="shrink-0"><rect width="24" height="24" rx="5" fill="#FF0000" /><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#fff" /></svg>
                     YouTube
                   </a>
                 ) : (
-                  <a href={s.href} target="_blank" rel="noopener" className="inline-flex items-center min-h-[48px] hover:underline">{s.label}</a>
+                  <a href={s.href} target="_blank" rel="noopener" className="inline-flex items-center min-h-[32px] hover:underline">{s.label}</a>
                 )}
               </li>
             ))}
           </ul>
-          <p className="font-bold text-white text-base mt-6">Angan Tech services</p>
+          <p className="font-bold text-white text-base mt-5">Angan Tech services</p>
           <span className="block w-8 h-0.5 bg-[#DDB78B] mt-2" />
-          <ul className="mt-4 space-y-1">
+          <ul className="mt-3 grid grid-cols-2 gap-x-2 gap-y-2">
             {SERVICES.slice(0, 4).map((s) => (
               <li key={s.id}>
-                <Link href={`/services/${s.id}`} className="inline-flex items-center min-h-[48px] hover:underline">{s.name}</Link>
+                <Link href={`/services/${s.id}`} className="inline-flex items-center min-h-[32px] hover:underline">{s.name}</Link>
               </li>
             ))}
           </ul>
         </div>
       </div>
-      <div className="bg-[#00263E] text-white text-sm text-center py-4 px-4">
+      <div className="bg-[#00263E] text-white text-sm text-center py-3 px-4">
         Copyright &copy; ANNGAN TECHNOLOGIES PVT. LTD. All rights reserved.
       </div>
     </footer>
