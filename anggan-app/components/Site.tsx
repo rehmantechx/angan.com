@@ -285,7 +285,7 @@ export function Footer() {
             <li><Link href="/projects" className="inline-flex items-center min-h-[32px] hover:underline">Projects</Link></li>
             <li><Link href="/societies" className="inline-flex items-center min-h-[32px] hover:underline">Societies Guide</Link></li>
             <li><Link href="/tools" className="inline-flex items-center min-h-[32px] hover:underline">Property Tools</Link></li>
-            <li><a href="https://anngan.com/" target="_blank" rel="noopener" className="inline-flex items-center min-h-[32px] hover:underline">anngan.com</a></li>
+            <li><Link href="/" className="inline-flex items-center min-h-[32px] hover:underline">anngan.com</Link></li>
           </ul>
         </div>
         <div className="lg:col-span-2">

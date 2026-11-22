@@ -53,7 +53,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                   alt={ph.caption}
                   width={1200}
                   height={675}
-                  className="w-full rounded-lg object-cover bg-navy aspect-[16/10]"
+                  className="w-full rounded-lg object-contain bg-neutral-100 border border-gray-200 aspect-[16/10]"
                   loading={i === 0 ? "eager" : "lazy"}
                   sizes="(max-width: 768px) 100vw, 60vw"
                 />

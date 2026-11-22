@@ -87,9 +87,6 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
           <div className="flex gap-2 mt-4 flex-wrap">
             <a href="tel:+923041111698" className="btn btn-red">Call +92 304 1111 698</a>
             <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
-            {l.url ? (
-              <a href={l.url} target="_blank" rel="noopener" className="btn btn-outline-navy">On anngan.com</a>
-            ) : null}
           </div>
           {others.length > 0 ? (
             <div className="mt-8">

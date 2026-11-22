@@ -436,7 +436,7 @@ export default function AdminPage() {
           {blogs.map((b) => (
             <div key={b.id} className="border rounded p-3 text-sm">
               <span className="text-gray-600">{b.date} · </span>
-              <a href={b.url} target="_blank" rel="noopener noreferrer" className="text-navy underline">{b.title}<span aria-hidden="true"> ↗</span><span className="sr-only"> (opens in a new tab)</span></a>
+              <a href={`/blogs/${b.id}`} target="_blank" rel="noopener noreferrer" className="text-navy underline">{b.title}<span aria-hidden="true"> ↗</span><span className="sr-only"> (opens in a new tab)</span></a>
             </div>
           ))}
         </div>
@@ -507,11 +507,6 @@ export default function AdminPage() {
               <div className="flex gap-2 flex-wrap"><dt className="font-semibold">Visibility:</dt><dd>{detail.liveStatus === "live" && detail.visible !== false ? "Live" : detail.liveStatus === "pending" ? "Pending" : "Hidden"}</dd></div>
               <div className="flex gap-2 flex-wrap"><dt className="font-semibold">Added:</dt><dd>{detail.createdAt}</dd></div>
             </dl>
-            {detail.url ? (
-              <a href={detail.url} target="_blank" rel="noopener noreferrer" className="text-navy underline text-sm block mt-3">
-                View original listing on anngan.com
-              </a>
-            ) : null}
             {canEdit ? (
               <div className="flex gap-2 mt-4 flex-wrap">
                 <button className={btnLine} onClick={() => { setEdit(detail); setShowAdd(false); setDetail(null); }}>Edit</button>

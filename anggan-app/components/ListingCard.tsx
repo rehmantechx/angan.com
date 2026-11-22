@@ -34,9 +34,6 @@ export function ListingCard({ l }: { l: Listing }) {
           <a href="tel:+923041111698" className="btn btn-red">Call</a>
           <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
           <Link href={`/properties/${l.id}`} className="btn btn-outline-navy">Details</Link>
-          {l.url ? (
-            <a href={l.url} target="_blank" rel="noopener" className="btn btn-outline-navy">On anngan.com</a>
-          ) : null}
         </div>
       </div>
     </article>
