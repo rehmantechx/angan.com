@@ -25,7 +25,7 @@ import { Listing, Project, Blog, Agency, Service, Enquiry, OfficeSettings } from
 
 type Tab = "Overview" | "Listings" | "Enquiries" | "Projects" | "Blogs" | "Agencies" | "Services" | "Settings";
 
-const inputCls = "border border-gray-300 rounded px-3 py-2 w-full";
+const inputCls = "border border-gray-300 rounded px-3 py-2 w-full min-w-0";
 const btnRed = "bg-anngan text-white px-3 py-2.5 rounded min-h-[48px] inline-flex items-center text-sm";
 const btnNavy = "bg-navy text-white px-3 py-2.5 rounded min-h-[48px] inline-flex items-center text-sm";
 const btnLine = "border border-navy text-navy px-3 py-2.5 rounded min-h-[48px] inline-flex items-center text-sm";
@@ -119,7 +119,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div>
+    <div className="w-full max-w-full min-w-0">
       <div className="flex items-baseline gap-3 flex-wrap min-w-0">
         <h1 className="text-3xl font-bold text-navy">Dashboard</h1>
         <span className="text-sm text-gray-600 min-w-0 break-words">
@@ -128,7 +128,7 @@ export default function AdminPage() {
       </div>
       {isDemo ? (
         <div className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3 flex gap-3 items-center flex-wrap">
-          <span className="flex-1 min-w-[220px]">Demo mode, view only. Changes are not saved. Sign in with Google for the real office dashboard.</span>
+          <span className="flex-1 min-w-0 break-words">Demo mode, view only. Changes are not saved. Sign in with Google for the real office dashboard.</span>
           <button
             className="bg-navy text-white px-3 py-2 rounded min-h-[48px] inline-flex items-center text-sm"
             onClick={async () => { await signOut(); router.push("/admin/login"); }}
@@ -156,7 +156,7 @@ export default function AdminPage() {
       ) : null}
       {msg ? <p className="bg-green-50 text-green-900 text-sm rounded p-3 mt-3">{msg}</p> : null}
 
-      <div className="flex gap-2 mt-4 flex-wrap">
+      <div className="flex gap-2 mt-4 flex-wrap w-full max-w-full min-w-0">
         {(["Overview", "Listings", "Enquiries", "Projects", "Blogs", "Agencies", "Services", "Settings"] as Tab[]).map((t) => (
           <button
             key={t}
@@ -209,8 +209,8 @@ export default function AdminPage() {
               <h2 className="font-bold text-lg">Waiting for approval ({pending.length})</h2>
               <p className="text-sm text-gray-600">These do not show on the public site until approved.</p>
               {pending.map((l) => (
-                <div key={l.id} className="border rounded p-3 mt-2 flex gap-2 items-center flex-wrap">
-                  <span className="font-semibold flex-1">{l.title} : {l.price} ({l.city})</span>
+                <div key={l.id} className="border rounded p-3 mt-2 flex gap-2 items-center flex-wrap w-full max-w-full min-w-0">
+                  <span className="font-semibold flex-1 min-w-0 break-words">{l.title} : {l.price} ({l.city})</span>
                   {canEdit ? (
                     <>
                       <button className={btnNavy} onClick={() => doSave({ ...l, liveStatus: "live", badge: "For Sale" })}>Approve and show live</button>
@@ -224,8 +224,8 @@ export default function AdminPage() {
           <h2 className="font-bold text-lg mt-6">All listings ({listings.length})</h2>
           <div className="grid gap-3 mt-2">
             {listings.map((l) => (
-              <div key={l.id} className="border rounded p-3 flex gap-2 items-center flex-wrap">
-                <span className="flex-1 min-w-[200px]">
+              <div key={l.id} className="border rounded p-3 flex gap-2 items-center flex-wrap w-full max-w-full min-w-0">
+                <span className="flex-1 min-w-0 break-words">
                   <span className="font-semibold">{l.title}</span>
                   <span className="text-sm text-gray-600 block">{l.price} | {l.city} | {l.size} | {l.status} | {l.liveStatus === "live" && l.visible !== false ? "Live" : l.liveStatus === "pending" ? "Pending" : "Hidden"}</span>
                 </span>
@@ -289,7 +289,7 @@ export default function AdminPage() {
                       }
                     }}
                     onChange={() => {}}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm flex-1 min-w-[180px]"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm flex-1 min-w-0 max-w-full"
                   />
                 </div>
               </div>
@@ -415,7 +415,7 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
   }
 
   return (
-    <form onSubmit={submit} className="border border-navy rounded-lg p-4 mt-4 bg-white grid gap-3 max-w-xl">
+    <form onSubmit={submit} className="border border-navy rounded-lg p-4 mt-4 bg-white grid gap-3 w-full max-w-xl min-w-0">
       <h3 className="font-bold">{initial ? "Edit listing" : "Add listing"}</h3>
       <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" className={inputCls} />
       <input required value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Price in Rs, numbers only" inputMode="numeric" className={inputCls} />
@@ -459,9 +459,9 @@ function TestEnquiryForm({ onDone }: { onDone: () => void }) {
   const [name, setName] = useState("Test Buyer");
   const [phone, setPhone] = useState("+92 300 000 0000");
   return (
-    <div className="flex gap-2 mt-2 flex-wrap">
-      <input value={name} onChange={(e) => setName(e.target.value)} className="border border-gray-300 rounded px-3 py-2" />
-      <input value={phone} onChange={(e) => setPhone(e.target.value)} className="border border-gray-300 rounded px-3 py-2" />
+    <div className="flex gap-2 mt-2 flex-wrap w-full max-w-full min-w-0">
+      <input value={name} onChange={(e) => setName(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 max-w-full flex-1" />
+      <input value={phone} onChange={(e) => setPhone(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 max-w-full flex-1" />
       <button
         className={btnNavy}
         onClick={async () => {
@@ -482,7 +482,7 @@ function SettingsForm({ initial, canEdit, onSave }: { initial: OfficeSettings; c
   const [ceo, setCeo] = useState(initial.ceo);
   return (
     <form
-      className="mt-4 grid gap-3 max-w-xl"
+      className="mt-4 grid gap-3 w-full max-w-xl min-w-0"
       onSubmit={(e) => {
         e.preventDefault();
         onSave({ ...initial, phone, email, address, ceo });

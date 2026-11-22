@@ -6,7 +6,7 @@ import { saveListing } from "../../lib/db";
 import { isValidPakPhone } from "../../components/EnquiryForm";
 import Link from "next/link";
 
-const inputCls = "border border-gray-300 rounded px-3 py-2 w-full";
+const inputCls = "border border-gray-300 rounded px-3 py-2 w-full min-w-0";
 
 export default function CreateListingPage() {
   const { user, loading } = useAuth();
@@ -88,15 +88,15 @@ export default function CreateListingPage() {
   }
 
   return (
-    <div>
+    <div className="w-full max-w-full min-w-0">
       <h1 className="text-3xl font-bold text-navy">List a property</h1>
       {user.demo || user.email === DEMO_EMAIL ? (
         <p className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">Demo, view only. You can see the form, but you cannot send a listing. Sign in with Google to send one.</p>
       ) : null}
-      <p className="text-gray-600 mt-1">
+      <p className="text-gray-600 mt-1 break-words">
         Signed in as {user.email}. Your listing goes to the office for approval and does not go live until approved.
       </p>
-      <form onSubmit={submit} className="grid gap-3 mt-4 max-w-xl">
+      <form onSubmit={submit} className="grid gap-3 mt-4 w-full max-w-xl min-w-0">
         <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title, for example 5 Marla house for sale in DHA Lahore" className={inputCls} />
         <input required value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Price in Rs, numbers only" inputMode="numeric" className={inputCls} />
         <div className="grid grid-cols-2 gap-3">
