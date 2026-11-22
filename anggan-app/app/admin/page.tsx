@@ -55,16 +55,37 @@ export default function AdminPage() {
   const [statusF, setStatusF] = useState("All");
   const [sort, setSort] = useState("newest");
   const [detail, setDetail] = useState<Listing | null>(null);
+  // In-app delete confirmation. The old code used window.confirm, which
+  // is the root cause of the live failure: an automated browser
+  // auto-dismisses native dialogs, so confirm returned false, the delete
+  // never ran, and no message ever appeared. A real dialog in the page
+  // cannot be auto-dismissed, and its Yes button is a normal click.
+  const [confirmDelete, setConfirmDelete] = useState<{ kind: "listing" | "enquiry"; id: string; label: string } | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [msgError, setMsgError] = useState(false);
 
   async function reload() {
-    setListings(await getListings());
-    setProjects(await getProjects());
-    setBlogs(await getBlogs());
-    setAgencies(await getAgencies());
-    setServices(await getServices());
-    setEnquiries(await getEnquiries());
-    setSettings(await getSettings());
-    setSeeded(await isFirestoreSeeded());
+    // Parallel, not sequential: the old version awaited 8 reads one after
+    // another, so a refresh after Delete/Hide took many seconds and the
+    // page looked unchanged. All reads have their own timeouts.
+    const [l, p, b, a, s, e, st, sd] = await Promise.all([
+      getListings(),
+      getProjects(),
+      getBlogs(),
+      getAgencies(),
+      getServices(),
+      getEnquiries(),
+      getSettings(),
+      isFirestoreSeeded(),
+    ]);
+    setListings(l);
+    setProjects(p);
+    setBlogs(b);
+    setAgencies(a);
+    setServices(s);
+    setEnquiries(e);
+    setSettings(st);
+    setSeeded(sd);
   }
 
   useEffect(() => {
@@ -134,34 +155,42 @@ export default function AdminPage() {
     await reload();
   }
 
-  async function doDeleteEnquiry(id: string, name: string) {
+  // Delete flow: the Delete button only opens the in-app dialog above.
+  // Confirming removes the row from state immediately (optimistic), so
+  // the change is visible at once, then deletes in Firestore, then
+  // reloads to sync. If the delete fails, the message says so in red
+  // and the reload puts the row back, so a failed delete is never silent.
+  async function confirmDeleteNow() {
+    const target = confirmDelete;
+    if (!target || deletingId) return;
+    setConfirmDelete(null);
     if (isDemo) {
+      setMsgError(false);
       setMsg("Demo mode, view only. Changes are not saved.");
       return;
     }
-    if (!window.confirm("Delete this enquiry from " + name + "?")) return;
+    setDeletingId(target.id);
+    if (target.kind === "listing") setListings((prev) => prev.filter((l) => l.id !== target.id));
+    else setEnquiries((prev) => prev.filter((e) => e.id !== target.id));
+    setMsgError(false);
+    setMsg("Deleting...");
     try {
-      await deleteEnquiry(id);
-      setMsg("Enquiry deleted.");
+      if (target.kind === "listing") await deleteListing(target.id);
+      else await deleteEnquiry(target.id);
+      setMsgError(false);
+      setMsg(target.kind === "listing" ? "Deleted. It is gone from the public site too." : "Enquiry deleted.");
     } catch (err) {
       const e = err as { message?: string };
-      setMsg("Could not delete the enquiry: " + (e.message || "permission denied"));
-    }
-    await reload();
-  }
-
-  async function doDelete(id: string, title: string) {
-    if (isDemo) {
-      setMsg("Demo mode, view only. Changes are not saved.");
-      return;
-    }
-    if (!window.confirm("Delete this listing: " + title + "?")) return;
-    try {
-      await deleteListing(id);
-      setMsg("Deleted. It is gone from the public site too.");
-    } catch (err) {
-      const e = err as { message?: string };
-      setMsg("Could not delete: " + (e.message || "permission denied") + " The signed-in user needs the Full access or Staff role.");
+      setMsgError(true);
+      setMsg(
+        "Could not delete " +
+          (target.kind === "listing" ? "the listing" : "the enquiry") +
+          ": " +
+          (e.message || "permission denied") +
+          " The signed-in user needs the Full access or Staff role. The item is still there, try again."
+      );
+    } finally {
+      setDeletingId(null);
     }
     await reload();
   }
@@ -202,7 +231,7 @@ export default function AdminPage() {
           Firebase is connected. Changes save to Firestore and show on the public site.
         </p>
       ) : null}
-      {msg ? <p className="bg-green-50 text-green-900 text-sm rounded p-3 mt-3">{msg}</p> : null}
+      {msg ? <p className={msgError ? "bg-red-50 text-red-900 text-sm rounded p-3 mt-3" : "bg-green-50 text-green-900 text-sm rounded p-3 mt-3"}>{msg}</p> : null}
 
       <div className="flex gap-2 mt-4 flex-wrap w-full max-w-full min-w-0">
         {(["Overview", "Listings", "Enquiries", "Projects", "Blogs", "Agencies", "Services", "Settings"] as Tab[]).map((t) => (
@@ -264,7 +293,7 @@ export default function AdminPage() {
                   {canEdit ? (
                     <>
                       <button className={btnNavy} onClick={() => doSave({ ...l, liveStatus: "live", badge: "For Sale" })}>Approve and show live</button>
-                      <button className={btnLine} onClick={() => doDelete(l.id, l.title)}>Delete</button>
+                      <button type="button" className={btnLine} disabled={deletingId === l.id} onClick={() => setConfirmDelete({ kind: "listing", id: l.id, label: l.title })}>Delete</button>
                     </>
                   ) : null}
                 </div>
@@ -316,7 +345,7 @@ export default function AdminPage() {
                     ) : l.liveStatus === "hidden" || l.visible === false ? (
                       <button className={btnNavy} onClick={() => doSave({ ...l, liveStatus: "live", visible: true })}>Show live</button>
                     ) : null}
-                    <button className={btnLine} onClick={() => doDelete(l.id, l.title)}>Delete</button>
+                    <button type="button" className={btnLine} disabled={deletingId === l.id} onClick={() => setConfirmDelete({ kind: "listing", id: l.id, label: l.title })}>{deletingId === l.id ? "Deleting..." : "Delete"}</button>
                   </>
                 ) : null}
               </div>
@@ -371,7 +400,7 @@ export default function AdminPage() {
                     className="border border-gray-300 rounded px-2 py-1 text-sm flex-1 min-w-0 max-w-full"
                   />
                   {canEdit ? (
-                    <button className="border border-navy text-navy px-2 py-1 rounded text-sm min-h-[40px]" onClick={() => doDeleteEnquiry(e.id, e.name)}>Delete</button>
+                    <button type="button" className="border border-navy text-navy px-2 py-1 rounded text-sm min-h-[40px]" disabled={deletingId === e.id} onClick={() => setConfirmDelete({ kind: "enquiry", id: e.id, label: e.name })}>{deletingId === e.id ? "Deleting..." : "Delete"}</button>
                   ) : null}
                 </div>
               </div>
@@ -491,11 +520,29 @@ export default function AdminPage() {
                 ) : detail.liveStatus === "hidden" || detail.visible === false ? (
                   <button className={btnNavy} onClick={async () => { await doSave({ ...detail, liveStatus: "live", visible: true }); setDetail(null); }}>Show live</button>
                 ) : null}
-                <button className={btnLine} onClick={async () => { await doDelete(detail.id, detail.title); setDetail(null); }}>Delete</button>
+                <button type="button" className={btnLine} disabled={deletingId === detail.id} onClick={() => { setConfirmDelete({ kind: "listing", id: detail.id, label: detail.title }); setDetail(null); }}>{deletingId === detail.id ? "Deleting..." : "Delete"}</button>
               </div>
             ) : (
               <p className="text-sm text-gray-600 mt-4">Your role is View only. You can see this listing but not change it.</p>
             )}
+          </div>
+        </div>
+      ) : null}
+
+      {confirmDelete ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="alertdialog" aria-label={confirmDelete.kind === "listing" ? "Delete this listing?" : "Delete this enquiry?"}>
+          <div className="absolute inset-0 bg-black/50" onClick={() => setConfirmDelete(null)} />
+          <div className="relative bg-white rounded-lg p-5 w-full max-w-sm min-w-0">
+            <h2 className="font-bold text-lg text-navy">{confirmDelete.kind === "listing" ? "Delete this listing?" : "Delete this enquiry?"}</h2>
+            <p className="text-sm text-gray-600 mt-2 break-words">
+              {confirmDelete.kind === "listing"
+                ? "Delete listing: " + confirmDelete.label + "? It will be gone from the public site too. This cannot be undone."
+                : "Delete enquiry from " + confirmDelete.label + "? This cannot be undone."}
+            </p>
+            <div className="flex gap-2 mt-4 flex-wrap">
+              <button type="button" className={btnRed} disabled={deletingId === confirmDelete.id} onClick={confirmDeleteNow}>Yes, delete</button>
+              <button type="button" className={btnLine} onClick={() => setConfirmDelete(null)}>Cancel</button>
+            </div>
           </div>
         </div>
       ) : null}
