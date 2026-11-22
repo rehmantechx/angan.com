@@ -203,7 +203,9 @@ export default function AdminPage() {
           <div className="border rounded p-4"><p className="text-2xl font-bold">{live.length}</p><p>Live listings on the public site</p></div>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{pending.length}</p><p>Waiting for approval</p></div>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{enquiries.length}</p><p>Enquiries ({newEnq} new)</p></div>
-          <div className="border rounded p-4"><p className="text-2xl font-bold">{projects.length}</p><p>Projects | {blogs.length} blogs | {agencies.length} agencies</p></div>
+          <div className="border rounded p-4"><p className="text-2xl font-bold">{projects.length}</p><p>Projects</p></div>
+          <div className="border rounded p-4"><p className="text-2xl font-bold">{blogs.length}</p><p>Blogs</p></div>
+          <div className="border rounded p-4"><p className="text-2xl font-bold">{agencies.length}</p><p>Agencies</p></div>
           <div className="border rounded p-4 sm:col-span-2">
             <p className="font-bold">Enquiries by stage</p>
             <p className="text-sm mt-1">{STAGES.map((s) => `${s}: ${enquiries.filter((e) => e.stage === s).length}`).join(" | ")}</p>
