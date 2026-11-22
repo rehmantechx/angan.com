@@ -1,36 +1,89 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { getPublicListings } from "../../lib/db";
 import { Listing, LISTINGS } from "../../lib/seed";
 import { ListingCard } from "../../components/ListingCard";
 import { matchesKey } from "../../lib/search";
 
-const CITIES = ["", "Lahore", "Karachi", "Rawalpindi", "Multan", "Islamabad", "Mangla", "Kashmir"];
+// Size in sqft, for sorting: 1 Marla = 272.25 sqft, 1 Kanal = 20 Marla.
+function sizeSqft(size: string): number {
+  const n = parseFloat(size);
+  if (Number.isNaN(n)) return 0;
+  if (size.includes("Kanal")) return n * 5445;
+  return n * 272.25;
+}
 
-export default function PropertiesPage() {
+const SORTS = [
+  { value: "newest", label: "Newest first" },
+  { value: "price-low", label: "Price: low to high" },
+  { value: "price-high", label: "Price: high to low" },
+  { value: "size-small", label: "Size: small to large" },
+  { value: "size-large", label: "Size: large to small" },
+] as const;
+
+function PropertiesPage() {
   // Same as home: show the 12 real seed listings at once, and only
   // replace them when Firestore actually returns rows. Starting empty
   // showed "0 real properties" while Firestore was still loading or
   // empty, even though home showed 12.
   const [listings, setListings] = useState<Listing[]>(LISTINGS.filter((l) => l.liveStatus === "live" && l.visible !== false));
+  const params = useSearchParams();
   const [q, setQ] = useState("");
   const [city, setCity] = useState("");
   const [status, setStatus] = useState("");
   const [beds, setBeds] = useState("");
   const [size, setSize] = useState("");
+  const [sort, setSort] = useState("newest");
 
   useEffect(() => {
     getPublicListings().then((rows) => { if (rows.length > 0) setListings(rows); });
-    if (typeof window !== "undefined") {
-      const qs = new URLSearchParams(window.location.search);
-      if (qs.get("q")) setQ(qs.get("q") || "");
-      if (qs.get("city")) setCity(qs.get("city") || "");
-    }
   }, []);
+
+  // Read the filters once from the URL on first paint, so a filtered
+  // link can be shared or bookmarked.
+  useEffect(() => {
+    if (params.get("q")) setQ(params.get("q") || "");
+    if (params.get("city")) setCity(params.get("city") || "");
+    if (params.get("status")) setStatus(params.get("status") || "");
+    if (params.get("beds")) setBeds(params.get("beds") || "");
+    if (params.get("size")) setSize(params.get("size") || "");
+    if (params.get("sort")) setSort(params.get("sort") || "newest");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep the URL in sync with the filters, so the current view can be
+  // shared or bookmarked. replaceState, so the back button is not
+  // filled with one entry per keystroke.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const qs = new URLSearchParams();
+    if (q.trim()) qs.set("q", q.trim());
+    if (city) qs.set("city", city);
+    if (status) qs.set("status", status);
+    if (beds) qs.set("beds", beds);
+    if (size) qs.set("size", size);
+    if (sort !== "newest") qs.set("sort", sort);
+    const url = qs.toString() ? "/properties?" + qs.toString() : "/properties";
+    window.history.replaceState(null, "", url);
+  }, [q, city, status, beds, size, sort]);
+
+  // Cities come only from the active listings, so Mangla and Kashmir,
+  // which have projects but no property listings, never appear here.
+  const cities = useMemo(() => {
+    const seen: string[] = [];
+    for (const l of listings) if (!seen.includes(l.city)) seen.push(l.city);
+    return seen;
+  }, [listings]);
+  const sizes = useMemo(() => {
+    const seen: string[] = [];
+    for (const l of listings) if (!seen.includes(l.size)) seen.push(l.size);
+    return seen;
+  }, [listings]);
 
   const results = useMemo(() => {
     const key = q.trim().toLowerCase();
-    return listings.filter((l) => {
+    const out = listings.filter((l) => {
       if (city && l.city !== city) return false;
       if (status && l.status !== status) return false;
       if (beds) {
@@ -45,7 +98,17 @@ export default function PropertiesPage() {
       }
       return true;
     });
-  }, [listings, q, city, status, beds, size]);
+    if (sort === "price-low") out.sort((a, b) => a.n - b.n);
+    if (sort === "price-high") out.sort((a, b) => b.n - a.n);
+    if (sort === "size-small") out.sort((a, b) => sizeSqft(a.size) - sizeSqft(b.size));
+    if (sort === "size-large") out.sort((a, b) => sizeSqft(b.size) - sizeSqft(a.size));
+    return out;
+  }, [listings, q, city, status, beds, size, sort]);
+
+  const anyFilter = q.trim() !== "" || city !== "" || status !== "" || beds !== "" || size !== "" || sort !== "newest";
+  function clearFilters() {
+    setQ(""); setCity(""); setStatus(""); setBeds(""); setSize(""); setSort("newest");
+  }
 
   return (
     <div>
@@ -54,30 +117,36 @@ export default function PropertiesPage() {
 
       <div className="grid gap-2 mt-4 sm:grid-cols-2 lg:grid-cols-6 bg-gray-50 border border-gray-200 rounded-lg p-3">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search listings" aria-label="Search listings by word, area or society" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px] lg:col-span-2" />
-        <select value={city} onChange={(e) => setCity(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+        <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="City" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
           <option value="">All cities</option>
-          {CITIES.filter(Boolean).map((c) => <option key={c} value={c}>{c}</option>)}
+          {cities.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+        <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="For sale or rent" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
           <option value="">For sale or rent</option>
           <option value="sale">For sale</option>
           <option value="rent">For rent</option>
         </select>
-        <select value={beds} onChange={(e) => setBeds(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+        <select value={beds} onChange={(e) => setBeds(e.target.value)} aria-label="Bedrooms" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
           <option value="">Any beds</option>
           <option value="2">2 beds</option>
           <option value="3">3 beds</option>
           <option value="4">4 beds</option>
           <option value="5+">5+ beds</option>
         </select>
-        <select value={size} onChange={(e) => setSize(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+        <select value={size} onChange={(e) => setSize(e.target.value)} aria-label="Size" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
           <option value="">Any size</option>
-          <option value="4 Marla">4 Marla</option>
-          <option value="5 Marla">5 Marla</option>
-          <option value="6 Marla">6 Marla</option>
-          <option value="10 Marla">10 Marla</option>
-          <option value="1 Kanal">1 Kanal</option>
+          {sizes.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
+      </div>
+
+      <div className="flex gap-2 mt-3 flex-wrap items-center">
+        <label htmlFor="sort" className="text-sm font-bold text-gray-700">Sort by</label>
+        <select id="sort" value={sort} onChange={(e) => setSort(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-h-[48px]">
+          {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+        </select>
+        {anyFilter ? (
+          <button type="button" onClick={clearFilters} className="btn btn-outline-navy">Clear filters</button>
+        ) : null}
       </div>
 
       <p className="mt-4 text-sm font-semibold">
@@ -99,5 +168,13 @@ export default function PropertiesPage() {
         ))}
       </div>
     </div>
+  );
+}
+
+export default function Properties() {
+  return (
+    <Suspense fallback={<p className="mt-4 text-sm text-gray-600">Loading properties...</p>}>
+      <PropertiesPage />
+    </Suspense>
   );
 }
