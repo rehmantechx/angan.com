@@ -8,7 +8,38 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Small polish only: same focus ring and card lift everywhere. */
+/* Premium Anngan buttons: one look everywhere. Red is the action,
+   navy is the office, green-700 is WhatsApp. All are 48px tall so a
+   finger never misses, with a clear shadow and a hover state. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.625rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 38, 62, 0.25);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.btn:hover { box-shadow: 0 4px 12px rgba(0, 38, 62, 0.25); }
+.btn:active { transform: translateY(1px); }
+.btn-red { background: #DD3333; color: #fff; }
+.btn-red:hover { background: #C81E1E; }
+.btn-navy { background: #004274; color: #fff; }
+.btn-navy:hover { background: #003257; }
+.btn-green { background: #15803D; color: #fff; }
+.btn-green:hover { background: #166534; }
+.btn-outline-red { background: #fff; color: #C81E1E; border: 2px solid #DD3333; box-shadow: none; }
+.btn-outline-red:hover { background: #FEF2F2; }
+.btn-outline-navy { background: #fff; color: #004274; border: 2px solid #004274; box-shadow: none; }
+.btn-outline-navy:hover { background: #EFF6FF; }
+.btn-sky { background: #38BDF8; color: #004274; }
+.btn-sky:hover { background: #7DD3FC; }
+
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
