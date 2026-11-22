@@ -364,7 +364,7 @@ export default function Home() {
                 {p.img ? <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover" loading="lazy" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" /> : (
                   <div className="w-full h-48 bg-navy flex flex-col items-center justify-center text-white px-4 text-center">
                     <span className="font-bold text-base">{p.name}</span>
-                    <span className="text-sm text-white/80 mt-1">996 shops</span>
+                    <span className="text-sm text-white/80 mt-1">No photo yet</span>
                   </div>
                 )}
                 <div className="p-4">
@@ -468,8 +468,8 @@ export default function Home() {
                 <Image src={`/img/${p.img}`} alt={p.name} width={256} height={192} className="w-28 h-24 object-cover rounded shrink-0" loading="lazy" sizes="112px" />
               ) : (
                 <div className="w-28 h-24 bg-navy rounded shrink-0 flex flex-col items-center justify-center text-white px-2 text-center">
-                  <span className="text-xs font-bold">Pak China Grain Market</span>
-                  <span className="text-xs text-white/80 mt-1">996 shops</span>
+                  <span className="text-xs font-bold">{p.name}</span>
+                  <span className="text-xs text-white/80 mt-1">No photo yet</span>
                 </div>
               )}
               <div className="min-w-0">
