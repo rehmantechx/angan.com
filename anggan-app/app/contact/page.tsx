@@ -14,22 +14,22 @@ export default function ContactPage() {
           href="https://wa.me/923041111698"
           target="_blank"
           rel="noopener"
-          className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm block"
+          className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm block flex flex-col"
         >
           <p className="font-bold text-navy text-lg">WhatsApp us first</p>
           <p className="text-sm text-gray-600 mt-1">
             Message the office on WhatsApp at +92 304 1111 698. Tell us the project
             or property you are asking about.
           </p>
-          <p className="text-green-700 font-semibold mt-2">Open WhatsApp</p>
+          <span className="mt-auto pt-3 flex"><span className="btn btn-green">Open WhatsApp</span></span>
         </a>
-        <a href="tel:+923041111698" className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm block">
+        <a href="tel:+923041111698" className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm block flex flex-col">
           <p className="font-bold text-navy text-lg">Call the office</p>
           <p className="text-sm text-gray-600 mt-1">
             Call +92 304 1111 698 for files, prices and payment plans. File rates
             change with the market, so call for today's rate.
           </p>
-          <p className="text-anngan-dark font-semibold mt-2">Call now</p>
+          <span className="mt-auto pt-3 flex"><span className="btn btn-navy">Call now</span></span>
         </a>
       </div>
 
