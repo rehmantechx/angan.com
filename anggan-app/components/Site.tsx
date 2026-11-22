@@ -73,7 +73,7 @@ export function Header() {
         </div>
       </div>
       <div className="bg-white">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2 sm:gap-3">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-1.5 sm:gap-3">
           <Link href="/" className="flex items-center shrink-0 min-w-0" aria-label="Anngan home">
             <Image
               src="/img/logo.png"
@@ -81,13 +81,13 @@ export function Header() {
               width={1200}
               height={231}
               priority
-              className="h-9 sm:h-[54px] w-auto max-w-[140px] sm:max-w-[280px] object-contain"
+              className="h-9 sm:h-[54px] w-auto max-w-[110px] min-[400px]:max-w-[140px] sm:max-w-[280px] object-contain"
             />
           </Link>
-          <div className="flex gap-2 ml-auto shrink-0">
+          <div className="flex gap-1.5 sm:gap-2 ml-auto shrink-0">
             <a
               href="tel:+923041111698"
-              className="btn btn-navy text-xs sm:text-sm px-2.5 sm:px-3 whitespace-nowrap"
+              className="btn btn-navy text-xs sm:text-sm px-2 sm:px-3 whitespace-nowrap"
               aria-label="Call Anngan on +92 304 1111 698"
             >
               Call<span className="hidden sm:inline">&nbsp;+92 304 1111 698</span>
@@ -96,7 +96,7 @@ export function Header() {
               href="https://wa.me/923041111698"
               target="_blank"
               rel="noopener"
-              className="btn btn-green text-xs sm:text-sm px-2.5 sm:px-3 whitespace-nowrap"
+              className="btn btn-green text-xs sm:text-sm px-2 sm:px-3 whitespace-nowrap"
             >
               WhatsApp
             </a>
