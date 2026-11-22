@@ -120,13 +120,11 @@ export default function AdminPage() {
 
   return (
     <div>
-      <div className="flex items-baseline gap-3 flex-wrap">
+      <div className="flex items-baseline gap-3 flex-wrap min-w-0">
         <h1 className="text-3xl font-bold text-navy">Dashboard</h1>
-        <span className="text-sm text-gray-600">
-          Signed in as {user.name} ({user.email}) : {user.role}
-          {isDemo ? " : Demo user, view only" : ""}
+        <span className="text-sm text-gray-600 min-w-0 break-words">
+          Signed in as {user.email} · {user.role}
         </span>
-        <span className="text-xs text-gray-600">Your user id: {user.uid}</span>
       </div>
       {isDemo ? (
         <div className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3 flex gap-3 items-center flex-wrap">
@@ -142,7 +140,7 @@ export default function AdminPage() {
       {user.role === "View only" && !isDemo && firebaseOn() ? (
         <p className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">
           Your role is View only. To change listings, the owner must raise your role in the Firebase console:
-          Firestore, collection users, document {user.uid}, field role, set to Full access or Staff.
+          Firestore, collection users, your user document, field role, set to Full access or Staff.
         </p>
       ) : null}
       {!isDemo && !firebaseOn() ? (
