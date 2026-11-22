@@ -186,15 +186,15 @@ export function Header() {
                 </Link>
               )}
             </nav>
-            <div className="px-4 pb-4 flex gap-2">
-              <a href="tel:+923041111698" className="btn btn-red flex-1 text-center">
+            <div className="px-4 pb-4 flex flex-col gap-2">
+              <a href="tel:+923041111698" className="btn btn-red w-full text-center">
                 Call +92 304 1111 698
               </a>
               <a
                 href="https://wa.me/923041111698"
                 target="_blank"
                 rel="noopener"
-                className="btn btn-green flex-1 text-center"
+                className="btn btn-green w-full text-center"
               >
                 WhatsApp
               </a>
