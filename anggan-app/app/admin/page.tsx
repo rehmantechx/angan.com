@@ -607,6 +607,9 @@ function SettingsForm({ initial, canEdit, onSave }: { initial: OfficeSettings; c
   const [email, setEmail] = useState(initial.email);
   const [address, setAddress] = useState(initial.address);
   const [ceo, setCeo] = useState(initial.ceo);
+  // View only users see the values but cannot change them, so their
+  // inputs look disabled: muted gray fill, muted text, not-allowed cursor.
+  const fieldCls = canEdit ? inputCls : inputCls + " bg-gray-100 text-gray-500 cursor-not-allowed";
   return (
     <form
       className="mt-4 grid gap-3 w-full max-w-xl min-w-0"
@@ -616,10 +619,10 @@ function SettingsForm({ initial, canEdit, onSave }: { initial: OfficeSettings; c
       }}
     >
       <h2 className="font-bold text-lg">Office settings</h2>
-      <label className="text-sm">Phone<input disabled={!canEdit} value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} /></label>
-      <label className="text-sm">Email<input disabled={!canEdit} value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} /></label>
-      <label className="text-sm">Office address<input disabled={!canEdit} value={address} onChange={(e) => setAddress(e.target.value)} className={inputCls} /></label>
-      <label className="text-sm">CEO<input disabled={!canEdit} value={ceo} onChange={(e) => setCeo(e.target.value)} className={inputCls} /></label>
+      <label className="text-sm">Phone<input disabled={!canEdit} value={phone} onChange={(e) => setPhone(e.target.value)} className={fieldCls} /></label>
+      <label className="text-sm">Email<input disabled={!canEdit} value={email} onChange={(e) => setEmail(e.target.value)} className={fieldCls} /></label>
+      <label className="text-sm">Office address<input disabled={!canEdit} value={address} onChange={(e) => setAddress(e.target.value)} className={fieldCls} /></label>
+      <label className="text-sm">CEO<input disabled={!canEdit} value={ceo} onChange={(e) => setCeo(e.target.value)} className={fieldCls} /></label>
       {canEdit ? <button className={btnRed + " w-fit"}>Save settings</button> : <p className="text-sm text-gray-600">Your role is View only. You can see settings but not change them.</p>}
     </form>
   );
