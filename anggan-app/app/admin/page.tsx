@@ -156,7 +156,7 @@ export default function AdminPage() {
       </div>
       {isDemo ? (
         <div className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3 flex gap-3 items-center flex-wrap">
-          <span className="flex-1 min-w-0 break-words">Demo mode, view only. Changes are not saved. Sign in with Google for the real office dashboard.</span>
+          <span className="flex-1 min-w-0 break-words">Demo mode, view only. Changes are not saved. Sign in with an authorized office account for the real office dashboard.</span>
           <button
             className="bg-navy text-white px-3 py-2 rounded min-h-[48px] inline-flex items-center text-sm"
             onClick={async () => { await signOut(); router.push("/admin/login"); }}
