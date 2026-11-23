@@ -6,9 +6,8 @@ import Link from "next/link";
 import { getProjects } from "../lib/db";
 import { Project, PROJECTS, LISTINGS } from "../lib/seed";
 import { ProjectFallback } from "../components/ProjectFallback";
-import { ListingCard } from "../components/ListingCard";
 import { AGENCIES } from "../lib/seed";
-import { CalcIcon, LoanIcon, ConvertIcon, FileIcon, PhoneIcon, WhatsAppIcon, BuildingIcon, HomeIcon, UsersIcon, MapIcon } from "../lib/icons";
+import { PhoneIcon, WhatsAppIcon, BuildingIcon, HomeIcon, UsersIcon, MapIcon } from "../lib/icons";
 
 // Hero background slider, like the original anngan.com: the photo
 // changes every 10 seconds, crossfade, loop. Real photos only, all
@@ -162,7 +161,6 @@ export default function Home() {
     return () => clearTimeout(t);
   }, []);
 
-  const featured = LISTINGS.filter((l) => l.liveStatus === "live").slice(0, 6);
   const mgh = projects.find((p) => p.id === "proj-1");
   const otherProjects = projects.filter((p) => p.id !== "proj-1");
 
@@ -349,40 +347,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PIC-01: Featured Properties, 6 real listings, photo first.
-          Restored on the audit order, superseding the earlier
-          remove-listings-from-home order. */}
-      <section className="mt-10" aria-label="Featured properties">
-        <div className="flex items-baseline justify-between flex-wrap gap-2">
-          <h2 className="text-2xl font-bold text-navy">Featured properties</h2>
-          <Link href="/properties" className="text-anngan-dark font-semibold text-sm">All 12 properties &rarr;</Link>
-        </div>
-        <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((l) => (<ListingCard key={l.id} l={l} />))}
-        </div>
-      </section>
-
-      {/* PIC-01: Property Tools as visual icon cards, not an empty strip. */}
-      <section className="mt-10" aria-label="Property tools">
-        <div className="flex items-baseline justify-between flex-wrap gap-2">
-          <h2 className="text-2xl font-bold text-navy">Property tools</h2>
-          <Link href="/tools" className="text-anngan-dark font-semibold text-sm">Open tools &rarr;</Link>
-        </div>
-        <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
-          {[
-            { href: "/tools#cost", icon: <CalcIcon size={36} />, name: "Calculator" },
-            { href: "/tools#loan", icon: <LoanIcon size={36} />, name: "Loan" },
-            { href: "/tools#area", icon: <ConvertIcon size={36} />, name: "Marla converter" },
-            { href: "/tools#finder", icon: <FileIcon size={36} />, name: "Plot finder" },
-          ].map((t) => (
-            <Link key={t.name} href={t.href} className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden hover:shadow-md block">
-              <span className="block bg-navy px-5 pt-5 pb-4 text-[#DDB78B]">{t.icon}</span>
-              <span className="block w-10 h-1 bg-anngan ml-5 -mt-0.5" aria-hidden="true" />
-              <span className="block p-4 font-bold text-navy">{t.name} &rarr;</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+      {/* 2026-11-23 user order: Featured Properties and Property Tools
+          REMOVED from home. Home is pictorial, like the old anngan.com,
+          for dealers who cannot read English: hero, search, Browse by
+          city, Societies, Our projects, Who is Anngan. Listings stay
+          live at /properties (all 12) and tools stay live at /tools;
+          nothing was deleted, only the two home sections. */}
 
       {/* PIC-01: compact Societies and partner agencies strip. Societies
           are real photo chips; agencies are their real logos from the
