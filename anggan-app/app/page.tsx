@@ -239,18 +239,18 @@ export default function Home() {
           />
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/20 to-navy/60 pointer-events-none" aria-hidden="true" />
-        <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-10">
-          <h1 className="text-white text-3xl md:text-4xl font-extrabold max-w-[22ch] leading-tight">
+        <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-10 text-center">
+          <h1 className="text-white text-3xl md:text-4xl font-extrabold max-w-[22ch] mx-auto leading-tight">
             Property for sale and rent in Pakistan
           </h1>
           <p className="text-white text-lg md:text-xl font-light mt-2">
             Pakistan&apos;s Most Trusted Real Estate Service Providers
           </p>
-          <p className="text-blue-100 mt-2 max-w-[70ch]">
+          <p className="text-blue-100 mt-2 max-w-[70ch] mx-auto">
             Search real listings and projects from Anngan, in Karachi, Lahore, Islamabad, Rawalpindi, Multan, Mangla and Kashmir.
           </p>
-          <div className="bg-white rounded-lg p-3 mt-4 shadow-xl border-t-4 border-anngan">
-            <div className="flex gap-2 flex-wrap" role="tablist" aria-label="Property status">
+          <div className="bg-white rounded-lg p-3 mt-4 shadow-xl border-t-4 border-anngan text-left">
+            <div className="flex gap-2 flex-wrap justify-center" role="tablist" aria-label="Property status">
               <button type="button" role="tab" id="tab-all" aria-controls="search-results" aria-selected={status === "all"} className={tabCls(status === "all")} onClick={() => setStatus("all")}>All Status</button>
               <button type="button" role="tab" id="tab-sale" aria-controls="search-results" aria-selected={status === "sale"} className={tabCls(status === "sale")} onClick={() => setStatus("sale")}>For Sale</button>
               <button type="button" role="tab" id="tab-rent" aria-controls="search-results" aria-selected={status === "rent"} className={tabCls(status === "rent")} onClick={() => setStatus("rent")}>For Rent</button>
@@ -287,9 +287,11 @@ export default function Home() {
                 </select>
               </div>
             </div>
-            <button type="button" onClick={doSearch} className="btn btn-red px-8 mt-3 w-full sm:w-auto">
-              Search
-            </button>
+            <div className="text-center">
+              <button type="button" onClick={doSearch} className="btn btn-red px-8 mt-3 w-full sm:w-auto">
+                Search
+              </button>
+            </div>
             {bedsDisabled ? <p className="text-sm text-gray-600 mt-2">Bedrooms do not apply to plots, files or shops.</p> : null}
             {filtersChanged ? <p className="text-sm font-semibold text-navy mt-2">Filters changed. Click Search to update results.</p> : null}
             {searchResults.note ? <p className="text-sm font-semibold text-navy mt-2" role="status">{searchResults.note}</p> : null}
