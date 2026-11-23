@@ -168,7 +168,7 @@ function PropertiesPage() {
         {budget ? (
           <span className="bg-navy text-white text-sm rounded-full px-3 py-2 inline-flex items-center gap-2">
             Budget: {budgetLabel}
-            <button type="button" onClick={() => setBudget("")} aria-label="Clear budget filter" className="font-bold min-w-[24px] min-h-[24px]">✕</button>
+            <button type="button" onClick={() => setBudget("")} aria-label="Clear budget filter" className="font-bold min-w-[24px] min-h-[24px] inline-flex items-center justify-center"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg></button>
           </span>
         ) : null}
       </div>

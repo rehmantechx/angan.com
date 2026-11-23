@@ -392,9 +392,9 @@ export default function Home() {
         <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
           {[
             { name: "DHA Lahore", img: "lst-dha-stunning.jpg", href: "/properties?q=DHA" },
-            { name: "Bahria Town", img: "lst-bahria-luxury.jpg", href: "/properties?q=Bahria" },
+            { name: "Bahria Town", img: "bahria-eiffel.jpg", href: "/properties?q=Bahria" },
             { name: "MGH Pakistan", img: "mgh-lake-aerial.jpg", href: "/projects/proj-1" },
-            { name: "Kashmir Modern City", img: "kmc-01.jpg", href: "/projects/proj-7" },
+            { name: "Kashmir Modern City", img: "city-kashmir-neelum.jpg", href: "/projects/proj-7" },
           ].map((c) => (
             <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm aspect-[4/3] bg-navy">
               <Image src={`/img/${c.img}`} alt={c.name} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover" />

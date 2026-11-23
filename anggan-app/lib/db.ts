@@ -353,11 +353,27 @@ export async function deleteListing(id: string): Promise<void> {
 }
 
 // ---- Projects, blogs, agencies, services ----
+// Live-verification fix (23 Nov): Firestore project docs were seeded
+// before lib/seed.ts gained cardImg, so a live doc has no cardImg and
+// the public pages rendered p.img instead, the old Al Ghani green
+// banner and the dense Global Homes flyer. The seed is the source of
+// truth for the clean card photo, so merge it in whenever a loaded row
+// omits it. Fields the row actually has are never overridden, and a
+// row with no seed match passes through unchanged.
+function mergeSeedProjects(rows: Project[]): Project[] {
+  return rows.map((r) => {
+    const seed = PROJECTS.find((p) => p.id === r.id);
+    if (!seed) return r;
+    return { ...seed, ...r, cardImg: r.cardImg || seed.cardImg, img: r.img || seed.img };
+  });
+}
+
 export async function getProjects(): Promise<Project[]> {
   if (demoMode) return demoStore().projects;
 
   const rows = await readCollection<Project>("projects");
-  return rows && rows.length > 0 ? rows : loadLocal().projects;
+  if (rows && rows.length > 0) return mergeSeedProjects(rows);
+  return mergeSeedProjects(loadLocal().projects);
 }
 
 export async function getBlogs(): Promise<Blog[]> {
