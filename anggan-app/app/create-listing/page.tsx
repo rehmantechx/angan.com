@@ -4,7 +4,31 @@ import { useAuth } from "../../lib/auth";
 import { DEMO_EMAIL } from "../../lib/auth-context";
 import { saveListing } from "../../lib/db";
 import { isValidPakPhone } from "../../components/EnquiryForm";
+import { GoogleButton } from "../../components/GoogleButton";
 import Link from "next/link";
+
+// VIS-06: 3 quick visual steps, so a dealer sees in one glance how
+// listing works: photo, details, then office approval on WhatsApp.
+function ListSteps() {
+  const steps = [
+    { n: "1", t: "Photo", d: "Add photos of your property" },
+    { n: "2", t: "Details", d: "Title, price, city and beds" },
+    { n: "3", t: "WhatsApp / Approval", d: "Office approves, buyers WhatsApp you" },
+  ];
+  return (
+    <ol className="grid gap-2 sm:grid-cols-3 mt-4">
+      {steps.map((s) => (
+        <li key={s.n} className="border border-gray-200 rounded-lg p-3 bg-white flex gap-3 items-start">
+          <span className="bg-navy text-white font-bold rounded-full w-8 h-8 shrink-0 flex items-center justify-center">{s.n}</span>
+          <span>
+            <span className="block font-bold text-navy">{s.t}</span>
+            <span className="block text-sm text-gray-600">{s.d}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
 
 const inputCls = "border border-gray-300 rounded px-3 py-2 w-full min-w-0";
 
@@ -38,7 +62,10 @@ export default function CreateListingPage() {
         <h1 className="text-3xl font-bold text-navy">List a property</h1>
         <p className="mt-2">You need an account to list a property. Sign in first, then your listing goes to the office for approval.</p>
         <p className="mt-2 text-sm text-gray-600">Nothing goes live without office approval.</p>
-        <Link href="/signin?return=/create-listing" className="inline-block bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center mt-4">Sign in with Google</Link>
+        <ListSteps />
+        <div className="mt-4">
+          <GoogleButton label="Sign in with Google" href="/signin?return=/create-listing" />
+        </div>
       </div>
     );
   }
@@ -105,6 +132,7 @@ export default function CreateListingPage() {
   return (
     <div className="w-full max-w-full min-w-0">
       <h1 className="text-3xl font-bold text-navy">List a property</h1>
+      <ListSteps />
       {user.demo || user.email === DEMO_EMAIL ? (
         <p className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">Demo, view only. You can see the form, but you cannot send a listing. Sign in with an authorized office account to send one.</p>
       ) : null}

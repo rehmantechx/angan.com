@@ -3,6 +3,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../lib/auth";
+import { GoogleButton } from "../../components/GoogleButton";
 
 // Public sign-in, for people who want to list a property. This is NOT
 // the office login: it never says "Office team only", and it never sends
@@ -38,9 +39,9 @@ function SignInInner() {
       </p>
       {error ? <p role="alert" className="bg-red-50 text-red-800 text-sm rounded p-3 mt-4">{error}</p> : null}
       <div className="grid gap-3 mt-4">
-        <button
+        <GoogleButton
+          label={busy ? "Signing in..." : "Continue with Google"}
           disabled={busy}
-          className="bg-navy text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center justify-center disabled:opacity-50"
           onClick={async () => {
             setBusy(true);
             setError("");
@@ -48,9 +49,7 @@ function SignInInner() {
             setBusy(false);
             if (err) setError(err);
           }}
-        >
-          {busy ? "Signing in..." : "Continue with Google"}
-        </button>
+        />
         <Link href="/properties" className="text-anngan-dark font-semibold text-sm text-center">Browse properties without signing in</Link>
       </div>
     </div>

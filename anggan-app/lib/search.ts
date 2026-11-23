@@ -45,6 +45,10 @@ export function matchesKey(hay: string, key: string): boolean {
 export function budgetOK(l: Listing, bud: string): boolean {
   if (!bud) return true;
   if (l.status === "rent") return true;
+  // Home search values: under-1cr / 1cr-5cr / above-5cr.
+  if (bud === "under-1cr") return l.n < 10000000;
+  if (bud === "1cr-5cr") return l.n >= 10000000 && l.n < 50000000;
+  if (bud === "above-5cr") return l.n >= 50000000;
   if (bud.startsWith("Under")) return l.n < 10000000;
   if (bud.startsWith("Rs 1 to 3")) return l.n >= 10000000 && l.n < 30000000;
   if (bud.startsWith("Rs 3 to 5")) return l.n >= 30000000 && l.n < 50000000;

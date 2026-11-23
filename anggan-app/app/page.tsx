@@ -14,13 +14,18 @@ import { CalcIcon, LoanIcon, ConvertIcon, FileIcon, PhoneIcon, WhatsAppIcon, Bui
 // changes every 10 seconds, crossfade, loop. Real photos only, all
 // already in the repo, no AI, no fake. No video, no new section, same
 // hero, same text, no search box. Order is fixed: Mangla lake,
-// Urban City, MGH Precinct 01, Bahria Sky, Kashmir Modern City.
+// Urban City, MGH Precinct 01, Bahria Sky, Neelum Valley Kashmir.
+// VIS-07: slide 5 was kmc-01.jpg, Kashmir Modern City, which carries
+// old anngan.com and MODERN CITY watermarks in the top corners. All
+// three kmc photos carry the same watermarks, so slide 5 is now the
+// clean, unwatermarked Neelum Valley photo already used on the
+// Kashmir city card.
 const HERO_PHOTOS = [
   { src: "/img/mgh-lake-aerial.jpg", alt: "Mangla Lake aerial view, MGH Pakistan" },
   { src: "/img/urban-drone.jpg", alt: "Urban City, Lahore, drone view" },
   { src: "/img/mgh-precinct-01.jpg", alt: "MGH Pakistan, Precinct 01, Mangla" },
   { src: "/img/chinatown-bahria-sky.jpg", alt: "Bahria Sky, where China Town is located" },
-  { src: "/img/kmc-01.jpg", alt: "Kashmir Modern City, Mirpur" },
+  { src: "/img/city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir" },
 ];
 
 // Pictorial city cards: for people who cannot read English, a big
@@ -79,8 +84,8 @@ export default function Home() {
     if (searchCity) qs.set("city", searchCity);
     if (searchStatus) qs.set("status", searchStatus);
     if (searchBeds) qs.set("beds", searchBeds);
-    // NOTE: /properties has no budget filter yet, so budget is carried
-    // in the URL as budget= for now and is not applied there.
+    // Budget is applied on /properties by budgetOK (under-1cr /
+    // 1cr-5cr / above-5cr, sale only, rent always passes).
     if (searchBudget) qs.set("budget", searchBudget);
     const url = qs.toString() ? "/properties?" + qs.toString() : "/properties";
     router.push(url);
@@ -173,12 +178,15 @@ export default function Home() {
           the page about 15px wider than the viewport.
           Search lives BELOW the hero in the old-style panel, and it
           goes to /properties: no listing cards render on home. */}
-      {/* Hero is compact so header + hero + search fit one desktop
-          screen (1280x800): hero about 340px at desktop, 300px on
-          mobile, text centred vertically with breathing room, not a
-          thin strip and not too large. */}
+      {/* Hero is compact so header + hero + search + the Browse by
+          city heading and first row fit one desktop screen
+          (1280x800): hero about 260px at desktop, 240px on mobile,
+          text centred vertically with breathing room, not a thin
+          strip and not too large. URGENT 2026-11-23: the city cards
+          were cut off below the fold, so the hero was cut from 340px
+          to 260px and the city cards from 4/3 to 16/10. */}
       <section
-        className="relative w-full bg-navy overflow-hidden min-h-[300px] md:min-h-[340px] flex flex-col justify-center"
+        className="relative w-full bg-navy overflow-hidden min-h-[240px] md:min-h-[260px] flex flex-col justify-center"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
@@ -220,7 +228,7 @@ export default function Home() {
           />
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/20 to-navy/60 pointer-events-none" aria-hidden="true" />
-        <div className="relative w-full max-w-6xl mx-auto px-4 py-6 md:py-8 text-center">
+        <div className="relative w-full max-w-6xl mx-auto px-4 py-5 md:py-6 text-center">
           <h1 className="text-white text-2xl sm:text-4xl md:text-5xl font-extrabold mx-auto leading-tight md:whitespace-nowrap">
             WELCOME TO ANNGAN.COM
           </h1>
@@ -269,7 +277,7 @@ export default function Home() {
             </button>
           ))}
         </div>
-        <form onSubmit={submitSearch} className="max-w-4xl mx-auto mt-0 bg-white rounded-lg shadow p-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-5 items-end">
+        <form onSubmit={submitSearch} className="max-w-4xl mx-auto mt-0 bg-white rounded-lg shadow p-2 grid gap-2 grid-cols-2 lg:grid-cols-5 items-end">
           <div>
             <label htmlFor="search-type" className="block text-xs font-bold tracking-wide text-gray-600">LOOKING FOR</label>
             <select id="search-type" value={searchType} onChange={(e) => setSearchType(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[36px]">
@@ -310,7 +318,7 @@ export default function Home() {
               <option value="above-5cr">Above Rs 5 Crore</option>
             </select>
           </div>
-          <button type="submit" className="btn btn-red w-full">Search</button>
+          <button type="submit" className="btn btn-red w-full col-span-2 lg:col-span-1">Search</button>
         </form>
       </section>
 
@@ -318,21 +326,21 @@ export default function Home() {
           photo, click it and you are on that city's listings. Put
           right after the search panel, before Our projects, so it is
           the first thing a visitor sees after the hero and search. */}
-      <section className="mt-10" aria-label="Browse by city">
-        <h2 className="text-2xl font-bold text-navy text-center">Browse by city</h2>
-        <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
+      <section className="mt-6" aria-label="Browse by city">
+        <h2 className="text-xl font-bold text-navy text-center">Browse by city</h2>
+        <div className="grid gap-4 mt-3 grid-cols-2 lg:grid-cols-4">
           {CITY_CARDS.map((c) => {
             const n = c.kind === "listings" ? cityCount(c.name) : c.kind === "all" ? LISTINGS.filter((l) => l.liveStatus === "live").length : 0;
             return (
-              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.sub}, open project` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
+              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[16/10] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.sub}, open project` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
                 <Image src={`/img/${c.img}`} alt={c.alt} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover" />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                 <span className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                  <span className="block text-xl md:text-2xl font-extrabold leading-tight drop-shadow">{c.name}</span>
+                  <span className="block text-lg md:text-xl font-extrabold leading-tight drop-shadow">{c.name}</span>
                   {c.kind === "project" ? (
-                    <span className="block text-sm font-semibold mt-0.5">{c.sub} &rarr;</span>
+                    <span className="block text-xs font-semibold mt-0.5">{c.sub} &rarr;</span>
                   ) : (
-                    <span className="block text-sm font-semibold mt-0.5">{n} {n === 1 ? "home" : "homes"} &rarr;</span>
+                    <span className="block text-xs font-semibold mt-0.5">{n} {n === 1 ? "home" : "homes"} &rarr;</span>
                   )}
                 </span>
               </Link>
@@ -437,7 +445,7 @@ export default function Home() {
           {otherProjects.map((p) => (
             <article key={p.id} className="card border border-gray-200 rounded-lg bg-white shadow-sm p-4 flex gap-4 items-start h-full">
               {p.img ? (
-                <Image src={`/img/${p.img}`} alt={p.name} width={256} height={192} className="w-28 h-24 object-cover rounded shrink-0" loading="lazy" sizes="112px" />
+                <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} width={256} height={192} className="w-28 h-24 object-cover rounded shrink-0" loading="lazy" sizes="112px" />
               ) : (
                 <ProjectFallback name={p.name} loc={p.loc} className="w-28 h-24 rounded shrink-0" compact />
               )}
@@ -453,7 +461,7 @@ export default function Home() {
       <section className="mt-10">
         <div className="grid gap-6 md:grid-cols-2 items-center">
           <div className="flex justify-center md:justify-start">
-            <Image src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full md:w-auto md:max-h-[300px] h-auto object-contain rounded-lg bg-white p-2 pt-3" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+            <Image src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={773} className="w-full md:w-auto md:max-h-[300px] h-auto object-contain object-top rounded-lg bg-white p-2 pt-3" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>

@@ -20,7 +20,7 @@ export default function ProjectsPage() {
         {projects.map((p, i) => (
           <article key={p.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
             {p.img ? (
-              <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover bg-navy" loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+              <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover bg-navy" loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
             ) : (
               <ProjectFallback name={p.name} loc={p.loc} />
             )}

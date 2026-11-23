@@ -6,7 +6,7 @@
 // show no photo: Pak China Grain Market (project) and the Rs 35,000,000 house,
 // which is not among the 12 real listings and is not included here.
 export type Listing = { id: string; title: string; price: string; n: number; beds: number; baths: number; size: string; city: string; loc: string; type: string; status: "sale" | "rent"; img: string; badge: string; url: string; liveStatus: "live" | "pending" | "hidden"; visible: boolean; createdAt: string; submittedBy?: string };
-export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string };
+export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string; cardImg?: string };
 export type Blog = { id: string; date: string; title: string; url: string };
 export type Agency = { id: string; name: string; logo: string; logoUrl?: string };
 export type Service = { id: string; name: string; note: string; page: string };
@@ -259,6 +259,9 @@ export const PROJECTS: Project[] = [
     "city": "Lahore",
     "page": "project-global.html",
     "img": "global-zamzam-2.jpg",
+    // VIS-09: the card cover is a clean photo of the house, cropped
+    // from the real flyer. The full flyer stays inside proj-2.
+    "cardImg": "global-zamzam-house.jpg",
     "note": "Zam Zam City, Lahore. LDA approved."
   },
   {
@@ -268,6 +271,10 @@ export const PROJECTS: Project[] = [
     "city": "Lahore",
     "page": "project-alghani.html",
     "img": "alghani-hero.jpeg",
+    // VIS-04: the card cover is a clean aerial crop of the real
+    // marketing banner, not the tight sign crop. alghani-site.jpeg
+    // is a fake mosque/dome render, never use it.
+    "cardImg": "alghani-aerial.jpg",
     "note": "Bhaini Road, Lahore."
   },
   {

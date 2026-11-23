@@ -5,9 +5,10 @@ const WORK = [
   { title: "Project marketing", img: "mgh-lake-aerial.jpg", alt: "Mangla Lake, MGH Pakistan", note: "MGH Pakistan, Global Homes Lahore, Al Ghani Phase 7, Urban City, China Town, Pak China Grain Market, Kashmir Modern City." },
   { title: "For sale", img: "lst-dha-stunning.jpg", alt: "House in DHA Lahore", note: "Houses, flats and portions in Lahore, Karachi, Rawalpindi, Multan and Islamabad. Real photos, real prices." },
   { title: "For rent", img: "lst-orchard-rent.jpg", alt: "House for rent in Bahria Orchard, Lahore", note: "Houses and portions in Lahore, Rawalpindi and Islamabad. Monthly rent shown." },
-  // Files have no real site photo, only the paper file itself, so this
-  // card is a plain navy block, not a cropped scan of a document.
-  { title: "Files", img: "", alt: "", note: "MGH Zamindar File, Affidavit MGH, Serene Farm Houses. Call for today's file rate." },
+  // VIS-08: the Files card shows a clean thumbnail of the real MGH
+  // Zamindar File allotment letter (the same file shown on proj-1),
+  // not a navy text box.
+  { title: "Files", img: "mgh-zamindar-file.jpg", alt: "MGH Zamindar File allotment letter", note: "MGH Zamindar File, Affidavit MGH, Serene Farm Houses. Call for today's file rate." },
 ];
 
 const FAQ = [
@@ -61,8 +62,8 @@ export default function AboutPage() {
             src="/img/ceo.jpg"
             alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan"
             width={1024}
-            height={683}
-            className="w-full h-auto object-contain bg-white pt-3 px-2"
+            height={773}
+            className="w-full h-auto object-contain object-top bg-white pt-6 px-2"
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
           <figcaption className="text-sm text-gray-600 mt-2">
@@ -93,8 +94,8 @@ export default function AboutPage() {
               <dd className="text-2xl font-bold text-navy">12</dd>
             </div>
             <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white">
-              <dt className="text-xs sm:text-sm text-gray-600">News and blog articles</dt>
-              <dd className="text-2xl font-bold text-navy">23</dd>
+              <dt className="text-xs sm:text-sm text-gray-600">Partner agencies</dt>
+              <dd className="text-2xl font-bold text-navy">13</dd>
             </div>
           </dl>
 
@@ -131,7 +132,7 @@ export default function AboutPage() {
         ))}
       </div>
 
-      <h2 className="text-xl font-bold text-navy mt-10">Watch Mahmood Asghar Cheema on MGH</h2>
+      <h2 className="text-xl font-bold text-navy mt-10">Watch Muhammad Mahmood Cheema on MGH</h2>
       <p className="text-gray-600 text-sm mt-1">
         Short briefings from the Anngan YouTube channel, @annganpk. Tap a
         video to watch it on YouTube, or open the channel.

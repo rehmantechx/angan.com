@@ -4,7 +4,14 @@ import { useSearchParams } from "next/navigation";
 import { getPublicListings } from "../../lib/db";
 import { Listing, LISTINGS } from "../../lib/seed";
 import { ListingCard } from "../../components/ListingCard";
-import { matchesKey } from "../../lib/search";
+import { matchesKey, budgetOK } from "../../lib/search";
+
+const BUDGETS = [
+  { value: "", label: "Any budget" },
+  { value: "under-1cr", label: "Under Rs 1 Crore" },
+  { value: "1cr-5cr", label: "Rs 1 Crore to Rs 5 Crore" },
+  { value: "above-5cr", label: "Above Rs 5 Crore" },
+] as const;
 
 // Size in sqft, for sorting: 1 Marla = 272.25 sqft, 1 Kanal = 20 Marla.
 function sizeSqft(size: string): number {
@@ -34,6 +41,7 @@ function PropertiesPage() {
   const [status, setStatus] = useState("");
   const [beds, setBeds] = useState("");
   const [size, setSize] = useState("");
+  const [budget, setBudget] = useState("");
   const [sort, setSort] = useState("newest");
 
   useEffect(() => {
@@ -48,6 +56,7 @@ function PropertiesPage() {
     if (params.get("status")) setStatus(params.get("status") || "");
     if (params.get("beds")) setBeds(params.get("beds") || "");
     if (params.get("size")) setSize(params.get("size") || "");
+    if (params.get("budget")) setBudget(params.get("budget") || "");
     if (params.get("sort")) setSort(params.get("sort") || "newest");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -63,10 +72,11 @@ function PropertiesPage() {
     if (status) qs.set("status", status);
     if (beds) qs.set("beds", beds);
     if (size) qs.set("size", size);
+    if (budget) qs.set("budget", budget);
     if (sort !== "newest") qs.set("sort", sort);
     const url = qs.toString() ? "/properties?" + qs.toString() : "/properties";
     window.history.replaceState(null, "", url);
-  }, [q, city, status, beds, size, sort]);
+  }, [q, city, status, beds, size, budget, sort]);
 
   // Cities come only from the active listings, so Mangla and Kashmir,
   // which have projects but no property listings, never appear here.
@@ -92,6 +102,10 @@ function PropertiesPage() {
         } else if (l.beds !== parseInt(beds, 10)) return false;
       }
       if (size && l.size !== size) return false;
+      // Budget is a sale price (under-1cr / 1cr-5cr / above-5cr from
+      // the home search). Rent listings always pass it: their n is
+      // a monthly rent, not a sale price.
+      if (!budgetOK(l, budget)) return false;
       if (key) {
         const hay = l.title + " " + l.loc + " " + l.city + " " + l.size + " " + l.type;
         if (!matchesKey(hay, key)) return false;
@@ -103,11 +117,12 @@ function PropertiesPage() {
     if (sort === "size-small") out.sort((a, b) => sizeSqft(a.size) - sizeSqft(b.size));
     if (sort === "size-large") out.sort((a, b) => sizeSqft(b.size) - sizeSqft(a.size));
     return out;
-  }, [listings, q, city, status, beds, size, sort]);
+  }, [listings, q, city, status, beds, size, budget, sort]);
 
-  const anyFilter = q.trim() !== "" || city !== "" || status !== "" || beds !== "" || size !== "" || sort !== "newest";
+  const anyFilter = q.trim() !== "" || city !== "" || status !== "" || beds !== "" || size !== "" || budget !== "" || sort !== "newest";
+  const budgetLabel = BUDGETS.find((b) => b.value === budget)?.label || "";
   function clearFilters() {
-    setQ(""); setCity(""); setStatus(""); setBeds(""); setSize(""); setSort("newest");
+    setQ(""); setCity(""); setStatus(""); setBeds(""); setSize(""); setBudget(""); setSort("newest");
   }
 
   return (
@@ -115,7 +130,7 @@ function PropertiesPage() {
       <h1 className="text-3xl font-bold text-navy">Properties</h1>
       <p className="text-gray-600 mt-1">{listings.length} real properties. Only live, approved listings are shown here.</p>
 
-      <div className="grid gap-2 mt-4 sm:grid-cols-2 lg:grid-cols-6 bg-gray-50 border border-gray-200 rounded-lg p-3">
+      <div className="grid gap-2 mt-4 sm:grid-cols-2 lg:grid-cols-7 bg-gray-50 border border-gray-200 rounded-lg p-3">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search listings" aria-label="Search listings by word, area or society" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px] lg:col-span-2" />
         <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="City" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
           <option value="">All cities</option>
@@ -137,6 +152,9 @@ function PropertiesPage() {
           <option value="">Any size</option>
           {sizes.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
+        <select value={budget} onChange={(e) => setBudget(e.target.value)} aria-label="Max. Price" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+          {BUDGETS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
+        </select>
       </div>
 
       <div className="flex gap-2 mt-3 flex-wrap items-center">
@@ -146,6 +164,12 @@ function PropertiesPage() {
         </select>
         {anyFilter ? (
           <button type="button" onClick={clearFilters} className="btn btn-outline-navy">Clear filters</button>
+        ) : null}
+        {budget ? (
+          <span className="bg-navy text-white text-sm rounded-full px-3 py-2 inline-flex items-center gap-2">
+            Budget: {budgetLabel}
+            <button type="button" onClick={() => setBudget("")} aria-label="Clear budget filter" className="font-bold min-w-[24px] min-h-[24px]">✕</button>
+          </span>
         ) : null}
       </div>
 
