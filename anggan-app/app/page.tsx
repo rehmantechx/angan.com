@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getProjects, getSettings } from "../lib/db";
-import { Project, OfficeSettings, PROJECTS, SETTINGS } from "../lib/seed";
+import { Project, OfficeSettings, PROJECTS, SETTINGS, LISTINGS } from "../lib/seed";
 import { ProjectFallback } from "../components/ProjectFallback";
 
 // Hero background slider, like the original anngan.com: the photo
@@ -26,6 +27,35 @@ export default function Home() {
   // data actually differs.
   const [projects, setProjects] = useState<Project[]>(PROJECTS);
   const [settings, setSettings] = useState<OfficeSettings | null>(SETTINGS);
+
+  // Old-style search panel below the hero. It never renders listings
+  // on home: submit goes to /properties with the filters in the URL.
+  const router = useRouter();
+  const [searchStatus, setSearchStatus] = useState("");
+  const [searchType, setSearchType] = useState("");
+  const [searchCity, setSearchCity] = useState("");
+  const [searchBeds, setSearchBeds] = useState("");
+  const [searchBudget, setSearchBudget] = useState("");
+  // Cities come only from the live listings, so Mangla and Kashmir,
+  // which have projects but no property listings, never appear here.
+  const searchCities = Array.from(
+    new Set(LISTINGS.filter((l) => l.liveStatus === "live").map((l) => l.city))
+  );
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const qs = new URLSearchParams();
+    // /properties matches q against title, area, city, size and type,
+    // so a property type goes as q and actually filters.
+    if (searchType) qs.set("q", searchType);
+    if (searchCity) qs.set("city", searchCity);
+    if (searchStatus) qs.set("status", searchStatus);
+    if (searchBeds) qs.set("beds", searchBeds);
+    // NOTE: /properties has no budget filter yet, so budget is carried
+    // in the URL as budget= for now and is not applied there.
+    if (searchBudget) qs.set("budget", searchBudget);
+    const url = qs.toString() ? "/properties?" + qs.toString() : "/properties";
+    router.push(url);
+  }
 
 
   // Hero slider state. heroPrev is the photo fading out underneath,
@@ -111,9 +141,14 @@ export default function Home() {
           Full width with w-full, because this section is a direct
           child of <main>, not of the content div. No w-screen: 100vw
           counts the classic desktop scrollbar, so the old hero made
-          the page about 15px wider than the viewport. */}
+          the page about 15px wider than the viewport.
+          Search lives BELOW the hero in the old-style panel, and it
+          goes to /properties: no listing cards render on home. */}
+      {/* Hero is TALL like the old anngan.com, not a thin strip:
+          at least 500-600px at desktop, tall on mobile too, with the
+          text centred vertically and breathing room above and below. */}
       <section
-        className="relative w-full bg-navy overflow-hidden"
+        className="relative w-full bg-navy overflow-hidden min-h-[520px] md:min-h-[600px] flex flex-col justify-center"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
@@ -155,8 +190,8 @@ export default function Home() {
           />
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/20 to-navy/60 pointer-events-none" aria-hidden="true" />
-        <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-10 text-center">
-          <h1 className="text-white text-3xl md:text-4xl font-extrabold max-w-[22ch] mx-auto leading-tight">
+        <div className="relative w-full max-w-6xl mx-auto px-4 py-16 md:py-24 text-center">
+          <h1 className="text-white text-4xl md:text-5xl font-extrabold max-w-[22ch] mx-auto leading-tight">
             WELCOME TO ANNGAN.COM
           </h1>
           <p className="text-white text-lg md:text-xl font-light mt-2">
@@ -177,6 +212,76 @@ export default function Home() {
             </button>
           ))}
         </div>
+      </section>
+
+      {/* Old-style search panel, dark blue band with blue tabs and a
+          white panel, like the old anngan.com. Submit goes to
+          /properties: no listing cards ever render on home. */}
+      <section className="bg-navy px-4 pt-5 pb-8" aria-label="Search properties">
+        <div className="flex justify-center gap-2 flex-wrap" role="tablist" aria-label="For sale or rent">
+          {[
+            { value: "", label: "All Status" },
+            { value: "rent", label: "For Rent" },
+            { value: "sale", label: "For Sale" },
+          ].map((t) => (
+            <button
+              key={t.value || "all"}
+              type="button"
+              role="tab"
+              aria-selected={searchStatus === t.value}
+              onClick={() => setSearchStatus(t.value)}
+              className={
+                "px-4 py-2 min-h-[48px] rounded-t-lg font-bold text-sm text-white " +
+                (searchStatus === t.value ? "bg-[#005F90]" : "bg-[#2F96CD] hover:bg-[#005F90]")
+              }
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <form onSubmit={submitSearch} className="max-w-4xl mx-auto mt-0 bg-white rounded-lg shadow p-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 items-end">
+          <div>
+            <label htmlFor="search-type" className="block text-xs font-bold tracking-wide text-gray-600">LOOKING FOR</label>
+            <select id="search-type" value={searchType} onChange={(e) => setSearchType(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+              <option value="">Property Type</option>
+              <option value="House">House</option>
+              <option value="Flat">Flat</option>
+              <option value="Portion">Portion</option>
+              <option value="Plot">Plot</option>
+              <option value="Commercial">Commercial</option>
+              <option value="File">File</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="search-city" className="block text-xs font-bold tracking-wide text-gray-600">LOCATION</label>
+            <select id="search-city" value={searchCity} onChange={(e) => setSearchCity(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+              <option value="">All Cities</option>
+              {searchCities.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="search-beds" className="block text-xs font-bold tracking-wide text-gray-600">PROPERTY SIZE</label>
+            <select id="search-beds" value={searchBeds} onChange={(e) => setSearchBeds(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+              <option value="">Bedrooms</option>
+              <option value="2">2 beds</option>
+              <option value="3">3 beds</option>
+              <option value="4">4 beds</option>
+              <option value="5+">5+ beds</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="search-budget" className="block text-xs font-bold tracking-wide text-gray-600">YOUR BUDGET</label>
+            <select id="search-budget" value={searchBudget} onChange={(e) => setSearchBudget(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+              <option value="">Max. Price</option>
+              <option value="under-1cr">Under Rs 1 Crore</option>
+              <option value="1cr-5cr">Rs 1 Crore to Rs 5 Crore</option>
+              <option value="above-5cr">Above Rs 5 Crore</option>
+            </select>
+          </div>
+          <button type="submit" className="btn btn-red w-full">Search</button>
+        </form>
       </section>
 
       <div>
