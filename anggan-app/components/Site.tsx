@@ -121,14 +121,14 @@ export function Header() {
                 {l.label}
               </Link>
             ))}
-            <Link href="/create-listing" aria-current={isActive("/create-listing") ? "page" : undefined} className={"btn btn-white px-3 shrink-0 min-h-[40px] py-2 " + (isActive("/create-listing") ? "ring-2 ring-white" : "")}>
+            <Link href="/create-listing" aria-current={isActive("/create-listing") ? "page" : undefined} className={"btn bg-[#2F96CD] hover:bg-[#005F90] text-white px-3 shrink-0 min-h-[40px] py-2 " + (isActive("/create-listing") ? "ring-2 ring-white" : "")}>
               CREATE A LISTING
             </Link>
             {user ? (
               <>
                 {/* FIX-02: DASHBOARD is a clean white text link, not a second
-                    white block. CREATE A LISTING above stays the single
-                    white CTA button, so the two never compete. On the
+                    block. CREATE A LISTING above stays the single blue CTA
+                    button, so the two never compete. On the
                     dashboard it reads as active with bold + underline. */}
                 <Link
                   href="/admin"
@@ -178,7 +178,7 @@ export function Header() {
               <Link
                 href="/create-listing"
                 onClick={() => setMenuOpen(false)}
-                className="btn btn-white mt-2 text-center"
+                className="btn bg-[#2F96CD] hover:bg-[#005F90] text-white mt-2 text-center"
               >
                 CREATE A LISTING
               </Link>

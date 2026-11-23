@@ -315,7 +315,6 @@ export default function Home() {
           the first thing a visitor sees after the hero and search. */}
       <section className="mt-10" aria-label="Browse by city">
         <h2 className="text-2xl font-bold text-navy text-center">Browse by city</h2>
-        <p className="text-gray-600 mt-1 text-center">Click a picture to see homes in that city.</p>
         <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
           {CITY_CARDS.map((c) => {
             const n = c.kind === "listings" ? cityCount(c.name) : 0;
@@ -351,15 +350,8 @@ export default function Home() {
             </div>
             <div className="p-5 md:w-1/2">
               <h3 className="font-bold text-navy text-xl">MGH Pakistan</h3>
-              <p className="text-gray-600 text-sm">Mangla, 7KM Mangla Gaddari Road</p>
-              <div className="flex gap-2 mt-3 flex-wrap">
-                <span className="bg-slate-100 text-navy text-xs font-semibold px-2 py-1 rounded">Zamindar File</span>
-                <span className="bg-slate-100 text-navy text-xs font-semibold px-2 py-1 rounded">Affidavit MGH</span>
-                <span className="bg-slate-100 text-navy text-xs font-semibold px-2 py-1 rounded">Serene Farm Houses</span>
-              </div>
               <div className="flex gap-2 mt-4 flex-wrap">
                 <Link href="/projects/proj-1" className="btn btn-red">Open MGH Pakistan</Link>
-                <a href="tel:+923041111698" className="btn btn-outline-navy">Call for today's file rate</a>
               </div>
             </div>
           </article>
@@ -374,7 +366,6 @@ export default function Home() {
               )}
               <div className="min-w-0">
                 <h3 className="font-bold text-navy">{p.name}</h3>
-                <p className="text-gray-600 text-sm">{p.loc}</p>
                 <Link href={`/projects/${p.id}`} className="btn btn-outline-navy mt-2">Open project</Link>
               </div>
             </article>
@@ -402,9 +393,6 @@ export default function Home() {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>
-            <p className="text-gray-600 mt-2"><b className="text-navy">Anngan</b> is Pakistan&apos;s trusted real estate service provider.</p>
-            <p className="text-gray-600 mt-2"><b>Muhammad Mahmood Cheema</b>, Chairman and Chief Executive Officer</p>
-            <p className="urdu-tagline mt-2" lang="ur">بنائے خواب حقیقت</p>
             <div className="flex gap-2 mt-4 flex-wrap">
               <Link href="/about" className="btn btn-red">Read our story</Link>
             </div>
