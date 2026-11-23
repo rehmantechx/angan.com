@@ -2,21 +2,31 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Listing } from "../lib/seed";
+import { formatPrice, whatsappFor } from "../lib/formatPrice";
+import { BedIcon, BathIcon, SizeIcon, HomeIcon } from "../lib/icons";
 
+// Pictorial dealer card: big photo, bold colour-coded FOR SALE (red)
+// / FOR RENT (blue) pill on the photo, dealer-friendly Crore/Lac
+// price, and bed / bath / size / type as icons, not pipe text.
+// WhatsApp is pre-filled with the exact title, city and price.
 export function ListingCard({ l }: { l: Listing }) {
+  const price = formatPrice(l.n, l.status);
+  const pill = l.status === "rent" ? "FOR RENT" : "FOR SALE";
+  const pillCls = l.status === "rent" ? "bg-[#005F90]" : "bg-anngan";
   return (
     <article className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
       {l.img ? (
-        <Link href={`/properties/${l.id}`} aria-label={l.title}>
-        <Image
-          src={l.img.startsWith("http") ? l.img : `/img/${l.img}`}
-          alt={l.title}
-          width={592}
-          height={444}
-          className="w-full h-48 object-cover bg-navy"
-          loading="lazy"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        />
+        <Link href={`/properties/${l.id}`} aria-label={l.title} className="relative block">
+          <Image
+            src={l.img.startsWith("http") ? l.img : `/img/${l.img}`}
+            alt={l.title}
+            width={592}
+            height={444}
+            className="w-full h-48 object-cover bg-navy"
+            loading="lazy"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+          <span className={`absolute top-3 left-3 ${pillCls} text-white text-xs font-extrabold px-3 py-1.5 rounded-full shadow`}>{pill}</span>
         </Link>
       ) : (
         <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-600 text-sm px-4 text-center">
@@ -24,15 +34,18 @@ export function ListingCard({ l }: { l: Listing }) {
         </div>
       )}
       <div className="p-4 flex flex-col flex-1">
-        <p className="text-anngan-dark font-bold text-lg">{l.price}</p>
+        <p className="text-anngan-dark font-extrabold text-xl">{price}</p>
         <h3 className="font-semibold mt-1 line-clamp-2"><Link href={`/properties/${l.id}`} className="text-navy hover:text-anngan-dark">{l.title}</Link></h3>
         <p className="text-gray-600 text-sm mt-1">{l.loc}</p>
-        <p className="text-gray-600 text-sm mt-2">
-          {l.beds} Beds | {l.baths} Baths | {l.size} | {l.type}
-        </p>
+        <div className="flex gap-3 mt-3 flex-wrap text-sm text-navy font-semibold" aria-label={`${l.beds} beds, ${l.baths} baths, ${l.size}, ${l.type}`}>
+          <span className="inline-flex items-center gap-1"><BedIcon size={18} /> {l.beds} Beds</span>
+          <span className="inline-flex items-center gap-1"><BathIcon size={18} /> {l.baths} Baths</span>
+          <span className="inline-flex items-center gap-1"><SizeIcon size={18} /> {l.size}</span>
+          <span className="inline-flex items-center gap-1"><HomeIcon size={18} /> {l.type}</span>
+        </div>
         <div className="flex gap-2 mt-auto pt-3 flex-wrap">
           <a href="tel:+923041111698" className="btn btn-red">Call</a>
-          <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
+          <a href={whatsappFor(l.title, l.city, price)} target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
           <Link href={`/properties/${l.id}`} className="btn btn-outline-navy">Details</Link>
         </div>
       </div>

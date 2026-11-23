@@ -1,10 +1,13 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LISTINGS } from "../../../lib/seed";
 import { getListingById } from "../../../lib/db";
 import { EnquiryForm } from "../../../components/EnquiryForm";
+import { Lightbox } from "../../../components/Lightbox";
+import { formatPrice, whatsappFor } from "../../../lib/formatPrice";
+import { BedIcon, BathIcon, SizeIcon, HomeIcon } from "../../../lib/icons";
+import { ListingCard } from "../../../components/ListingCard";
 import type { Listing } from "../../../lib/seed";
 
 export default function PropertyPage({ params }: { params: { id: string } }) {
@@ -50,26 +53,27 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
       </p>
       <h1 className="text-3xl font-bold text-navy mt-2">{l.title}</h1>
       <p className="text-gray-600 mt-1">{l.loc}</p>
-      <p className="text-anngan-dark font-bold text-2xl mt-3">{l.price}</p>
-      {l.badge ? <p className="mt-2"><span className="bg-anngan text-white text-xs font-bold px-2 py-1 rounded">{l.badge}</span></p> : null}
+      <p className="text-anngan-dark font-extrabold text-2xl mt-3">{formatPrice(l.n, l.status)}</p>
+      <p className="mt-2"><span className={l.status === "rent" ? "bg-[#005F90] text-white text-xs font-extrabold px-3 py-1.5 rounded-full" : "bg-anngan text-white text-xs font-extrabold px-3 py-1.5 rounded-full"}>{l.status === "rent" ? "FOR RENT" : "FOR SALE"}</span></p>
 
       {l.img ? (
-        <Image
-          src={l.img.startsWith("http") ? l.img : `/img/${l.img}`}
-          alt={l.title}
-          width={1200}
-          height={675}
-          className="w-full rounded-lg object-cover bg-navy mt-5"
-          sizes="100vw"
-        />
+        <div className="mt-5">
+          <Lightbox images={[{ src: l.img.startsWith("http") ? l.img : `/img/${l.img}`, alt: l.title }]} label={l.title} />
+        </div>
       ) : null}
 
       <div className="grid gap-6 mt-8 lg:grid-cols-2">
         <div>
           <h2 className="text-xl font-bold text-navy">Property facts</h2>
+          <div className="flex gap-3 mt-3 flex-wrap text-sm text-navy font-semibold">
+            <span className="inline-flex items-center gap-1"><BedIcon size={18} /> {l.beds} Beds</span>
+            <span className="inline-flex items-center gap-1"><BathIcon size={18} /> {l.baths} Baths</span>
+            <span className="inline-flex items-center gap-1"><SizeIcon size={18} /> {l.size}</span>
+            <span className="inline-flex items-center gap-1"><HomeIcon size={18} /> {l.type}</span>
+          </div>
           <dl className="mt-3 border border-gray-200 rounded-lg divide-y divide-gray-200 bg-white">
             {[
-              ["Price", l.price],
+              ["Price", formatPrice(l.n, l.status)],
               ["City", l.city],
               ["Area", l.loc],
               ["Size", l.size],
@@ -86,18 +90,16 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
           </dl>
           <div className="flex gap-2 mt-4 flex-wrap">
             <a href="tel:+923041111698" className="btn btn-red">Call +92 304 1111 698</a>
-            <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
+            <a href={whatsappFor(l.title, l.city, formatPrice(l.n, l.status))} target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
           </div>
           {others.length > 0 ? (
             <div className="mt-8">
               <h2 className="text-xl font-bold text-navy">More in {l.city}</h2>
-              <ul className="mt-3 space-y-2">
+              <div className="grid gap-4 mt-3 sm:grid-cols-2">
                 {others.map((o) => (
-                  <li key={o.id}>
-                    <Link href={`/properties/${o.id}`} className="text-anngan-dark font-semibold hover:underline">{o.title} &middot; {o.price}</Link>
-                  </li>
+                  <ListingCard key={o.id} l={o} />
                 ))}
-              </ul>
+              </div>
             </div>
           ) : null}
         </div>

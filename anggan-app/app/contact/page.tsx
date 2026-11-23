@@ -1,4 +1,5 @@
 import { EnquiryForm } from "../../components/EnquiryForm";
+import { WhatsAppIcon, PhoneIcon, MapIcon } from "../../lib/icons";
 
 export default function ContactPage() {
   return (
@@ -16,7 +17,8 @@ export default function ContactPage() {
           rel="noopener"
           className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm block flex flex-col"
         >
-          <p className="font-bold text-navy text-lg">WhatsApp us first</p>
+          <p className="text-green-700"><WhatsAppIcon size={40} /></p>
+          <p className="font-bold text-navy text-lg mt-2">WhatsApp us first</p>
           <p className="text-sm text-gray-600 mt-1">
             Message the office on WhatsApp at +92 304 1111 698. Tell us the project
             or property you are asking about.
@@ -24,7 +26,8 @@ export default function ContactPage() {
           <span className="mt-auto pt-3 flex"><span className="btn btn-green">Open WhatsApp</span></span>
         </a>
         <a href="tel:+923041111698" className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm block flex flex-col">
-          <p className="font-bold text-navy text-lg">Call the office</p>
+          <p className="text-navy"><PhoneIcon size={40} /></p>
+          <p className="font-bold text-navy text-lg mt-2">Call the office</p>
           <p className="text-sm text-gray-600 mt-1">
             Call +92 304 1111 698 for files, prices and payment plans. File rates
             change with the market, so call for today's rate.
@@ -68,6 +71,10 @@ export default function ContactPage() {
               </dd>
             </div>
           </dl>
+          <div className="mt-4 rounded-lg overflow-hidden border border-gray-200">
+            <p className="text-navy font-bold px-3 pt-3 flex items-center gap-2"><MapIcon size={20} /> Paragon City, Lahore</p>
+            <iframe title="Anngan office map, Paragon City, Lahore" src="https://www.google.com/maps?q=Paragon+City+Lahore&output=embed" className="w-full h-64 mt-2" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+          </div>
           <p className="mt-3 text-sm">
             <a
               href="https://www.google.com/maps/search/?api=1&query=Paragon+City+Lahore"

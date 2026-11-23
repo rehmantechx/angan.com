@@ -3,12 +3,26 @@ import { useEffect, useMemo, useState } from "react";
 import { getPublicListings } from "../../lib/db";
 import { Listing, LISTINGS, GRAIN_MARKET } from "../../lib/seed";
 import { ListingCard } from "../../components/ListingCard";
+import { CalcIcon, LoanIcon, ConvertIcon, FileIcon, MapIcon, HomeIcon } from "../../lib/icons";
 
-function Tool({ title, children, id }: { title: string; children: React.ReactNode; id: string }) {
+// Services-style card: navy header, gold icon, number, like /services.
+// Same design language, so tools read as visual cards, not text blocks.
+const TOOL_ICONS: Record<string, React.ReactNode> = {
+  cost: <CalcIcon size={36} />, loan: <LoanIcon size={36} />, area: <ConvertIcon size={36} />,
+  index: <HomeIcon size={36} />, guides: <MapIcon size={36} />, finder: <FileIcon size={36} />,
+};
+function Tool({ title, children, id, num }: { title: string; children: React.ReactNode; id: string; num: string }) {
   return (
-    <section id={id} className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm scroll-mt-4">
-      <h2 className="font-bold text-navy text-lg">{title}</h2>
-      <div className="mt-3 grid gap-2">{children}</div>
+    <section id={id} className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden scroll-mt-4 flex flex-col h-full">
+      <div className="bg-navy px-5 pt-5 pb-4 text-white flex items-start justify-between">
+        <span className="text-[#DDB78B]">{TOOL_ICONS[id]}</span>
+        <span className="block text-white font-bold text-2xl leading-none">{num}</span>
+      </div>
+      <div className="w-10 h-1 bg-anngan ml-5 -mt-0.5" aria-hidden="true" />
+      <div className="p-5 flex flex-col flex-1">
+        <h2 className="font-bold text-navy text-lg">{title}</h2>
+        <div className="mt-3 grid gap-2">{children}</div>
+      </div>
     </section>
   );
 }
@@ -88,7 +102,7 @@ export default function ToolsPage() {
       <p className="text-gray-600 mt-1">Free tools. Prices come from the listings on this site.</p>
 
       <div className="grid gap-4 mt-4 md:grid-cols-2">
-        <Tool id="cost" title="1. Building cost calculator">
+        <Tool id="cost" num="01" title="Building cost calculator">
           <input value={ccArea} onChange={(e) => setCcArea(e.target.value)} placeholder="Covered area in sqft" inputMode="decimal" className={inputCls} />
           <input value={ccRate} onChange={(e) => setCcRate(e.target.value)} placeholder="Rate per sqft in Rs" inputMode="decimal" className={inputCls} />
           <label className="text-sm flex gap-2 items-center">
@@ -110,7 +124,7 @@ export default function ToolsPage() {
           {ccOut ? <p className="text-sm font-semibold">{ccOut}</p> : null}
         </Tool>
 
-        <Tool id="loan" title="2. Home loan calculator">
+        <Tool id="loan" num="02" title="Home loan calculator">
           <input value={lnAmt} onChange={(e) => setLnAmt(e.target.value)} placeholder="Loan amount in Rs" inputMode="decimal" className={inputCls} />
           <input value={lnYears} onChange={(e) => setLnYears(e.target.value)} placeholder="Years" inputMode="decimal" className={inputCls} />
           <input value={lnRate} onChange={(e) => setLnRate(e.target.value)} placeholder="Yearly markup % (for example 18)" inputMode="decimal" className={inputCls} />
@@ -133,7 +147,7 @@ export default function ToolsPage() {
           {lnOut ? <p className="text-sm font-semibold">{lnOut}</p> : null}
         </Tool>
 
-        <Tool id="area" title="3. Area converter">
+        <Tool id="area" num="03" title="Area converter">
           <input value={acVal} onChange={(e) => setAcVal(e.target.value)} placeholder="Enter a number" inputMode="decimal" className={inputCls} />
           <select value={acFrom} onChange={(e) => setAcFrom(e.target.value)} className={inputCls}>
             <option>Marla</option>
@@ -156,7 +170,7 @@ export default function ToolsPage() {
           {acOut ? <p className="text-sm font-semibold">{acOut}</p> : null}
         </Tool>
 
-        <Tool id="index" title="4. City prices from real listings">
+        <Tool id="index" num="04" title="City prices from real listings">
           <p className="text-sm text-gray-600">For sale only. Rent is listed separately below, so sale prices and rent are never mixed.</p>
           <select value={pfCity} onChange={(e) => setPfCity(e.target.value)} className={inputCls}>
             <option value="">All cities</option>
@@ -181,7 +195,7 @@ export default function ToolsPage() {
           ) : null}
         </Tool>
 
-        <Tool id="guides" title="5. Area guides">
+        <Tool id="guides" num="05" title="Area guides">
           <select value={guide} onChange={(e) => setGuide(e.target.value)} className={inputCls}>
             <option value="">Pick an area</option>
             {Object.keys(guides).map((g) => <option key={g}>{g}</option>)}
@@ -189,7 +203,7 @@ export default function ToolsPage() {
           {guide ? <p className="text-sm">{guides[guide]}</p> : <p className="text-sm text-gray-600">Guides use only the real listings and projects on this site.</p>}
         </Tool>
 
-        <Tool id="finder" title="6. Plot and file finder">
+        <Tool id="finder" num="06" title="Plot and file finder">
           <input value={ffQ} onChange={(e) => setFfQ(e.target.value)} placeholder="Search files, for example MGH or Grain Market" className={inputCls} />
           <button className={btnCls} onClick={() => setFfGo(true)}>Find</button>
           {ffGo ? (

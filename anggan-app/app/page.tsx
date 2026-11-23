@@ -6,6 +6,9 @@ import Link from "next/link";
 import { getProjects } from "../lib/db";
 import { Project, PROJECTS, LISTINGS } from "../lib/seed";
 import { ProjectFallback } from "../components/ProjectFallback";
+import { ListingCard } from "../components/ListingCard";
+import { AGENCIES } from "../lib/seed";
+import { CalcIcon, LoanIcon, ConvertIcon, FileIcon, PhoneIcon, WhatsAppIcon, BuildingIcon, HomeIcon, UsersIcon, MapIcon } from "../lib/icons";
 
 // Hero background slider, like the original anngan.com: the photo
 // changes every 10 seconds, crossfade, loop. Real photos only, all
@@ -41,6 +44,7 @@ const CITY_CARDS = [
   { name: "Multan", img: "city-multan-shah-rukn.jpg", alt: "Tomb of Shah Rukn-e-Alam, Multan", href: "/properties?city=Multan", kind: "listings" },
   { name: "Mangla", img: "city-mangla-dam.jpg", alt: "Mangla Dam, seen from Ramkot Fort", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan" },
   { name: "Kashmir", img: "city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City" },
+  { name: "All cities", img: "urban-drone.jpg", alt: "Urban City, Lahore, drone view", href: "/properties", kind: "all", sub: "12 homes" },
 ] as const;
 function cityCount(city: string) {
   return LISTINGS.filter((l) => l.liveStatus === "live" && l.city === city).length;
@@ -153,6 +157,7 @@ export default function Home() {
     return () => clearTimeout(t);
   }, []);
 
+  const featured = LISTINGS.filter((l) => l.liveStatus === "live").slice(0, 6);
   const mgh = projects.find((p) => p.id === "proj-1");
   const otherProjects = projects.filter((p) => p.id !== "proj-1");
 
@@ -317,22 +322,86 @@ export default function Home() {
         <h2 className="text-2xl font-bold text-navy text-center">Browse by city</h2>
         <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
           {CITY_CARDS.map((c) => {
-            const n = c.kind === "listings" ? cityCount(c.name) : 0;
+            const n = c.kind === "listings" ? cityCount(c.name) : c.kind === "all" ? LISTINGS.filter((l) => l.liveStatus === "live").length : 0;
             return (
-              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "listings" ? `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings` : `${c.name}, ${c.sub}, open project`}>
+              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.sub}, open project` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
                 <Image src={`/img/${c.img}`} alt={c.alt} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover" />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                 <span className="absolute bottom-0 left-0 right-0 p-3 text-white">
                   <span className="block text-xl md:text-2xl font-extrabold leading-tight drop-shadow">{c.name}</span>
-                  {c.kind === "listings" ? (
-                    <span className="block text-sm font-semibold mt-0.5">{n} {n === 1 ? "home" : "homes"} &rarr;</span>
-                  ) : (
+                  {c.kind === "project" ? (
                     <span className="block text-sm font-semibold mt-0.5">{c.sub} &rarr;</span>
+                  ) : (
+                    <span className="block text-sm font-semibold mt-0.5">{n} {n === 1 ? "home" : "homes"} &rarr;</span>
                   )}
                 </span>
               </Link>
             );
           })}
+        </div>
+      </section>
+
+      {/* PIC-01: Featured Properties, 6 real listings, photo first.
+          Restored on the audit order, superseding the earlier
+          remove-listings-from-home order. */}
+      <section className="mt-10" aria-label="Featured properties">
+        <div className="flex items-baseline justify-between flex-wrap gap-2">
+          <h2 className="text-2xl font-bold text-navy">Featured properties</h2>
+          <Link href="/properties" className="text-anngan-dark font-semibold text-sm">All 12 properties &rarr;</Link>
+        </div>
+        <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
+          {featured.map((l) => (<ListingCard key={l.id} l={l} />))}
+        </div>
+      </section>
+
+      {/* PIC-01: Property Tools as visual icon cards, not an empty strip. */}
+      <section className="mt-10" aria-label="Property tools">
+        <div className="flex items-baseline justify-between flex-wrap gap-2">
+          <h2 className="text-2xl font-bold text-navy">Property tools</h2>
+          <Link href="/tools" className="text-anngan-dark font-semibold text-sm">Open tools &rarr;</Link>
+        </div>
+        <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
+          {[
+            { href: "/tools#cost", icon: <CalcIcon size={36} />, name: "Calculator" },
+            { href: "/tools#loan", icon: <LoanIcon size={36} />, name: "Loan" },
+            { href: "/tools#area", icon: <ConvertIcon size={36} />, name: "Marla converter" },
+            { href: "/tools#finder", icon: <FileIcon size={36} />, name: "Plot finder" },
+          ].map((t) => (
+            <Link key={t.name} href={t.href} className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden hover:shadow-md block">
+              <span className="block bg-navy px-5 pt-5 pb-4 text-[#DDB78B]">{t.icon}</span>
+              <span className="block w-10 h-1 bg-anngan ml-5 -mt-0.5" aria-hidden="true" />
+              <span className="block p-4 font-bold text-navy">{t.name} &rarr;</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* PIC-01: compact Societies and partner agencies strip. Societies
+          are real photo chips; agencies are their real logos from the
+          repo, linking to /contact (no public agencies page exists). */}
+      <section className="mt-10" aria-label="Societies and partner agencies">
+        <h2 className="text-2xl font-bold text-navy">Societies</h2>
+        <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
+          {[
+            { name: "DHA Lahore", img: "lst-dha-stunning.jpg", href: "/properties?q=DHA" },
+            { name: "Bahria Town", img: "lst-bahria-luxury.jpg", href: "/properties?q=Bahria" },
+            { name: "MGH Pakistan", img: "mgh-lake-aerial.jpg", href: "/projects/proj-1" },
+            { name: "Kashmir Modern City", img: "kmc-01.jpg", href: "/projects/proj-7" },
+          ].map((c) => (
+            <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm aspect-[4/3] bg-navy">
+              <Image src={`/img/${c.img}`} alt={c.name} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover" />
+              <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
+              <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg leading-tight">{c.name} &rarr;</span>
+            </Link>
+          ))}
+        </div>
+        <h3 className="font-bold text-navy mt-6">Partner agencies</h3>
+        <div className="flex flex-wrap gap-3 mt-3 items-center">
+          {AGENCIES.map((a) => (
+            <Link key={a.id} href="/contact" aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
+              <Image src={`/img/${a.logo}`} alt={a.name} width={120} height={60} className="h-10 w-auto object-contain" loading="lazy" />
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -350,8 +419,16 @@ export default function Home() {
             </div>
             <div className="p-5 md:w-1/2">
               <h3 className="font-bold text-navy text-xl">MGH Pakistan</h3>
+              <p className="text-sm text-gray-600 mt-1 flex items-center gap-1"><MapIcon size={16} /> Mangla, 7KM Mangla Gaddari Road</p>
+              <div className="flex gap-2 mt-3 flex-wrap">
+                <span className="border border-gray-200 rounded-full px-3 py-1 text-sm bg-white">Zamindar File</span>
+                <span className="border border-gray-200 rounded-full px-3 py-1 text-sm bg-white">Affidavit MGH</span>
+                <span className="border border-gray-200 rounded-full px-3 py-1 text-sm bg-white">Serene Farm Houses</span>
+              </div>
               <div className="flex gap-2 mt-4 flex-wrap">
                 <Link href="/projects/proj-1" className="btn btn-red">Open MGH Pakistan</Link>
+                <a href="tel:+923041111698" className="btn btn-navy inline-flex items-center gap-1"><PhoneIcon size={18} /> Call</a>
+                <a href="https://wa.me/923041111698?text=Hi%20Anngan%2C%20I%20am%20asking%20about%20MGH%20Pakistan%2C%20Mangla." target="_blank" rel="noopener" className="btn btn-green inline-flex items-center gap-1"><WhatsAppIcon size={18} /> WhatsApp</a>
               </div>
             </div>
           </article>
@@ -373,19 +450,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-10" aria-label="More from Anngan">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Link href="/tools" className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:border-anngan flex items-baseline justify-between gap-2">
-            <span className="font-bold text-navy">Ask Anngan</span>
-            <span className="text-anngan-dark font-semibold text-sm shrink-0">Open tools &rarr;</span>
-          </Link>
-          <Link href="/blogs" className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:border-anngan flex items-baseline justify-between gap-2">
-            <span className="font-bold text-navy">From the Anngan blog</span>
-            <span className="text-anngan-dark font-semibold text-sm shrink-0">All articles &rarr;</span>
-          </Link>
-        </div>
-      </section>
-
       <section className="mt-10">
         <div className="grid gap-6 md:grid-cols-2 items-center">
           <div className="flex justify-center md:justify-start">
@@ -393,6 +457,13 @@ export default function Home() {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>
+            <p className="font-bold text-navy mt-2">Muhammad Mahmood Cheema</p>
+            <p className="text-sm text-gray-600">Chairman and Chief Executive Officer</p>
+            <div className="flex gap-3 mt-4 flex-wrap">
+              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><BuildingIcon size={20} /> 7 Projects</span>
+              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><HomeIcon size={20} /> 12 Properties</span>
+              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><UsersIcon size={20} /> 13 Partner agencies</span>
+            </div>
             <div className="flex gap-2 mt-4 flex-wrap">
               <Link href="/about" className="btn btn-red">Read our story</Link>
             </div>

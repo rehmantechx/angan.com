@@ -12,7 +12,6 @@ const NAV_LINKS = [
   { href: "/about", label: "ABOUT US" },
   { href: "/projects", label: "PROJECTS" },
   { href: "/properties", label: "PROPERTIES" },
-  { href: "/blogs", label: "BLOGS" },
   { href: "/societies", label: "SOCIETIES GUIDE" },
   { href: "/contact", label: "CONTACT" },
   { href: "/companies", label: "ANNGAN COMPANIES" },
@@ -315,8 +314,7 @@ export function Footer() {
             <p className="font-bold text-white text-base">Connect</p>
             <span className="block w-8 h-0.5 bg-[#DDB78B] mt-1.5" />
             <ul className="mt-2 space-y-1.5">
-              <li><Link href="/blogs" className="inline-flex items-center min-h-[32px] hover:underline">Blogs</Link></li>
-              <li><Link href="/properties" className="inline-flex items-center min-h-[32px] hover:underline">Properties</Link></li>
+                            <li><Link href="/properties" className="inline-flex items-center min-h-[32px] hover:underline">Properties</Link></li>
               <li><Link href="/projects" className="inline-flex items-center min-h-[32px] hover:underline">Projects</Link></li>
               <li><Link href="/societies" className="inline-flex items-center min-h-[32px] hover:underline">Societies Guide</Link></li>
               <li><Link href="/tools" className="inline-flex items-center min-h-[32px] hover:underline">Property Tools</Link></li>

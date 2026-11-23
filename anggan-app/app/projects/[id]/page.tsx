@@ -5,6 +5,7 @@ import { PROJECTS, GRAIN_MARKET } from "../../../lib/seed";
 import { PROJECT_DETAILS } from "../../../lib/projectDetails";
 import { EnquiryForm } from "../../../components/EnquiryForm";
 import { ProjectFallback } from "../../../components/ProjectFallback";
+import { ProjectGallery } from "../../../components/ProjectGallery";
 
 export function generateStaticParams() {
   return PROJECTS.map((p) => ({ id: p.id }));
@@ -39,50 +40,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
       </p>
       <p className="mt-3">{d.intro}</p>
 
-      {galleryCount > 0 ? (
-        <div className="grid gap-4 mt-5 sm:grid-cols-2">
-          {galleryPhotos.map((ph, i) => {
-            // First photo spans the row; if the photos after it leave a
-            // single photo on the last row, that photo spans too, so no
-            // empty column is ever left beside it.
-            const lastSingle = i === galleryCount - 1 && i > 0 && (galleryCount - 1) % 2 === 1;
-            return (
-              <figure key={ph.file} className={i === 0 || lastSingle ? "sm:col-span-2" : ""}>
-                <Image
-                  src={`/img/${ph.file}`}
-                  alt={ph.caption}
-                  width={1200}
-                  height={675}
-                  className="w-full rounded-lg object-contain bg-neutral-100 border border-gray-200 aspect-[16/10]"
-                  loading={i === 0 ? "eager" : "lazy"}
-                  sizes="(max-width: 768px) 100vw, 60vw"
-                />
-                <figcaption className="text-sm text-gray-600 mt-1">{ph.caption}</figcaption>
-              </figure>
-            );
-          })}
-        </div>
-      ) : null}
-
-      {documentPhotos.length > 0 ? (
-        <div className="mt-8">
-          <h2 className="text-xl font-bold text-navy text-center">Document</h2>
-          {documentPhotos.map((ph) => (
-            <figure key={ph.file} className="max-w-[480px] mx-auto mt-3">
-              <Image
-                src={`/img/${ph.file}`}
-                alt={ph.caption}
-                width={1114}
-                height={1747}
-                className="w-full rounded-lg object-contain bg-white border border-gray-200 aspect-[4/3]"
-                loading="lazy"
-                sizes="480px"
-              />
-              <figcaption className="text-sm text-gray-600 mt-1 text-center">{ph.caption}</figcaption>
-            </figure>
-          ))}
-        </div>
-      ) : null}
+      <ProjectGallery galleryPhotos={galleryPhotos} documentPhotos={documentPhotos} />
 
       {galleryCount === 0 && documentPhotos.length === 0 ? (
         <div className="mt-5 rounded-lg overflow-hidden">

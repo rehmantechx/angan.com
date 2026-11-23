@@ -16,7 +16,7 @@ export default function BlogsPage() {
   return (
     <div>
       <h1 className="text-3xl font-bold text-navy">Blogs</h1>
-      <p className="text-gray-600 mt-1">News from Anngan, newest first. {BLOGS.length} articles, 21 Dec 2022 to 27 Feb 2023. Open any title to read it here.</p>
+      <p className="text-gray-600 mt-1">News from Anngan, newest first. {BLOGS.length} articles, 21 Dec 2022 to 27 Feb 2023. Titles and dates only: the full article text is not published on this site. Call +92 304 1111 698 for details.</p>
       {BLOGS.length === 0 ? (
         <p className="mt-4 border border-gray-200 rounded-lg p-4 bg-white text-sm">
           No articles are showing right now. Call the office on +92 304 1111 698 and ask for the latest news.
