@@ -225,12 +225,12 @@ export default function Home() {
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/20 to-navy/60 pointer-events-none" aria-hidden="true" />
         <div className="relative max-w-6xl mx-auto px-4 py-8 md:py-10">
-          <p className="text-gold text-xs md:text-sm font-bold uppercase tracking-[0.18em] mb-2">
-            Pakistan&apos;s Most Trusted Real Estate Service Providers
-          </p>
           <h1 className="text-white text-3xl md:text-4xl font-extrabold max-w-[22ch] leading-tight">
             Property for sale and rent in Pakistan
           </h1>
+          <p className="text-white text-lg md:text-xl font-light mt-2">
+            Pakistan&apos;s Most Trusted Real Estate Service Providers
+          </p>
           <p className="text-blue-100 mt-2 max-w-[70ch]">
             Search real listings and projects from Anngan, in Karachi, Lahore, Islamabad, Rawalpindi, Multan, Mangla and Kashmir.
           </p>
