@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getPublicListings, getProjects, getSettings } from "../lib/db";
-import { Listing, Project, OfficeSettings, LISTINGS, PROJECTS, SETTINGS } from "../lib/seed";
-import { ListingCard } from "../components/ListingCard";
+import { getProjects, getSettings } from "../lib/db";
+import { Project, OfficeSettings, PROJECTS, SETTINGS } from "../lib/seed";
 import { ProjectFallback } from "../components/ProjectFallback";
-import { searchAll, buildSearchNote, SearchFilters } from "../lib/search";
+import { searchProjects, SearchFilters } from "../lib/search";
 
 const CITIES = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Multan", "Mangla", "Kashmir"];
 
@@ -24,11 +24,11 @@ const HERO_PHOTOS = [
 ];
 
 export default function Home() {
-  // Speed: show the real seed data on the first paint, do not wait for
-  // Firestore. The background refresh below only replaces it when the
-  // live data actually differs, so listings and images start loading
-  // at once instead of after a network round trip.
-  const [listings, setListings] = useState<Listing[]>(LISTINGS.filter((l) => l.liveStatus === "live" && l.visible !== false));
+  // No listings on the home page: the client wants listings only on
+  // /properties. Home shows projects only; listing searches go to
+  // /properties (see doSearch). Projects still start from seed on the
+  // first paint, the background refresh replaces them only if live
+  // data actually differs.
   const [projects, setProjects] = useState<Project[]>(PROJECTS);
   const [settings, setSettings] = useState<OfficeSettings | null>(SETTINGS);
 
@@ -38,17 +38,16 @@ export default function Home() {
   const [city, setCity] = useState("");
   const [beds, setBeds] = useState("");
   const [budget, setBudget] = useState("");
-  // One search result, set once per Search click. The note and the
-  // rendered list come from this same object, so they can never disagree,
-  // and changing a filter does not silently re-run the search.
-  const [results, setResults] = useState<{ listings: Listing[]; projects: Project[]; nearest: Listing[]; note: string } | null>(null);
+  // Home search result, projects only, set once per Search click.
+  // Listing searches never render here: they go to /properties.
+  const [results, setResults] = useState<{ projects: Project[]; note: string } | null>(null);
   const [searchedFilters, setSearchedFilters] = useState<SearchFilters | null>(null);
   const searched = results !== null;
-  const [browse, setBrowse] = useState("homes");
 
   // Hero slider state. heroPrev is the photo fading out underneath,
   // hero is the one fading in, and the next photo is already rendered
   // invisible so it is downloaded before its turn comes.
+  const router = useRouter();
   const [hero, setHero] = useState(0);
   const [heroPrev, setHeroPrev] = useState<number | null>(null);
   const [heroIn, setHeroIn] = useState(true);
@@ -103,10 +102,9 @@ export default function Home() {
   useEffect(() => {
     // Background refresh only, after the first paint AND when the
     // browser is idle, so the Firestore round trip never competes
-    // with the hero, the listings or the images. Listings already
-    // show from seed; live data replaces them only if it differs.
+    // with the hero or the images. Projects already show from seed;
+    // live data replaces them only if it differs.
     const refresh = () => {
-      getPublicListings().then((rows) => { if (rows.length > 0) setListings(rows); });
       getProjects().then((rows) => { if (rows.length > 0) setProjects(rows); });
       getSettings().then(setSettings);
     };
@@ -118,18 +116,35 @@ export default function Home() {
     return () => clearTimeout(t);
   }, []);
 
-  const sale = listings.filter((l) => l.status === "sale");
-  const rent = listings.filter((l) => l.status === "rent");
-
   function currentFilters(): SearchFilters {
     return { status, q, type, city, beds, budget };
   }
 
   function doSearch() {
     const f = currentFilters();
-    const { hits, phits, nearest } = searchAll(listings, projects, f);
-    setResults({ listings: hits, projects: phits, nearest, note: buildSearchNote(hits, phits, f) });
     setSearchedFilters(f);
+    // Project searches (Projects tab, or a File search for MGH) stay
+    // on home and show projects only, never listing cards.
+    if (f.status === "project" || f.type === "File") {
+      const phits = searchProjects(projects, f);
+      const note =
+        phits.length > 0
+          ? "Found " + phits.length + (phits.length === 1 ? " project." : " projects.")
+          : "No project matched that search. See all 7 projects below, or see all listings on the properties page.";
+      setResults({ projects: phits, note });
+      return;
+    }
+    // Every other search is a listing search. Home shows no listings,
+    // so go to /properties with the same filters. /properties reads
+    // q, city, status and beds from the URL; it has no type or budget
+    // filter, so those two are not carried over.
+    const qs = new URLSearchParams();
+    if (f.q.trim()) qs.set("q", f.q.trim());
+    if (f.city) qs.set("city", f.city);
+    if (f.status === "sale" || f.status === "rent") qs.set("status", f.status);
+    if (f.beds) qs.set("beds", f.beds);
+    const url = qs.toString() ? "/properties?" + qs.toString() : "/properties";
+    router.push(url);
   }
 
   function clearSearch() {
@@ -162,8 +177,8 @@ export default function Home() {
   const bedsDisabled = type === "Plot" || type === "File" || type === "Commercial";
 
   const searchResults = results
-    ? { listings: results.listings, projects: results.projects, nearest: results.nearest, note: results.note }
-    : { listings: [] as Listing[], projects: [] as Project[], nearest: [] as Listing[], note: "" };
+    ? { projects: results.projects, note: results.note }
+    : { projects: [] as Project[], note: "" };
 
   const mgh = projects.find((p) => p.id === "proj-1");
   const otherProjects = projects.filter((p) => p.id !== "proj-1");
@@ -303,22 +318,19 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-navy">
               Search results
               <button type="button" onClick={clearSearch} className="btn btn-outline-navy ml-3">
-                Show all 12 listings
+                Show all 7 projects
               </button>
             </h2>
-            <Link href="/properties" className="text-anngan-dark font-semibold text-sm">All properties &rarr;</Link>
+            <Link href="/properties" className="text-anngan-dark font-semibold text-sm">See all listings &rarr;</Link>
           </div>
-          {searchResults.listings.length === 0 && searchResults.projects.length === 0 && searchResults.nearest.length > 0 ? (
-            <div>
-              <h3 className="text-lg font-bold text-navy mt-2">Nearest real listings in Lahore</h3>
-              <p className="text-sm text-gray-600 mt-1">These are not search results. They are the nearest real listings, shown because nothing matched your search.</p>
-              <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
-                {searchResults.nearest.map((l) => <ListingCard key={l.id} l={l} />)}
-              </div>
-            </div>
+          {searchResults.note ? <p className="text-sm font-semibold text-navy mt-2" role="status">{searchResults.note}</p> : null}
+          {searchResults.projects.length === 0 ? (
+            <p className="text-sm text-gray-600 mt-2">
+              Listings are on the properties page, not on the home page.{" "}
+              <Link href="/properties" className="text-anngan-dark font-semibold">See all listings &rarr;</Link>
+            </p>
           ) : null}
           <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
-            {searchResults.listings.map((l) => <ListingCard key={l.id} l={l} />)}
             {searchResults.projects.map((p) => (
               <article key={p.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
                 {p.img ? <Image src={`/img/${p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover bg-navy" loading="lazy" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" /> : (
@@ -333,62 +345,7 @@ export default function Home() {
             ))}
           </div>
         </section>
-      ) : (
-        <section className="mt-8">
-          <div className="flex items-baseline justify-between flex-wrap gap-2">
-            <h2 className="text-2xl font-bold text-navy">Houses and flats from Anngan</h2>
-            <Link href="/properties" className="text-anngan-dark font-semibold text-sm">See all 12 &rarr;</Link>
-          </div>
-          <p className="text-gray-600 mt-1">
-            All 12 are real Anngan listings, with a real photo and a real price.
-          </p>
-          <div className="flex gap-2 mt-3 flex-wrap" role="tablist" aria-label="Change the list">
-            <button type="button" role="tab" id="tab-homes" aria-controls="browse-list" aria-selected={browse === "homes"} className={tabCls(browse === "homes")} onClick={() => setBrowse("homes")}>Houses and flats</button>
-            <button type="button" role="tab" id="tab-plots" aria-controls="browse-list" aria-selected={browse === "plots"} className={tabCls(browse === "plots")} onClick={() => setBrowse("plots")}>Files and plots</button>
-            <button type="button" role="tab" id="tab-commercial" aria-controls="browse-list" aria-selected={browse === "commercial"} className={tabCls(browse === "commercial")} onClick={() => setBrowse("commercial")}>Shops and markets</button>
-          </div>
-          <div id="browse-list" role="tabpanel" aria-labelledby="tab-homes">
-          {browse === "homes" ? (
-            <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
-              {listings.map((l) => <ListingCard key={l.id} l={l} />)}
-            </div>
-          ) : browse === "plots" ? (
-            <article className="border border-gray-200 rounded-lg bg-white shadow-sm p-5 mt-4">
-              <h3 className="font-bold text-navy text-lg">No plot listing on anngan.com right now</h3>
-              <p className="text-gray-600 text-sm mt-1">Plots are sold as files and projects instead. See MGH Pakistan.</p>
-              <div className="flex gap-2 mt-3 flex-wrap">
-                <Link href="/projects/proj-1" className="btn btn-red">MGH Zamindar File</Link>
-                <Link href="/projects" className="btn btn-navy">All projects</Link>
-              </div>
-            </article>
-          ) : (
-            <div className="grid gap-4 mt-4 sm:grid-cols-2">
-              <article className="border border-gray-200 rounded-lg bg-white shadow-sm p-5">
-                <h3 className="font-bold text-navy text-lg">Pak China Grain Market, Multan</h3>
-                <p className="text-gray-600 text-sm mt-1">996 shops, 54 acres, Shujabad Road. 2 Marla Rs 56 Lac, 3 Marla Rs 84 Lac, 4 Marla Rs 112 Lac.</p>
-                <Link href="/projects/proj-6" className="btn btn-red mt-3">View market</Link>
-              </article>
-              <article className="border border-gray-200 rounded-lg bg-white shadow-sm p-5">
-                <h3 className="font-bold text-navy text-lg">China Town, Lahore</h3>
-                <p className="text-gray-600 text-sm mt-1">Pakistan's First China Town, inside Bahria Sky, Bahria Orchard, Lahore.</p>
-                <Link href="/projects/proj-5" className="btn btn-red mt-3">View project</Link>
-              </article>
-            </div>
-          )}
-          </div>
-          <p className="mt-4 text-sm">
-            <span className="font-semibold">By size:</span>{" "}
-            {["3 Marla", "5 Marla", "6 Marla", "10 Marla", "1 Kanal"].map((s) => (
-              <Link key={s} href={`/properties?q=${encodeURIComponent(s)}`} className="text-anngan-dark font-semibold mr-3 hover:underline">{s}</Link>
-            ))}
-          </p>
-          <p className="mt-3 text-sm text-gray-600">
-            For sale: {sale.length} | For rent: {rent.length} | Lahore {listings.filter((l) => l.city === "Lahore").length} |
-            Rawalpindi {listings.filter((l) => l.city === "Rawalpindi").length} | Multan {listings.filter((l) => l.city === "Multan").length} |
-            Islamabad {listings.filter((l) => l.city === "Islamabad").length} | Karachi {listings.filter((l) => l.city === "Karachi").length}
-          </p>
-        </section>
-      )}
+      ) : null}
 
       <section className="mt-10 bg-slate-50 -mx-4 px-4 py-8">
         <div className="flex items-baseline justify-between flex-wrap gap-2">
