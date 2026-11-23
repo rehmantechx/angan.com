@@ -144,11 +144,12 @@ export default function Home() {
           the page about 15px wider than the viewport.
           Search lives BELOW the hero in the old-style panel, and it
           goes to /properties: no listing cards render on home. */}
-      {/* Hero is TALL like the old anngan.com, not a thin strip:
-          at least 500-600px at desktop, tall on mobile too, with the
-          text centred vertically and breathing room above and below. */}
+      {/* Hero is TALL like the old anngan.com, not a thin strip, but
+          hero + search together must fit one desktop screen
+          (1280x800): hero about 480px at desktop, 420px on mobile,
+          text centred vertically with breathing room above and below. */}
       <section
-        className="relative w-full bg-navy overflow-hidden min-h-[520px] md:min-h-[600px] flex flex-col justify-center"
+        className="relative w-full bg-navy overflow-hidden min-h-[420px] md:min-h-[480px] flex flex-col justify-center"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
@@ -190,11 +191,11 @@ export default function Home() {
           />
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/20 to-navy/60 pointer-events-none" aria-hidden="true" />
-        <div className="relative w-full max-w-6xl mx-auto px-4 py-16 md:py-24 text-center">
-          <h1 className="text-white text-4xl md:text-5xl font-extrabold max-w-[22ch] mx-auto leading-tight">
+        <div className="relative w-full max-w-6xl mx-auto px-4 py-10 md:py-14 text-center">
+          <h1 className="text-white text-2xl sm:text-4xl md:text-5xl font-extrabold mx-auto leading-tight md:whitespace-nowrap">
             WELCOME TO ANNGAN.COM
           </h1>
-          <p className="text-white text-lg md:text-xl font-light mt-2">
+          <p className="text-white text-lg md:text-xl font-light mt-2 md:whitespace-nowrap">
             Pakistan&apos;s Most Trusted Real Estate Service Providers
           </p>
         </div>
@@ -217,7 +218,7 @@ export default function Home() {
       {/* Old-style search panel, dark blue band with blue tabs and a
           white panel, like the old anngan.com. Submit goes to
           /properties: no listing cards ever render on home. */}
-      <section className="bg-navy px-4 pt-5 pb-8" aria-label="Search properties">
+      <section className="bg-navy px-4 pt-2 pb-4" aria-label="Search properties">
         <div className="flex justify-center gap-2 flex-wrap" role="tablist" aria-label="For sale or rent">
           {[
             { value: "", label: "All Status" },
@@ -231,7 +232,7 @@ export default function Home() {
               aria-selected={searchStatus === t.value}
               onClick={() => setSearchStatus(t.value)}
               className={
-                "px-4 py-2 min-h-[48px] rounded-t-lg font-bold text-sm text-white " +
+                "px-3 py-1.5 min-h-[36px] rounded-t-lg font-bold text-sm text-white " +
                 (searchStatus === t.value ? "bg-[#005F90]" : "bg-[#2F96CD] hover:bg-[#005F90]")
               }
             >
@@ -239,10 +240,10 @@ export default function Home() {
             </button>
           ))}
         </div>
-        <form onSubmit={submitSearch} className="max-w-4xl mx-auto mt-0 bg-white rounded-lg shadow p-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5 items-end">
+        <form onSubmit={submitSearch} className="max-w-4xl mx-auto mt-0 bg-white rounded-lg shadow p-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5 items-end">
           <div>
             <label htmlFor="search-type" className="block text-xs font-bold tracking-wide text-gray-600">LOOKING FOR</label>
-            <select id="search-type" value={searchType} onChange={(e) => setSearchType(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+            <select id="search-type" value={searchType} onChange={(e) => setSearchType(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[40px]">
               <option value="">Property Type</option>
               <option value="House">House</option>
               <option value="Flat">Flat</option>
@@ -254,7 +255,7 @@ export default function Home() {
           </div>
           <div>
             <label htmlFor="search-city" className="block text-xs font-bold tracking-wide text-gray-600">LOCATION</label>
-            <select id="search-city" value={searchCity} onChange={(e) => setSearchCity(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+            <select id="search-city" value={searchCity} onChange={(e) => setSearchCity(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[40px]">
               <option value="">All Cities</option>
               {searchCities.map((c) => (
                 <option key={c} value={c}>{c}</option>
@@ -263,7 +264,7 @@ export default function Home() {
           </div>
           <div>
             <label htmlFor="search-beds" className="block text-xs font-bold tracking-wide text-gray-600">PROPERTY SIZE</label>
-            <select id="search-beds" value={searchBeds} onChange={(e) => setSearchBeds(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+            <select id="search-beds" value={searchBeds} onChange={(e) => setSearchBeds(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[40px]">
               <option value="">Bedrooms</option>
               <option value="2">2 beds</option>
               <option value="3">3 beds</option>
@@ -273,7 +274,7 @@ export default function Home() {
           </div>
           <div>
             <label htmlFor="search-budget" className="block text-xs font-bold tracking-wide text-gray-600">YOUR BUDGET</label>
-            <select id="search-budget" value={searchBudget} onChange={(e) => setSearchBudget(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+            <select id="search-budget" value={searchBudget} onChange={(e) => setSearchBudget(e.target.value)} className="mt-1 border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[40px]">
               <option value="">Max. Price</option>
               <option value="under-1cr">Under Rs 1 Crore</option>
               <option value="1cr-5cr">Rs 1 Crore to Rs 5 Crore</option>
