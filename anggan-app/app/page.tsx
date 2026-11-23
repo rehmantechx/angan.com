@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getProjects, getSettings } from "../lib/db";
-import { Project, OfficeSettings, PROJECTS, SETTINGS, LISTINGS } from "../lib/seed";
+import { getProjects } from "../lib/db";
+import { Project, PROJECTS, LISTINGS } from "../lib/seed";
 import { ProjectFallback } from "../components/ProjectFallback";
 
 // Hero background slider, like the original anngan.com: the photo
@@ -20,13 +20,31 @@ const HERO_PHOTOS = [
   { src: "/img/kmc-01.jpg", alt: "Kashmir Modern City, Mirpur" },
 ];
 
+// Pictorial city cards: for people who cannot read English, a big
+// photo with the city name on it. Click the picture, go to that
+// city's listings. Counts are counted from the live listings in
+// lib/seed, never typed in by hand. Mangla and Kashmir have no
+// listings, only projects, so they link to their real project page
+// and show no listing count.
+const CITY_CARDS = [
+  { name: "Lahore", img: "lst-dha-stunning.jpg", alt: "House for sale in DHA Lahore", href: "/properties?city=Lahore", kind: "listings" },
+  { name: "Islamabad", img: "lst-kuri-rent.jpg", alt: "House for rent in Kuri Road, Islamabad", href: "/properties?city=Islamabad", kind: "listings" },
+  { name: "Karachi", img: "lst-karachi-shamsi.jpg", alt: "Flat for sale in Shamsi Society, Karachi", href: "/properties?city=Karachi", kind: "listings" },
+  { name: "Rawalpindi", img: "lst-bahria-rwp.jpg", alt: "House for sale in Bahria Town, Rawalpindi", href: "/properties?city=Rawalpindi", kind: "listings" },
+  { name: "Multan", img: "lst-citi-multan.jpg", alt: "House for sale in Citi Housing, Multan", href: "/properties?city=Multan", kind: "listings" },
+  { name: "Mangla", img: "mgh-lake-aerial.jpg", alt: "Mangla Lake, MGH Pakistan", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan" },
+  { name: "Kashmir", img: "kmc-01.jpg", alt: "Kashmir Modern City, Mirpur", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City" },
+] as const;
+function cityCount(city: string) {
+  return LISTINGS.filter((l) => l.liveStatus === "live" && l.city === city).length;
+}
+
 export default function Home() {
   // No listings on the home page: the client wants listings only on
   // /properties. Home shows projects only. Projects still start from seed on the
   // first paint, the background refresh replaces them only if live
   // data actually differs.
   const [projects, setProjects] = useState<Project[]>(PROJECTS);
-  const [settings, setSettings] = useState<OfficeSettings | null>(SETTINGS);
 
   // Old-style search panel below the hero. It never renders listings
   // on home: submit goes to /properties with the filters in the URL.
@@ -119,7 +137,6 @@ export default function Home() {
     // live data replaces them only if it differs.
     const refresh = () => {
       getProjects().then((rows) => { if (rows.length > 0) setProjects(rows); });
-      getSettings().then(setSettings);
     };
     if (typeof window !== "undefined" && "requestIdleCallback" in window) {
       const id = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(refresh, { timeout: 3000 });
@@ -285,13 +302,40 @@ export default function Home() {
         </form>
       </section>
 
+      {/* Pictorial: browse by city. Big photo, big city name on the
+          photo, click it and you are on that city's listings. Put
+          right after the search panel, before Our projects, so it is
+          the first thing a visitor sees after the hero and search. */}
+      <section className="mt-10" aria-label="Browse by city">
+        <h2 className="text-2xl font-bold text-navy text-center">Browse by city</h2>
+        <p className="text-gray-600 mt-1 text-center">Click a picture to see homes in that city.</p>
+        <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
+          {CITY_CARDS.map((c) => {
+            const n = c.kind === "listings" ? cityCount(c.name) : 0;
+            return (
+              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "listings" ? `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings` : `${c.name}, ${c.sub}, open project`}>
+                <Image src={`/img/${c.img}`} alt={c.alt} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover" />
+                <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
+                <span className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                  <span className="block text-xl md:text-2xl font-extrabold leading-tight drop-shadow">{c.name}</span>
+                  {c.kind === "listings" ? (
+                    <span className="block text-sm font-semibold mt-0.5">{n} {n === 1 ? "home" : "homes"} &rarr;</span>
+                  ) : (
+                    <span className="block text-sm font-semibold mt-0.5">{c.sub} &rarr;</span>
+                  )}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
       <div>
       <section className="mt-10 bg-slate-50 -mx-4 px-4 py-8">
         <div className="flex items-baseline justify-between flex-wrap gap-2">
           <h2 className="text-2xl font-bold text-navy">Our projects</h2>
           <Link href="/projects" className="text-anngan-dark font-semibold text-sm">All 7 projects &rarr;</Link>
         </div>
-        <p className="text-gray-600 mt-1">Projects Anngan markets itself. MGH Pakistan at Mangla comes first.</p>
         {mgh ? (
           <article className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm mt-4 md:flex">
             <div className="relative md:w-1/2">
@@ -301,7 +345,6 @@ export default function Home() {
             <div className="p-5 md:w-1/2">
               <h3 className="font-bold text-navy text-xl">MGH Pakistan</h3>
               <p className="text-gray-600 text-sm">Mangla, 7KM Mangla Gaddari Road</p>
-              <p className="text-sm mt-2">Lake view housing at Mangla Cantt. Precincts 01 to 06, Serene Farm Houses in 05 and 06.</p>
               <div className="flex gap-2 mt-3 flex-wrap">
                 <span className="bg-slate-100 text-navy text-xs font-semibold px-2 py-1 rounded">Zamindar File</span>
                 <span className="bg-slate-100 text-navy text-xs font-semibold px-2 py-1 rounded">Affidavit MGH</span>
@@ -325,8 +368,6 @@ export default function Home() {
               <div className="min-w-0">
                 <h3 className="font-bold text-navy">{p.name}</h3>
                 <p className="text-gray-600 text-sm">{p.loc}</p>
-                <p className="text-sm mt-1">{p.note}</p>
-                {p.id === "proj-5" ? <p className="text-sm mt-1">Photo shows Bahria Sky.</p> : null}
                 <Link href={`/projects/${p.id}`} className="btn btn-outline-navy mt-2">Open project</Link>
               </div>
             </article>
@@ -337,11 +378,11 @@ export default function Home() {
       <section className="mt-10" aria-label="More from Anngan">
         <div className="grid gap-3 sm:grid-cols-2">
           <Link href="/tools" className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:border-anngan flex items-baseline justify-between gap-2">
-            <span><span className="font-bold text-navy">Ask Anngan</span><span className="text-sm text-gray-600 block">Six tools: building cost, loan, area, prices, guides, finder.</span></span>
+            <span className="font-bold text-navy">Ask Anngan</span>
             <span className="text-anngan-dark font-semibold text-sm shrink-0">Open tools &rarr;</span>
           </Link>
           <Link href="/blogs" className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:border-anngan flex items-baseline justify-between gap-2">
-            <span><span className="font-bold text-navy">From the Anngan blog</span><span className="text-sm text-gray-600 block">23 real articles from anngan.com, newest first.</span></span>
+            <span className="font-bold text-navy">From the Anngan blog</span>
             <span className="text-anngan-dark font-semibold text-sm shrink-0">All articles &rarr;</span>
           </Link>
         </div>
@@ -357,7 +398,6 @@ export default function Home() {
             <p className="text-gray-600 mt-2"><b className="text-navy">Anngan</b> is Pakistan&apos;s trusted real estate service provider.</p>
             <p className="text-gray-600 mt-2"><b>Muhammad Mahmood Cheema</b>, Chairman and Chief Executive Officer</p>
             <p className="urdu-tagline mt-2" lang="ur">بنائے خواب حقیقت</p>
-            <p className="text-sm text-gray-600 mt-2">Office: Paragon City, Lahore. Call {settings?.phone || "+92 304 1111 698"}.</p>
             <div className="flex gap-2 mt-4 flex-wrap">
               <Link href="/about" className="btn btn-red">Read our story</Link>
             </div>
