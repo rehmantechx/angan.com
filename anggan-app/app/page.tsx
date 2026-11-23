@@ -25,15 +25,22 @@ const HERO_PHOTOS = [
 // city's listings. Counts are counted from the live listings in
 // lib/seed, never typed in by hand. Mangla and Kashmir have no
 // listings, only projects, so they link to their real project page
-// and show no listing count.
+// and show no listing count. Photos are FAMOUS landmarks, not
+// listing houses: Badshahi Mosque (Lahore), Faisal Mosque
+// (Islamabad), Mazar-e-Quaid (Karachi), Raja Bazaar (Rawalpindi),
+// Shah Rukn-e-Alam (Multan), Mangla Dam (Mangla), Neelum Valley
+// (Kashmir). All real photos from Wikimedia Commons, downloaded
+// into public/img/city-*.jpg, see NOTES in
+// angan-e2e-evidence/famous-city-pics-2026-11-23/ for the source
+// URL of each photo. No AI images, no listing photos.
 const CITY_CARDS = [
-  { name: "Lahore", img: "lst-dha-stunning.jpg", alt: "House for sale in DHA Lahore", href: "/properties?city=Lahore", kind: "listings" },
-  { name: "Islamabad", img: "lst-kuri-rent.jpg", alt: "House for rent in Kuri Road, Islamabad", href: "/properties?city=Islamabad", kind: "listings" },
-  { name: "Karachi", img: "lst-karachi-shamsi.jpg", alt: "Flat for sale in Shamsi Society, Karachi", href: "/properties?city=Karachi", kind: "listings" },
-  { name: "Rawalpindi", img: "lst-bahria-rwp.jpg", alt: "House for sale in Bahria Town, Rawalpindi", href: "/properties?city=Rawalpindi", kind: "listings" },
-  { name: "Multan", img: "lst-citi-multan.jpg", alt: "House for sale in Citi Housing, Multan", href: "/properties?city=Multan", kind: "listings" },
-  { name: "Mangla", img: "mgh-lake-aerial.jpg", alt: "Mangla Lake, MGH Pakistan", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan" },
-  { name: "Kashmir", img: "kmc-01.jpg", alt: "Kashmir Modern City, Mirpur", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City" },
+  { name: "Lahore", img: "city-lahore-badshahi.jpg", alt: "Badshahi Mosque, Lahore", href: "/properties?city=Lahore", kind: "listings" },
+  { name: "Islamabad", img: "city-islamabad-faisal.jpg", alt: "Faisal Mosque, Islamabad", href: "/properties?city=Islamabad", kind: "listings" },
+  { name: "Karachi", img: "city-karachi-mazar.jpg", alt: "Mazar-e-Quaid, Karachi", href: "/properties?city=Karachi", kind: "listings" },
+  { name: "Rawalpindi", img: "city-rawalpindi-raja-bazaar.jpg", alt: "Raja Bazaar, Rawalpindi", href: "/properties?city=Rawalpindi", kind: "listings" },
+  { name: "Multan", img: "city-multan-shah-rukn.jpg", alt: "Tomb of Shah Rukn-e-Alam, Multan", href: "/properties?city=Multan", kind: "listings" },
+  { name: "Mangla", img: "city-mangla-dam.jpg", alt: "Mangla Dam, seen from Ramkot Fort", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan" },
+  { name: "Kashmir", img: "city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City" },
 ] as const;
 function cityCount(city: string) {
   return LISTINGS.filter((l) => l.liveStatus === "live" && l.city === city).length;
