@@ -374,10 +374,10 @@ export default function Home() {
           ))}
         </div>
         <h3 className="font-bold text-navy mt-6">Partner agencies</h3>
-        <div className="flex flex-wrap gap-3 mt-3 items-center">
+        <div className="flex flex-wrap gap-4 mt-3 items-center">
           {AGENCIES.map((a) => (
-            <Link key={a.id} href="/contact" aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
-              <Image src={`/img/${a.logo}`} alt={a.name} width={120} height={60} className="h-10 w-auto object-contain" loading="lazy" />
+            <Link key={a.id} href="/contact" aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+              <Image src={`/img/${a.logo}`} alt={a.name} width={240} height={210} className="h-24 w-auto md:h-32 object-contain" loading="lazy" />
             </Link>
           ))}
         </div>
