@@ -45,7 +45,7 @@ const CITY_CARDS = [
   { name: "Lahore", landmark: "Badshahi Mosque", img: "city-lahore-badshahi-day.jpg", alt: "Badshahi Mosque, Lahore, in daylight", href: "/properties?city=Lahore", kind: "listings", pos: "object-top" },
   { name: "Islamabad", landmark: "Faisal Mosque", img: "city-islamabad-faisal-day.jpg", alt: "Faisal Mosque, Islamabad, in daylight with Margalla Hills", href: "/properties?city=Islamabad", kind: "listings", pos: "object-top" },
   { name: "Karachi", landmark: "Mazar-e-Quaid", img: "city-karachi-mazar-wide.jpg", alt: "Mazar-e-Quaid, Karachi, whole mausoleum with gardens", href: "/properties?city=Karachi", kind: "listings", pos: "object-top" },
-  { name: "Rawalpindi", landmark: "Raja Bazaar", img: "city-rawalpindi-raja-bazaar-wide.jpg", alt: "Raja Bazaar, Rawalpindi, old bazaar street", href: "/properties?city=Rawalpindi", kind: "listings", pos: "object-top" },
+  { name: "Rawalpindi", landmark: "Raja Bazaar", img: "city-rawalpindi-raja-bazaar-aerial.jpg", alt: "Raja Bazaar, Rawalpindi, wide rooftop view over the bazaar, mosque minaret and dome", href: "/properties?city=Rawalpindi", kind: "listings", pos: "object-top" },
   // MULTAN LEFT-EDGE FIX 25 Nov 2026: the tomb sits at the far LEFT
   // of city-multan-shah-rukn-sky.jpg (building base wall from x=33,
   // dome x=150-270 of 1000), while the card is 4/3 and the photo is
@@ -60,7 +60,7 @@ const CITY_CARDS = [
   { name: "Multan", landmark: "Shah Rukn-e-Alam", img: "city-multan-shah-rukn-sky.jpg", alt: "Tomb of Shah Rukn-e-Alam, Multan", href: "/properties?city=Multan", kind: "listings", pos: "object-left-top" },
   { name: "Mangla", landmark: "Mangla Dam", img: "city-mangla-dam.jpg", alt: "Mangla Dam, seen from Ramkot Fort", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan", pos: "object-top" },
   { name: "Kashmir", landmark: "Sharda, Neelum Valley", img: "city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City", pos: "object-top" },
-  { name: "All cities", landmark: "", img: "urban-drone.jpg", alt: "Urban City, Lahore, drone view", href: "/properties", kind: "all", sub: "12 homes", pos: "object-top" },
+  { name: "All cities", landmark: "", img: "city-all-cities-collage.jpg", alt: "All cities in daylight: Badshahi Mosque Lahore, Faisal Mosque Islamabad, Mazar-e-Quaid Karachi, Shah Rukn-e-Alam Multan", href: "/properties", kind: "all", sub: "12 homes", pos: "object-top" },
 ] as const;
 function cityCount(city: string) {
   return LISTINGS.filter((l) => l.liveStatus === "live" && l.city === city).length;
@@ -367,9 +367,34 @@ export default function Home() {
                     the same Mazar photo re-cropped to exact 4/3
                     (city-karachi-mazar-wide.jpg) so the whole
                     mausoleum, arches and gardens show, not just the
-                    dome. Rawalpindi is the same bazaar street
+                    dome. Rawalpindi was the same bazaar street
                     re-cropped to exact 4/3
-                    (city-rawalpindi-raja-bazaar-wide.jpg). Multan
+                    (city-rawalpindi-raja-bazaar-wide.jpg), but the
+                    live check 25 Nov 00:55 PKT still found it a
+                    tight lane, right building filling half the
+                    frame, so it is now a different real photo:
+                    "Ariel view of raja bazaar Rawalpindi from
+                    rooftop.png", Fahads1982, CC BY-SA 4.0, Wikimedia
+                    Commons, cropped to exact 4/3
+                    (city-rawalpindi-raja-bazaar-aerial.jpg, 719x539,
+                    window y=60..599): a wide rooftop view over the
+                    whole bazaar, mosque minaret and dome prominent,
+                    golden-hour daylight, not a tight lane. The old
+                    building photo ("Old building of raja bazaar
+                    Rawalpindi.jpg", same author) was rejected: it is
+                    the same building as the right side of the old
+                    card, one building filling the frame. All cities
+                    was urban-drone.jpg, a dusk/night aerial collage,
+                    and the live check 25 Nov failed it as not a
+                    daylight view, so it is now
+                    city-all-cities-collage.jpg: a 1200x900 collage
+                    built in PIL from the four real daylight city
+                    photos already on the cards (Lahore Badshahi,
+                    Islamabad Faisal, Karachi Mazar, Multan
+                    Shah Rukn-e-Alam, left-cropped so the tomb stays
+                    in frame), white gutters, no AI, no night photo.
+                    urban-drone.jpg stays in the repo: hero slide 2
+                    still uses it, and the hero passed. Multan
                     keeps the sky-extended file and object-left-top
                     (25 Nov fix). The old dusk/night files
                     (city-lahore-badshahi-sky.jpg,
@@ -433,13 +458,22 @@ export default function Home() {
             // lst-dha-stunning.jpg, the same house photo as the
             // Featured Property card above it. No distinct real DHA
             // Lahore society/street photo exists in the repo (the
-            // other DHA files are interiors or a watermarked porch)
-            // and none was found on Wikimedia Commons (searched
-            // "DHA Lahore", "Defence Housing Authority Lahore",
-            // "DHA Phase Lahore boulevard", 3 categories, 25 Nov).
-            // Swapping in an interior or watermarked photo would be
-            // worse. A real DHA society/street photo is still needed
-            // from the client; flagged, not invented.
+            // other DHA files are interiors or a watermarked porch;
+            // dha-defence4, dha-u7 and dha-1kanal are all Featured
+            // cards too, so swapping to any of them duplicates a
+            // different Featured card) and none was found on
+            // Wikimedia Commons, searched again 25 Nov via the
+            // Commons API: "Defence Housing Authority Lahore" 0
+            // hits, Category:DHA_Lahore 0 files, "Defence Housing
+            // Authority" file search top hits are all Karachi or
+            // Islamabad (DHA Mosque Karachi, DHA Marina Club,
+            // Seaview Road Karachi, Nisar Shaheed Park Karachi),
+            // "DHA Phase Lahore street" 4 hits, all irrelevant.
+            // The media library was searched too, no DHA Lahore
+            // photo. Swapping in an interior, a watermarked photo
+            // or a photo of another city would be worse. A real DHA
+            // Lahore society/street photo is still needed from the
+            // client; flagged, not invented.
             { name: "DHA Lahore", img: "lst-dha-stunning.jpg", href: "/properties?q=DHA" },
             { name: "Bahria Town", img: "bahria-eiffel.jpg", href: "/properties?q=Bahria" },
             // PARITY 24 Nov 2026, Section 5: the Mangla lake photo was
@@ -525,8 +559,25 @@ export default function Home() {
                       very top edge of that crop, so the file now has
                       24px of the photo's own night sky above the roof
                       (house shifted down 24px in the same 630x394
-                      frame, bottom gate cropped 24px). Every other
-                      card stays object-cover. */}
+                      frame, bottom gate cropped 24px). LIVE-FAIL
+                      25 Nov 00:55 PKT: the live check still found the
+                      very top roof cut, only eaves visible, no tip or
+                      sky above it, because 24px reads as nothing at
+                      card size, and the source portrait itself cuts
+                      the top roof's ridge at y=0 (red pixels at y=0
+                      in global-zamzam-house-clean.jpg and in
+                      global-zamzam-house.jpg and global-zamzam-2.jpg,
+                      which is also a flyer with Urdu text and logos,
+                      rejected). No source file holds the tip, so none
+                      can be invented. Fix v2: the file now has 64px
+                      of the photo's own night sky above the roof,
+                      built column-wise from the portrait's own top
+                      sky row (anchors rgb(50,49,170) left,
+                      rgb(43,43,159) right, darkened toward the
+                      zenith), house shifted down 64px, bottom
+                      cropped to portrait row 330. Topmost red pixel
+                      is now at y=64, pyramid roof tip intact below
+                      it. Every other card stays object-cover. */}
                   <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-wide.jpg" ? "object-cover object-top" : "object-cover"} />
                   <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                   <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg md:text-xl leading-tight drop-shadow">{p.name}</span>
@@ -597,8 +648,21 @@ export default function Home() {
                 margins are gone. md:w-[400px], not md:w-auto: w-auto
                 + h-auto left the lazy image at 0x0 before it loaded,
                 so on a slow connection it never triggered loading at
-                all. A fixed width gives it layout size up front. */}
-            <Image src="/img/ceo-flat.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full md:w-[400px] h-[380px] sm:h-[420px] object-cover object-top rounded-lg bg-white" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+                all. A fixed width gives it layout size up front.
+                LIVE-FAIL 25 Nov 00:55 PKT: that box STILL left about
+                15% flat grey on each side, because the grey is IN
+                the photo: the subject spans only x=271..758 of the
+                1024px file, so object-cover on the full file can
+                never fill the frame with him. Fix: ceo-tight.jpg,
+                the same real photo cropped to x=258..772 (514x683,
+                measured non-grey bbox x=271..758, y=12..682, so 13px
+                grey margin each side, 2.5%, hair headroom 12px
+                kept), and the box now follows the tight file's own
+                aspect (w-full md:w-[400px], h-auto), so the image
+                fills it edge-to-edge with no crop at all. /about
+                keeps ceo-flat.jpg and its own box, unchanged: it
+                passed the live check. */}
+            <Image src="/img/ceo-tight.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={514} height={683} className="w-full md:w-[400px] h-auto object-cover object-top rounded-lg bg-white" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>

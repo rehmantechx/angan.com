@@ -274,6 +274,13 @@ export const PROJECTS: Project[] = [
     // global-zamzam-house-wide.jpg, is a true 16/10 crop of that same
     // real house photo (PIL, roof + top floor + balcony), so it fills
     // the card with no pillars and no blur. No AI, no new photo.
+    // LIVE-FAIL 25 Nov 00:55 PKT: the top roof still read as cut, so
+    // the file now carries 64px of the photo's own night sky above
+    // the roof (column-wise from the portrait's top sky row, house
+    // shifted down 64px, bottom cropped to portrait row 330).
+    // Topmost red pixel is at y=64; the source portrait itself cuts
+    // the top roof's ridge at y=0, so no tip beyond the source exists
+    // to restore, and none was invented.
     "cardImg": "global-zamzam-house-wide.jpg",
     "note": "Zam Zam City, Lahore. LDA approved."
   },
