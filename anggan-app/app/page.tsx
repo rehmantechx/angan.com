@@ -655,26 +655,26 @@ export default function Home() {
       <section className="mt-10">
         <div className="grid gap-6 md:grid-cols-2 items-center">
           <div className="flex justify-center md:justify-start">
-            {/* LIVE-FAIL 25 Nov 2026, ROOT CAUSE: ceo-tight.jpg
-                did NOT fill the frame, and no box fix could make
-                it: the file was cropped to the FULL-HEIGHT bbox
-                (shoulders x=271..758 of 1024, 486px wide), but the
-                HEAD is only x=448..604, 156px wide, measured
-                per-row in PIL. In a 514px-wide file the head is
-                30% of the frame, so at head height there are
-                37% grey bands each side plus a full-width grey
-                band above the hair, exactly what the live check
-                saw. The box was fine (400x532, exact file ratio,
-                h-auto, no crop). Fix: ceo-portrait.jpg, a true
-                head-and-shoulders crop of the same real photo,
-                x=380..660, y=0..440 (280x440): the head is 63%
-                of the frame width, the blue shirt fills the
-                frame edge-to-edge from the shoulders down, hair
-                intact with 13px headroom (3%). The box follows
-                the new file's own aspect, so the image fills it
-                with no crop at all. /about keeps ceo-flat.jpg
-                and its own box, unchanged: it passed live. */}
-            <Image src="/img/ceo-portrait.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={280} height={440} className="w-full md:w-[400px] h-auto object-cover object-top rounded-lg bg-white" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+            {/* LIVE-FAIL 2, 25 Nov 2026, ROOT CAUSE (measured in PIL,
+                not guessed): ceo-portrait.jpg head is only 64.3% of
+                the frame at its widest true head row (y=132, x=54..233
+                of 280) and 55.7% at eye level (yFrac 0.18), AND the
+                old crop x=380..660 was off-centre: widest head row
+                has a 29px left band but a 69px right band (10.4% /
+                24.6%), which is the ~90-100px grey side bands the
+                live check measured in a 399px frame. The box was
+                fine. Fix: ceo-portrait-v2.jpg, a true head-and-
+                shoulders crop of the same real photo (ceo-flat.jpg,
+                x=417..631, y=5..360, 215x356, quality 90): head
+                83.7% of frame at widest row (y=119, x=18..197),
+                70.7% at eye level (yFrac 0.18), side bands 18px /
+                17px (8.4% / 7.9%), hair intact with 7px headroom,
+                blue shirt 100% edge-to-edge at the bottom. New
+                filename busts any stale optimizer cache. Box follows
+                the new file's own aspect (w-full md:w-[360px],
+                h-auto), so the image fills it with no crop. /about
+                keeps ceo-flat.jpg and its own box, unchanged. */}
+            <Image src="/img/ceo-portrait-v2.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={215} height={356} className="w-full md:w-[360px] h-auto object-cover object-top rounded-lg bg-white" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>
