@@ -42,10 +42,10 @@ const HERO_PHOTOS = [
 // angan-e2e-evidence/famous-city-pics-2026-11-23/ for the source
 // URL of each photo. No AI images, no listing photos.
 const CITY_CARDS = [
-  { name: "Lahore", img: "city-lahore-badshahi-sky.jpg", alt: "Badshahi Mosque, Lahore", href: "/properties?city=Lahore", kind: "listings", pos: "object-top" },
-  { name: "Islamabad", img: "city-islamabad-faisal-sky.jpg", alt: "Faisal Mosque, Islamabad", href: "/properties?city=Islamabad", kind: "listings", pos: "object-top" },
-  { name: "Karachi", img: "city-karachi-mazar-sky.jpg", alt: "Mazar-e-Quaid, Karachi", href: "/properties?city=Karachi", kind: "listings", pos: "object-top" },
-  { name: "Rawalpindi", img: "city-rawalpindi-raja-bazaar.jpg", alt: "Raja Bazaar, Rawalpindi", href: "/properties?city=Rawalpindi", kind: "listings", pos: "object-top" },
+  { name: "Lahore", landmark: "Badshahi Mosque", img: "city-lahore-badshahi-day.jpg", alt: "Badshahi Mosque, Lahore, in daylight", href: "/properties?city=Lahore", kind: "listings", pos: "object-top" },
+  { name: "Islamabad", landmark: "Faisal Mosque", img: "city-islamabad-faisal-day.jpg", alt: "Faisal Mosque, Islamabad, in daylight with Margalla Hills", href: "/properties?city=Islamabad", kind: "listings", pos: "object-top" },
+  { name: "Karachi", landmark: "Mazar-e-Quaid", img: "city-karachi-mazar-wide.jpg", alt: "Mazar-e-Quaid, Karachi, whole mausoleum with gardens", href: "/properties?city=Karachi", kind: "listings", pos: "object-top" },
+  { name: "Rawalpindi", landmark: "Raja Bazaar", img: "city-rawalpindi-raja-bazaar-wide.jpg", alt: "Raja Bazaar, Rawalpindi, old bazaar street", href: "/properties?city=Rawalpindi", kind: "listings", pos: "object-top" },
   // MULTAN LEFT-EDGE FIX 25 Nov 2026: the tomb sits at the far LEFT
   // of city-multan-shah-rukn-sky.jpg (building base wall from x=33,
   // dome x=150-270 of 1000), while the card is 4/3 and the photo is
@@ -57,10 +57,10 @@ const CITY_CARDS = [
   // Sky above the dome was already fixed by the +60px PIL extension.
   // Real photo only, no AI, no image edit needed. All other cities
   // keep object-top, their subjects are centred.
-  { name: "Multan", img: "city-multan-shah-rukn-sky.jpg", alt: "Tomb of Shah Rukn-e-Alam, Multan", href: "/properties?city=Multan", kind: "listings", pos: "object-left-top" },
-  { name: "Mangla", img: "city-mangla-dam.jpg", alt: "Mangla Dam, seen from Ramkot Fort", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan", pos: "object-top" },
-  { name: "Kashmir", img: "city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City", pos: "object-top" },
-  { name: "All cities", img: "urban-drone.jpg", alt: "Urban City, Lahore, drone view", href: "/properties", kind: "all", sub: "12 homes", pos: "object-top" },
+  { name: "Multan", landmark: "Shah Rukn-e-Alam", img: "city-multan-shah-rukn-sky.jpg", alt: "Tomb of Shah Rukn-e-Alam, Multan", href: "/properties?city=Multan", kind: "listings", pos: "object-left-top" },
+  { name: "Mangla", landmark: "Mangla Dam", img: "city-mangla-dam.jpg", alt: "Mangla Dam, seen from Ramkot Fort", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan", pos: "object-top" },
+  { name: "Kashmir", landmark: "Sharda, Neelum Valley", img: "city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City", pos: "object-top" },
+  { name: "All cities", landmark: "", img: "urban-drone.jpg", alt: "Urban City, Lahore, drone view", href: "/properties", kind: "all", sub: "12 homes", pos: "object-top" },
 ] as const;
 function cityCount(city: string) {
   return LISTINGS.filter((l) => l.liveStatus === "live" && l.city === city).length;
@@ -354,23 +354,37 @@ export default function Home() {
           {CITY_CARDS.map((c) => {
             const n = c.kind === "listings" ? cityCount(c.name) : c.kind === "all" ? LISTINGS.filter((l) => l.liveStatus === "live").length : 0;
             return (
-              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.sub}, open project` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
-                {/* PARITY 24 Nov 2026, Section 2: object-top, not
-                    object-center, and taller 4/3 cards, so the tops
-                    of Badshahi Mosque, Faisal Mosque, Mazar-e-Quaid
-                    and Shah Rukn-e-Alam are not chopped off.
-                    LIVE-FAIL FIX 24 Nov 2026: the sky in the four
-                    city files was also extended upward in PIL
-                    (Faisal +150px black, Mazar +250px blue,
-                    Badshahi +80px, Multan +60px, column-wise top-row
-                    replication), so the domes/minarets sit well below
-                    the top edge with sky above them even if a card
-                    ever crops from the top again. Do NOT replace these
-                    files with the pre-pad originals. */}
+              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.landmark}, ${c.sub}, open project` : c.landmark ? `${c.name}, ${c.landmark}, ${n} ${n === 1 ? "home" : "homes"}, see listings` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
+                {/* FAMOUS PLACES 25 Nov 2026 (user order 00:34 PKT):
+                    the landmark must FILL the card, large, clear and
+                    well-lit, not a tiny dark silhouette. Lahore and
+                    Islamabad were dusk/night shots, so they are now
+                    daylight Commons photos, cropped to exact 4/3 in
+                    PIL: city-lahore-badshahi-day.jpg (Badshahi Mosque
+                    front picture, Romermaia, CC BY-SA 4.0) and
+                    city-islamabad-faisal-day.jpg (Faisal Mosque bright
+                    Sunny day, Mrfaisal007, CC BY-SA 3.0). Karachi is
+                    the same Mazar photo re-cropped to exact 4/3
+                    (city-karachi-mazar-wide.jpg) so the whole
+                    mausoleum, arches and gardens show, not just the
+                    dome. Rawalpindi is the same bazaar street
+                    re-cropped to exact 4/3
+                    (city-rawalpindi-raja-bazaar-wide.jpg). Multan
+                    keeps the sky-extended file and object-left-top
+                    (25 Nov fix). The old dusk/night files
+                    (city-lahore-badshahi-sky.jpg,
+                    city-islamabad-faisal-sky.jpg) stay in the repo
+                    but are no longer used on any card. PARITY 24 Nov
+                    2026, Section 2: object-top, not object-center,
+                    and taller 4/3 cards, so the tops of the landmarks
+                    are not chopped off. */}
                 <Image src={`/img/${c.img}`} alt={c.alt} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className={`object-cover ${c.pos}`} />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                 <span className="absolute bottom-0 left-0 right-0 p-3 text-white">
                   <span className="block text-lg md:text-xl font-extrabold leading-tight drop-shadow">{c.name}</span>
+                  {c.landmark ? (
+                    <span className="block text-xs font-bold mt-0.5 drop-shadow">{c.landmark}</span>
+                  ) : null}
                   {c.kind === "project" ? (
                     <span className="block text-xs font-semibold mt-0.5">{c.sub} &rarr;</span>
                   ) : (
@@ -415,13 +429,31 @@ export default function Home() {
         <h2 className="text-2xl font-bold text-navy">Societies</h2>
         <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
           {[
+            // POLISH-01 25 Nov 2026: DHA Lahore still uses
+            // lst-dha-stunning.jpg, the same house photo as the
+            // Featured Property card above it. No distinct real DHA
+            // Lahore society/street photo exists in the repo (the
+            // other DHA files are interiors or a watermarked porch)
+            // and none was found on Wikimedia Commons (searched
+            // "DHA Lahore", "Defence Housing Authority Lahore",
+            // "DHA Phase Lahore boulevard", 3 categories, 25 Nov).
+            // Swapping in an interior or watermarked photo would be
+            // worse. A real DHA society/street photo is still needed
+            // from the client; flagged, not invented.
             { name: "DHA Lahore", img: "lst-dha-stunning.jpg", href: "/properties?q=DHA" },
             { name: "Bahria Town", img: "bahria-eiffel.jpg", href: "/properties?q=Bahria" },
             // PARITY 24 Nov 2026, Section 5: the Mangla lake photo was
             // used 3 times on home (Hero 1, Societies, Projects). This
             // chip uses the real MGH Precinct 01 photo instead.
             { name: "MGH Pakistan", img: "mgh-precinct-01.jpg", href: "/projects/proj-1" },
-            { name: "Kashmir Modern City", img: "city-kashmir-neelum.jpg", href: "/projects/proj-7" },
+            // POLISH-01 25 Nov 2026: this chip used city-kashmir-neelum.jpg,
+            // the same Neelum bridge photo as the Kashmir city card above
+            // it, and that bridge is in Sharda, not at Kashmir Modern
+            // City. Now kmc-02-4x3.jpg: the real KMC site road photo
+            // (kmc-02.jpg, Jatlan, AJK), padded in PIL to 4/3 with
+            // sky/ground bands sampled from the photo itself, so both
+            // corner logos stay whole. Distinct from the city card.
+            { name: "Kashmir Modern City", img: "kmc-02-4x3.jpg", href: "/projects/proj-7" },
           ].map((c) => (
             <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm aspect-[4/3] bg-navy">
               {/* PARITY 24 Nov 2026, Section 2: object-top so the tip
@@ -488,7 +520,12 @@ export default function Home() {
                       fills the card with object-cover object-top, roof
                       intact, no side pillars. The old clean file was a
                       tall portrait, which object-contain squeezed into
-                      a narrow strip with white pillars. Every other
+                      a narrow strip with white pillars. POLISH-03
+                      25 Nov 2026: the top roof's tip still sat on the
+                      very top edge of that crop, so the file now has
+                      24px of the photo's own night sky above the roof
+                      (house shifted down 24px in the same 630x394
+                      frame, bottom gate cropped 24px). Every other
                       card stays object-cover. */}
                   <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-wide.jpg" ? "object-cover object-top" : "object-cover"} />
                   <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
@@ -550,11 +587,18 @@ export default function Home() {
                 was the real cause of the grey band: its darker top
                 strip read as a band on both pages. Do NOT "restore"
                 the git-history ceo.jpg original, that brings the band back.
-                md:w-[450px], not md:w-auto: w-auto + h-auto left the
-                lazy image at 0x0 before it loaded, so on a slow
-                connection it never triggered loading at all. A fixed
-                width gives it layout size up front. */}
-            <Image src="/img/ceo-flat.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full md:w-[450px] md:max-h-[300px] h-auto object-contain object-top rounded-lg" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+                POLISH-02 25 Nov 2026: the wide object-contain box
+                showed the whole 3:2 photo, so the subject sat small
+                with flat grey backdrop on both sides and his hair
+                nearly touching the top edge of the frame. Now the
+                same taller portrait box as /about: fixed height
+                380px (420px sm and up), object-cover object-top,
+                so the subject fills the frame and the grey side
+                margins are gone. md:w-[400px], not md:w-auto: w-auto
+                + h-auto left the lazy image at 0x0 before it loaded,
+                so on a slow connection it never triggered loading at
+                all. A fixed width gives it layout size up front. */}
+            <Image src="/img/ceo-flat.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full md:w-[400px] h-[380px] sm:h-[420px] object-cover object-top rounded-lg bg-white" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>

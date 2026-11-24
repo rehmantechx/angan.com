@@ -41,6 +41,16 @@ function PropertiesPage() {
   const [status, setStatus] = useState("");
   const [beds, setBeds] = useState("");
   const [size, setSize] = useState("");
+  // NAV FIX 25 Nov 2026: the PROJECTS dropdown links to
+  // /properties?type=Commercial, but this page had no type state at
+  // all, so the sync effect below rewrote the URL to plain
+  // /properties on first paint and the filter never applied. The
+  // type filter now exists, with the same vocabulary as the home
+  // search LOOKING FOR select (House, Flat, Portion, Plot,
+  // Commercial, File). There are 0 Commercial listings, so that
+  // link honestly shows "No exact match" plus the nearest Lahore
+  // listings, like any other 0-match filter.
+  const [type, setType] = useState("");
   const [budget, setBudget] = useState("");
   const [sort, setSort] = useState("newest");
 
@@ -56,6 +66,7 @@ function PropertiesPage() {
     if (params.get("status")) setStatus(params.get("status") || "");
     if (params.get("beds")) setBeds(params.get("beds") || "");
     if (params.get("size")) setSize(params.get("size") || "");
+    if (params.get("type")) setType(params.get("type") || "");
     if (params.get("budget")) setBudget(params.get("budget") || "");
     if (params.get("sort")) setSort(params.get("sort") || "newest");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -72,11 +83,12 @@ function PropertiesPage() {
     if (status) qs.set("status", status);
     if (beds) qs.set("beds", beds);
     if (size) qs.set("size", size);
+    if (type) qs.set("type", type);
     if (budget) qs.set("budget", budget);
     if (sort !== "newest") qs.set("sort", sort);
     const url = qs.toString() ? "/properties?" + qs.toString() : "/properties";
     window.history.replaceState(null, "", url);
-  }, [q, city, status, beds, size, budget, sort]);
+  }, [q, city, status, beds, size, type, budget, sort]);
 
   // Cities come only from the active listings, so Mangla and Kashmir,
   // which have projects but no property listings, never appear here.
@@ -102,6 +114,7 @@ function PropertiesPage() {
         } else if (l.beds !== parseInt(beds, 10)) return false;
       }
       if (size && l.size !== size) return false;
+      if (type && l.type !== type) return false;
       // Budget is a sale price (under-1cr / 1cr-5cr / above-5cr from
       // the home search). Rent listings always pass it: their n is
       // a monthly rent, not a sale price.
@@ -117,12 +130,12 @@ function PropertiesPage() {
     if (sort === "size-small") out.sort((a, b) => sizeSqft(a.size) - sizeSqft(b.size));
     if (sort === "size-large") out.sort((a, b) => sizeSqft(b.size) - sizeSqft(a.size));
     return out;
-  }, [listings, q, city, status, beds, size, budget, sort]);
+  }, [listings, q, city, status, beds, size, type, budget, sort]);
 
-  const anyFilter = q.trim() !== "" || city !== "" || status !== "" || beds !== "" || size !== "" || budget !== "" || sort !== "newest";
+  const anyFilter = q.trim() !== "" || city !== "" || status !== "" || beds !== "" || size !== "" || type !== "" || budget !== "" || sort !== "newest";
   const budgetLabel = BUDGETS.find((b) => b.value === budget)?.label || "";
   function clearFilters() {
-    setQ(""); setCity(""); setStatus(""); setBeds(""); setSize(""); setBudget(""); setSort("newest");
+    setQ(""); setCity(""); setStatus(""); setBeds(""); setSize(""); setType(""); setBudget(""); setSort("newest");
   }
 
   return (
@@ -160,6 +173,18 @@ function PropertiesPage() {
         <select value={size} onChange={(e) => setSize(e.target.value)} aria-label="Size" className="border border-gray-300 rounded px-3 py-2 min-w-0 min-h-[48px]">
           <option value="">Any size</option>
           {sizes.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        {/* NAV FIX 25 Nov 2026: Property Type select, same options as
+            the home search LOOKING FOR select, so a type in the URL
+            (?type=Commercial from the nav) shows here and filters. */}
+        <select value={type} onChange={(e) => setType(e.target.value)} aria-label="Property Type" className="border border-gray-300 rounded px-3 py-2 min-w-0 min-h-[48px]">
+          <option value="">All types</option>
+          <option value="House">House</option>
+          <option value="Flat">Flat</option>
+          <option value="Portion">Portion</option>
+          <option value="Plot">Plot</option>
+          <option value="Commercial">Commercial</option>
+          <option value="File">File</option>
         </select>
         <select value={budget} onChange={(e) => setBudget(e.target.value)} aria-label="Max. Price" className="border border-gray-300 rounded px-3 py-2 min-w-0 min-h-[48px]">
           {BUDGETS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}

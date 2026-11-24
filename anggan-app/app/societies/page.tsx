@@ -7,7 +7,13 @@ const GUIDES = [
   { name: "Paragon City, Lahore", note: "Anngan head office: 57-S, 2nd Floor, Imperial Homes, Paragon City.", href: "/contact", label: "Visit us", img: "", caption: "Anngan head office, Paragon City", contain: false },
   { name: "DHA Lahore", note: "10 Marla houses and 1 Kanal houses in the real listings on this site.", href: "/properties?q=DHA", label: "See DHA listings", img: "lst-dha-stunning.jpg", caption: "House in DHA Lahore", contain: false },
   { name: "Bahria Town, Lahore and Rawalpindi", note: "Houses for sale and rent in Bahria Town on this site.", href: "/properties?q=Bahria", label: "See Bahria listings", img: "bahria-eiffel.jpg", caption: "Eiffel Tower, Bahria Town, Lahore", contain: false },
-  { name: "Kashmir Modern City, Mirpur", note: "Sold Out. Developer Al-Baari. Soft launch at Mirpur, 21 Dec 2022.", href: "/projects/proj-7", label: "Open project", img: "kmc-01.jpg", caption: "Kashmir Modern City, Mirpur", contain: false },
+  // POLISH-03 25 Nov 2026: was kmc-01.jpg (1200x675, 16/9) in this
+  // 16/10 object-cover object-top card, which cropped the sides and
+  // clipped both corner logos (anngan.com top-left, Modern City
+  // top-right). Now kmc-01-16x10.jpg, the same real KMC photo padded
+  // in code to 1200x750 with sky/sand bands, both logos whole, the
+  // same file the homepage Our projects card already uses.
+  { name: "Kashmir Modern City, Mirpur", note: "Sold Out. Developer Al-Baari. Soft launch at Mirpur, 21 Dec 2022.", href: "/projects/proj-7", label: "Open project", img: "kmc-01-16x10.jpg", caption: "Kashmir Modern City, Mirpur", contain: false },
 ];
 
 export default function SocietiesPage() {
