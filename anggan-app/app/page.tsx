@@ -231,7 +231,7 @@ export default function Home() {
             className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
           />
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-b from-navy/25 via-transparent to-navy/35 pointer-events-none" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/65 via-slate-950/45 to-slate-950/75 pointer-events-none" aria-hidden="true" />
         <div className="relative w-full max-w-6xl mx-auto px-4 py-5 md:py-6 text-center">
           <h1 className="text-white text-2xl sm:text-5xl md:text-6xl font-extrabold mx-auto leading-tight md:whitespace-nowrap [text-shadow:0_2px_12px_rgba(0,0,0,0.55)]">
             WELCOME TO ANNGAN.COM
@@ -343,8 +343,12 @@ export default function Home() {
           {CITY_CARDS.map((c) => {
             const n = c.kind === "listings" ? cityCount(c.name) : c.kind === "all" ? LISTINGS.filter((l) => l.liveStatus === "live").length : 0;
             return (
-              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[16/10] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.sub}, open project` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
-                <Image src={`/img/${c.img}`} alt={c.alt} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover" />
+              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.sub}, open project` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
+                {/* PARITY 24 Nov 2026, Section 2: object-top, not
+                    object-center, and taller 4/3 cards, so the tops
+                    of Badshahi Mosque, Faisal Mosque, Mazar-e-Quaid
+                    and Shah Rukn-e-Alam are not chopped off. */}
+                <Image src={`/img/${c.img}`} alt={c.alt} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover object-top" />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                 <span className="absolute bottom-0 left-0 right-0 p-3 text-white">
                   <span className="block text-lg md:text-xl font-extrabold leading-tight drop-shadow">{c.name}</span>
@@ -394,33 +398,37 @@ export default function Home() {
           {[
             { name: "DHA Lahore", img: "lst-dha-stunning.jpg", href: "/properties?q=DHA" },
             { name: "Bahria Town", img: "bahria-eiffel.jpg", href: "/properties?q=Bahria" },
-            { name: "MGH Pakistan", img: "mgh-lake-aerial.jpg", href: "/projects/proj-1" },
+            // PARITY 24 Nov 2026, Section 5: the Mangla lake photo was
+            // used 3 times on home (Hero 1, Societies, Projects). This
+            // chip uses the real MGH Precinct 01 photo instead.
+            { name: "MGH Pakistan", img: "mgh-precinct-01.jpg", href: "/projects/proj-1" },
             { name: "Kashmir Modern City", img: "city-kashmir-neelum.jpg", href: "/projects/proj-7" },
           ].map((c) => (
             <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm aspect-[4/3] bg-navy">
-              <Image src={`/img/${c.img}`} alt={c.name} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover" />
+              {/* PARITY 24 Nov 2026, Section 2: object-top so the tip
+                  of the Bahria Town Eiffel Tower is not chopped. */}
+              <Image src={`/img/${c.img}`} alt={c.name} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover object-top" />
               <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
               <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg leading-tight">{c.name} &rarr;</span>
             </Link>
           ))}
         </div>
         <h3 className="font-bold text-navy mt-6">Partner agencies</h3>
-        {/* 2026-11-24 user order: the 2-per-row flex strip was tall
-            with huge empty white space and small logos, on mobile
-            and desktop. Rebuilt as a compact grid, 3 per row mobile,
-            4 tablet, 6 desktop. Each card is a fixed aspect-ratio
-            logo box (5/4, close to the real logos' 500x438) that the
-            logo fills with object-contain, tight padding, tight
-            label under it, no extra empty rows. Same 13 logos,
-            same order, same /contact links, same name labels. */}
-        <div className="grid gap-2 sm:gap-3 mt-3 grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
+        {/* PARITY 24 Nov 2026, Section 2: the 6-column grid left
+            Brick Line Estate as a lone orphan on Row 3 and clipped
+            logo edges at the container border. Now flex flex-wrap
+            justify-center, so the final row is centred, with p-3
+            inside every logo box so zero logo edges touch the border.
+            Same 13 logos, same order, same /contact links, same name
+            labels, 3 per row mobile, 4 tablet, 6 desktop. */}
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-3">
           {AGENCIES.map((a) => (
             // PHN-05: every logo tile carries its agency name under
             // the logo, so the bare stylised P (Pioneer Estate) is
             // named and no tile is an unlabeled picture.
-            <Link key={a.id} href="/contact" aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm flex flex-col items-center gap-1">
+            <Link key={a.id} href="/contact" aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm flex flex-col items-center gap-1 w-[calc(33.333%-6px)] sm:w-[calc(25%-9px)] lg:w-[calc(16.666%-10px)]">
               <span className="relative block w-full aspect-[5/4]">
-                <Image src={`/img/${a.logo}`} alt={a.name + " logo"} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-contain" loading="lazy" />
+                <Image src={`/img/${a.logo}`} alt={a.name + " logo"} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-contain p-3" loading="lazy" />
               </span>
               <span className="text-[11px] sm:text-xs font-bold text-navy text-center leading-tight">{a.name}</span>
             </Link>
@@ -446,12 +454,21 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-navy">Our projects</h2>
           <Link href="/projects" className="text-anngan-dark font-semibold text-sm">All 7 projects &rarr;</Link>
         </div>
-        <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-3">
+        {/* PARITY 24 Nov 2026, Section 2: flex flex-wrap
+            justify-center, so the 7th card (Kashmir Modern City)
+            is centred on the last row instead of a lone orphan on
+            the left. */}
+        <div className="flex flex-wrap justify-center gap-4 mt-4">
           {projects.map((p) => (
-            <Link key={p.id} href={`/projects/${p.id}`} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[16/10] bg-navy" aria-label={`${p.name}, open project`}>
+            <Link key={p.id} href={`/projects/${p.id}`} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[16/10] bg-navy w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]" aria-label={`${p.name}, open project`}>
               {p.img || p.cardImg ? (
                 <>
-                  <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className="object-cover" />
+                  {/* The Global Homes clean crop is a tall portrait
+                      house photo: object-contain on white, so the
+                      whole house shows with its roof intact and no
+                      blurred sidebars. Every other card stays
+                      object-cover. */}
+                  <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-clean.jpg" ? "object-contain bg-white" : "object-cover"} />
                   <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                   <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg md:text-xl leading-tight drop-shadow">{p.name}</span>
                 </>
@@ -461,16 +478,20 @@ export default function Home() {
             </Link>
           ))}
         </div>
-        {/* PAR-01: the MGH YouTube walkthrough, embedded cleanly in
-            the MGH spotlight section (Our projects), for dealers who
-            prefer watching to reading. Video ID UxOpwyG6YJA,
-            "Zamindar File, MGH Pakistan, best property in Pakistan",
-            629 views, 4 Feb 2023, verified from the real Anngan
-            YouTube channel (@annganpk) in app/about/page.tsx. It is
-            the channel's Zamindar File walkthrough, the closest
-            verified match to the old site's MGH walkthrough video.
-            No ID was guessed. */}
-        <div className="mt-6 max-w-3xl mx-auto">
+        {/* PARITY 24 Nov 2026, Section 5: the MGH YouTube walkthrough,
+            with a short MGH Zamindar File spotlight beside it, like
+            the old anngan.com. Video ID UxOpwyG6YJA, "Zamindar File,
+            MGH Pakistan, best property in Pakistan", 629 views,
+            4 Feb 2023, verified from the real Anngan YouTube channel
+            (@annganpk). The spotlight text uses only verified facts
+            from lib/projectDetails.ts: Pakistan's first and biggest
+            natural lake view housing project, 7KM Mangla Gaddari
+            Road, Mangla Cantt, Jhelum, Anngan is a Platinum partner,
+            Zamindar File 10% quota in balloting, Affidavit MGH,
+            Serene Farm Houses in Precincts 05 and 06. No ID guessed,
+            no claim invented. The secondary phone is NOT added here:
+            +92 320 5966 664 is still unconfirmed with the client. */}
+        <div className="mt-6 grid gap-4 lg:grid-cols-2 items-center max-w-5xl mx-auto">
           <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-sm bg-navy">
             <iframe
               src="https://www.youtube-nocookie.com/embed/UxOpwyG6YJA"
@@ -481,16 +502,32 @@ export default function Home() {
               className="absolute inset-0 w-full h-full"
             />
           </div>
-          <p className="text-center text-sm mt-2">
-            <a href="https://www.youtube.com/watch?v=UxOpwyG6YJA" target="_blank" rel="noopener" className="text-anngan-dark font-semibold underline">Watch on YouTube: MGH Pakistan, Zamindar File</a>
-          </p>
+          <div>
+            <h3 className="font-bold text-navy text-lg">MGH Zamindar File, Mangla</h3>
+            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+              MGH Pakistan at Mangla is Pakistan&apos;s first and biggest natural lake view housing project, on 7KM Mangla Gaddari Road, Mangla Cantt, Jhelum. Anngan is a Platinum partner of the project.
+            </p>
+            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+              The Zamindar File carries a 10% quota in balloting. Affidavit MGH and Serene Farm Houses in Precincts 05 and 06 are also available. File rates change with the market, call +92 304 1111 698 for today&apos;s rate.
+            </p>
+            <p className="text-sm mt-3">
+              <a href="https://www.youtube.com/watch?v=UxOpwyG6YJA" target="_blank" rel="noopener" className="text-anngan-dark font-semibold underline">Watch on YouTube: MGH Pakistan, Zamindar File</a>
+            </p>
+          </div>
         </div>
       </section>
 
       <section className="mt-10">
         <div className="grid gap-6 md:grid-cols-2 items-center">
           <div className="flex justify-center md:justify-start">
-            <Image src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={773} className="w-full md:w-auto md:max-h-[300px] h-auto object-contain object-top rounded-lg bg-white p-2 pt-3" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+            {/* PARITY 24 Nov 2026, Section 2: ceo.jpg is the original
+                unpadded photo again (1024x683, restored from git
+                history). No grey letterbox band, no extra padding.
+                md:w-[450px], not md:w-auto: w-auto + h-auto left the
+                lazy image at 0x0 before it loaded, so on a slow
+                connection it never triggered loading at all. A fixed
+                width gives it layout size up front. */}
+            <Image src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full md:w-[450px] md:max-h-[300px] h-auto object-contain object-top rounded-lg" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>

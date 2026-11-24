@@ -16,11 +16,18 @@ export default function ProjectsPage() {
     <div>
       <h1 className="text-3xl font-bold text-navy">Projects</h1>
       <p className="text-gray-600 mt-1">7 real projects. Call +92 304 1111 698 for files, prices and payment plans.</p>
-      <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* PARITY 24 Nov 2026, Section 2: flex flex-wrap
+          justify-center, so the 7th card (Kashmir Modern City) is
+          centred on the last row instead of a lone orphan. */}
+      <div className="flex flex-wrap justify-center gap-4 mt-4">
         {projects.map((p, i) => (
-          <article key={p.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
+          <article key={p.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]">
             {p.img ? (
-              <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} width={1200} height={675} className="w-full h-48 object-cover bg-navy" loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+              // The Global Homes clean crop is a tall portrait house
+              // photo: object-contain on white, so the whole house
+              // shows with its roof intact and no blurred sidebars.
+              // Every other card stays object-cover.
+              <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} width={1200} height={675} className={(p.cardImg || p.img) === "global-zamzam-house-clean.jpg" ? "w-full h-48 object-contain bg-white" : "w-full h-48 object-cover bg-navy"} loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
             ) : (
               <ProjectFallback name={p.name} loc={p.loc} />
             )}

@@ -4,8 +4,13 @@ import { GalleryLightbox } from "./Lightbox";
 
 // Client wrapper so the server project page can pass plain photo data
 // (serializable props) and the lightbox still opens at the clicked
-// photo. Gallery photos use object-cover at 16/10, no grey bars; the
-// allotment letter keeps its natural portrait height, no fixed aspect.
+// photo. PARITY 24 Nov 2026, Section 1 (HIGHEST PRIORITY): gallery
+// photos are flyers, banners and maps with text in them. They are
+// NEVER cropped: w-full h-auto object-contain at their natural aspect
+// ratio, inside a clean white frame with subtle padding, so zero text
+// or map labels are ever cut. The old aspect-[16/10] object-cover
+// clipped Sialkot off the MGH map, chopped the Global Homes flyer on
+// all 4 sides, and cut the Al Ghani banner and the E-STAMP letter.
 export function ProjectGallery({
   galleryPhotos,
   documentPhotos,
@@ -29,7 +34,7 @@ export function ProjectGallery({
                 return (
                   <figure key={ph.file} className={i === 0 || lastSingle ? "sm:col-span-2" : ""}>
                     <button type="button" onClick={() => open(i)} className="block w-full text-left focus:outline-none focus:ring-2 focus:ring-anngan rounded-lg" aria-label={"Zoom photo: " + ph.caption}>
-                      <Image src={`/img/${ph.file}`} alt={ph.caption} width={1200} height={675} className="w-full rounded-lg object-cover bg-navy border border-gray-200 aspect-[16/10]" loading={i === 0 ? "eager" : "lazy"} sizes="(max-width: 768px) 100vw, 60vw" />
+                      <Image src={`/img/${ph.file}`} alt={ph.caption} width={1200} height={675} className="w-full h-auto rounded-lg object-contain bg-white border border-gray-200 p-2" loading={i === 0 ? "eager" : "lazy"} sizes="(max-width: 768px) 100vw, 60vw" />
                     </button>
                     <figcaption className="text-sm text-gray-600 mt-1">{ph.caption} &middot; Tap to zoom</figcaption>
                   </figure>

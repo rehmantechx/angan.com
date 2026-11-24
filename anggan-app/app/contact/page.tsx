@@ -87,7 +87,9 @@ export default function ContactPage() {
           </p>
         </div>
         <div>
-          <h2 className="text-xl font-bold text-navy">Send an enquiry</h2>
+          {/* PARITY 24 Nov 2026, Section 4: the duplicate "Send an
+              enquiry" heading is removed. The form below already
+              carries its own "Send an enquiry" heading. */}
           <div className="mt-3">
             <EnquiryForm asked="General enquiry" compact />
           </div>

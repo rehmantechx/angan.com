@@ -63,7 +63,11 @@ const NAV_LINKS: NavItem[] = [
       { href: "/companies#marketing", label: "Corporate Angle Marketing" },
     ],
   },
-  { href: "/services", label: "ANGAN TECH" },
+  // PARITY 24 Nov 2026, Section 3: ANGAN TECH is NOT a separate
+  // top-level item any more. It is already inside the ANNGAN
+  // COMPANIES dropdown as Anngan Technologies, just like on
+  // anngan.com, and 12 nav items pushed OFFICE LOGIN past the right
+  // viewport edge. The footer still links Angan Tech.
 ];
 
 const SOCIAL_LINKS = [
@@ -178,7 +182,11 @@ export function Header() {
           >
             MENU &#9776;
           </button>
-          <div className="hidden xl:flex items-center gap-1 text-xs font-bold whitespace-nowrap max-w-7xl mx-auto px-4 sm:px-6 py-1">
+          {/* PARITY 24 Nov 2026, Section 3: nav tightened (text-xs
+              tracking-tight px-2 links, slim py-1.5 CREATE A LISTING)
+              so all 11 items plus OFFICE LOGIN fit inside the red bar
+              with breathing room, no horizontal scrollbar. */}
+          <div className="hidden xl:flex items-center gap-1 text-xs tracking-tight font-bold whitespace-nowrap max-w-7xl mx-auto px-4 sm:px-6 py-1">
             {NAV_LINKS.map((l) =>
               l.dropdown ? (
                 // NAV-01/02 desktop dropdown: hover opens it, the label
@@ -215,7 +223,12 @@ export function Header() {
                     <div className="absolute left-0 top-full z-50 w-80 bg-white text-navy shadow-lg rounded-b-lg border border-gray-200 py-1 normal-case" role="menu">
                       {l.dropdown.map((g) =>
                         g.children ? (
-                          <div key={g.href + g.label} className="border-b border-gray-100 last:border-b-0">
+                          // PARITY 24 Nov 2026, Section 3: nested
+                          // sub-menus open on hover (onMouseEnter),
+                          // as a flyout to the right of the parent
+                          // item on desktop. The chevron still
+                          // toggles on click for touch/mobile.
+                          <div key={g.href + g.label} className="relative border-b border-gray-100 last:border-b-0" onMouseEnter={() => setOpenSub(g.label)}>
                             <div className="flex items-stretch">
                               <Link href={g.href} onClick={() => setOpenDrop(null)} className="flex-1 px-4 py-2.5 min-h-[44px] inline-flex items-center font-bold hover:bg-blue-50">
                                 {g.label}
@@ -231,7 +244,7 @@ export function Header() {
                               </button>
                             </div>
                             {openSub === g.label ? (
-                              <div className="bg-blue-50/60 border-l-4 border-l-anngan ml-4">
+                              <div className="absolute left-full top-0 z-50 w-64 bg-white text-navy shadow-lg rounded-lg border border-gray-200 py-1 ml-0.5">
                                 {g.children.map((c) => (
                                   <Link key={c.href} href={c.href} onClick={() => setOpenDrop(null)} className="block px-4 py-2.5 min-h-[44px] hover:bg-blue-50">
                                     {c.label}
@@ -241,7 +254,7 @@ export function Header() {
                             ) : null}
                           </div>
                         ) : (
-                          <Link key={g.href + g.label} href={g.href} onClick={() => setOpenDrop(null)} className="block px-4 py-2.5 min-h-[44px] hover:bg-blue-50 border-b border-gray-100 last:border-b-0">
+                          <Link key={g.href + g.label} href={g.href} onClick={() => setOpenDrop(null)} onMouseEnter={() => setOpenSub(null)} className="block px-4 py-2.5 min-h-[44px] hover:bg-blue-50 border-b border-gray-100 last:border-b-0">
                             {g.label}
                           </Link>
                         ),
@@ -255,7 +268,11 @@ export function Header() {
                 </Link>
               ),
             )}
-            <Link href="/create-listing" aria-current={isActive("/create-listing") ? "page" : undefined} className={"btn bg-[#2F96CD] hover:bg-[#005F90] text-white px-3 shrink-0 min-h-[40px] py-2 " + (isActive("/create-listing") ? "ring-2 ring-white" : "")}>
+            {/* PARITY 24 Nov 2026, Section 3: slim py-1.5, min-h 36px.
+                NOT the .btn class: .btn forces padding 0.75rem and
+                min-height 48px, which overrode py-1.5, so the button
+                stayed 12px tall in padding and stuck out of the bar. */}
+            <Link href="/create-listing" aria-current={isActive("/create-listing") ? "page" : undefined} className={"inline-flex items-center justify-center gap-2 rounded-lg font-bold text-sm text-white bg-[#2F96CD] hover:bg-[#005F90] px-3 py-1.5 min-h-[36px] shrink-0 shadow " + (isActive("/create-listing") ? "ring-2 ring-white" : "")}>
               CREATE A LISTING
             </Link>
             {user ? (

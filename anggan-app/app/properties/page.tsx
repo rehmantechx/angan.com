@@ -130,33 +130,38 @@ function PropertiesPage() {
       <h1 className="text-3xl font-bold text-navy">Properties</h1>
       <p className="text-gray-600 mt-1">{listings.length} real properties. Only live, approved listings are shown here.</p>
 
-      <div className="grid gap-2 mt-4 sm:grid-cols-2 lg:grid-cols-7 bg-gray-50 border border-gray-200 rounded-lg p-3">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search listings" aria-label="Search listings by word, area or society" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px] lg:col-span-2" />
-        <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="City" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+      {/* PARITY 24 Nov 2026, Section 4: the filter bar is flex
+          flex-wrap gap-2, not a 7-column grid. The old grid gave the
+          status select a ~130px track, so its 190px min-width pushed
+          into the Any beds select and the chevron stayed clipped.
+          Each select now sizes to its own text, with room for its
+          chevron. */}
+      <div className="flex flex-wrap gap-2 mt-4 bg-gray-50 border border-gray-200 rounded-lg p-3">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search listings" aria-label="Search listings by word, area or society" className="border border-gray-300 rounded px-3 py-2 min-w-[220px] flex-1 min-h-[48px]" />
+        <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="City" className="border border-gray-300 rounded px-3 py-2 min-w-0 min-h-[48px]">
           <option value="">All cities</option>
           {cities.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        {/* PHN-05: the status dropdown is wide enough that "For sale
-            or rent" fits completely, not clipped to "For sale or ren".
-            FLT-01: pr-8 gives the native chevron room of its own, so
-            the text and the chevron never collide with the next select. */}
-        <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="For sale or rent" className="border border-gray-300 rounded px-3 py-2 pr-8 min-w-[190px] w-full min-h-[48px]">
+        {/* PHN-05 / FLT-01: min-w-[155px] pr-8 gives "For sale or
+            rent" and its native chevron room of their own, so the
+            text and the chevron never collide with the next select. */}
+        <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="For sale or rent" className="border border-gray-300 rounded px-3 py-2 pr-8 min-w-[155px] min-h-[48px]">
           <option value="">For sale or rent</option>
           <option value="sale">For sale</option>
           <option value="rent">For rent</option>
         </select>
-        <select value={beds} onChange={(e) => setBeds(e.target.value)} aria-label="Bedrooms" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+        <select value={beds} onChange={(e) => setBeds(e.target.value)} aria-label="Bedrooms" className="border border-gray-300 rounded px-3 py-2 min-w-0 min-h-[48px]">
           <option value="">Any beds</option>
           <option value="2">2 beds</option>
           <option value="3">3 beds</option>
           <option value="4">4 beds</option>
           <option value="5+">5+ beds</option>
         </select>
-        <select value={size} onChange={(e) => setSize(e.target.value)} aria-label="Size" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+        <select value={size} onChange={(e) => setSize(e.target.value)} aria-label="Size" className="border border-gray-300 rounded px-3 py-2 min-w-0 min-h-[48px]">
           <option value="">Any size</option>
           {sizes.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select value={budget} onChange={(e) => setBudget(e.target.value)} aria-label="Max. Price" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+        <select value={budget} onChange={(e) => setBudget(e.target.value)} aria-label="Max. Price" className="border border-gray-300 rounded px-3 py-2 min-w-0 min-h-[48px]">
           {BUDGETS.map((b) => <option key={b.value} value={b.value}>{b.label}</option>)}
         </select>
       </div>

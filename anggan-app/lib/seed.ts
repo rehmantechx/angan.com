@@ -250,6 +250,11 @@ export const PROJECTS: Project[] = [
     "city": "Mangla",
     "page": "project-mgh.html",
     "img": "mgh-lake-aerial.jpg",
+    // PARITY 24 Nov 2026, Section 5: the Mangla lake photo was used
+    // 3 times on home (Hero 1, Societies, Projects). The project card
+    // uses the real MGH Precinct 02 night photo instead, so each slot
+    // shows a different real MGH photo.
+    "cardImg": "mgh-precinct-02-night.jpg",
     "note": "Zamindar File, Affidavit MGH and Serene Farm Houses, inside one project."
   },
   {
@@ -259,9 +264,12 @@ export const PROJECTS: Project[] = [
     "city": "Lahore",
     "page": "project-global.html",
     "img": "global-zamzam-2.jpg",
-    // VIS-09: the card cover is a clean photo of the house, cropped
-    // from the real flyer. The full flyer stays inside proj-2.
-    "cardImg": "global-zamzam-house.jpg",
+    // PARITY 24 Nov 2026, Section 5: the old card cover was a crop
+    // of the real flyer with purple/blue blurred sidebars and a roof
+    // touching the top edge. global-zamzam-house-clean.jpg is the same
+    // real house photo, centre-cropped in code (PIL) to drop the
+    // blurred sidebars, roof intact, no AI, no new photo.
+    "cardImg": "global-zamzam-house-clean.jpg",
     "note": "Zam Zam City, Lahore. LDA approved."
   },
   {
@@ -284,6 +292,10 @@ export const PROJECTS: Project[] = [
     "city": "Lahore",
     "page": "project-urban.html",
     "img": "urban-drone.jpg",
+    // PARITY 24 Nov 2026, Section 5: the drone photo was used 3 times
+    // on home (Hero 2, All cities, Projects). The project card uses
+    // the real Urban City Grand Mosque photo instead.
+    "cardImg": "urban-mosque.jpg",
     "note": "80,000+ kanals, Lahore."
   },
   {
@@ -311,6 +323,13 @@ export const PROJECTS: Project[] = [
     "city": "Kashmir",
     "page": "project-kashmir.html",
     "img": "kmc-01.jpg",
+    // PARITY 24 Nov 2026, Section 5: kmc-01.jpg is 1200x677 (16:9),
+    // so a 16/10 object-cover card chopped the anngan.com logo and
+    // the Modern City logo at the top. kmc-01-16x10.jpg is the same
+    // real photo, padded in code (PIL) to 1200x750 with edge-sampled
+    // sky and sand bands, so both logos show whole. The gallery on
+    // proj-7 still uses the original kmc-01.jpg, uncropped.
+    "cardImg": "kmc-01-16x10.jpg",
     "note": "Sold Out. Mirpur, Kashmir."
   }
 ];

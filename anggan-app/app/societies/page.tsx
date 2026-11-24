@@ -21,12 +21,18 @@ export default function SocietiesPage() {
           <article key={g.name} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
             <figure>
               {g.img ? (
+                // PARITY 24 Nov 2026, Section 2: aspect-[16/10] with
+                // object-top, so the tip of the Bahria Town Eiffel
+                // Tower is not chopped. DHA Lahore keeps the real
+                // DHA house photo (lst-dha-stunning.jpg): no wider
+                // real DHA exterior shot exists in the repo, so no
+                // wider shot was invented. Flagged in NOTES.md.
                 <Image
                   src={`/img/${g.img}`}
                   alt={g.caption}
                   width={1200}
                   height={675}
-                  className="w-full h-40 object-cover bg-navy"
+                  className="w-full aspect-[16/10] object-cover object-top bg-navy"
                   loading={i < 2 ? "eager" : "lazy"}
                   priority={i < 2}
                   sizes="(max-width: 640px) 100vw, 50vw"

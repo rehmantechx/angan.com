@@ -75,12 +75,15 @@ export function CalcIcon({ size = 28 }: { size?: number }) {
     </Svg>
   );
 }
+// PARITY 24 Nov 2026, Section 4: this was drawn as a camera
+// (rect + lens circle + top bar). A home loan calculator gets a bank:
+// roof, three columns, base.
 export function LoanIcon({ size = 28 }: { size?: number }) {
   return (
     <Svg size={size}>
-      <rect x="3" y="6" width="18" height="13" rx="2" />
-      <circle cx="12" cy="12.5" r="3" />
-      <path d="M6 6V4h12v2" />
+      <path d="M3 9.5 12 3l9 6.5" />
+      <path d="M5 10v8M10 10v8M14 10v8M19 10v8" />
+      <path d="M3 21h18M4 18h16" />
     </Svg>
   );
 }

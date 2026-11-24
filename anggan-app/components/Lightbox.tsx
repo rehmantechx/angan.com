@@ -42,7 +42,7 @@ export function Lightbox({
           alt={images[start].alt}
           width={1200}
           height={675}
-          className="w-full rounded-lg object-cover bg-navy"
+          className="w-full h-auto rounded-lg object-contain bg-navy"
           sizes="100vw"
         />
         <span className="block text-xs text-gray-500 mt-1">Tap the photo to zoom</span>

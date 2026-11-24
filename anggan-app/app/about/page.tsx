@@ -58,12 +58,16 @@ export default function AboutPage() {
 
       <div className="grid gap-6 mt-6 lg:grid-cols-2 items-start">
         <figure className="border border-gray-200 rounded-lg p-4 bg-white max-w-md w-full">
+          {/* PARITY 24 Nov 2026, Section 2: ceo.jpg is the original
+              unpadded photo again (1024x683). Clean rounded frame,
+              object-cover object-top, max-height so it never
+              stretches pixelated. No grey letterbox band. */}
           <Image
             src="/img/ceo.jpg"
             alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan"
             width={1024}
-            height={773}
-            className="w-full h-auto object-contain object-top bg-white pt-6 px-2"
+            height={683}
+            className="w-full h-[380px] sm:h-[420px] object-cover object-top rounded-lg bg-white"
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
           <figcaption className="text-sm text-gray-600 mt-2">
@@ -84,16 +88,21 @@ export default function AboutPage() {
           </p>
 
           <h2 className="text-xl font-bold text-navy mt-6">Anngan in numbers</h2>
+          {/* PARITY 24 Nov 2026, Section 4: "Listings with photos
+              and prices" wrapped to 2 lines while "Projects on this
+              site" stayed on 1, misaligning the numbers 7, 12, 13.
+              Shortened to "Live listings", and each box is flex
+              flex-col justify-between so the numbers sit level. */}
           <dl className="mt-3 grid grid-cols-3 gap-2 sm:gap-3 text-center">
-            <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white">
+            <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white flex flex-col justify-between">
               <dt className="text-xs sm:text-sm text-gray-600">Projects on this site</dt>
               <dd className="text-2xl font-bold text-navy">7</dd>
             </div>
-            <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white">
-              <dt className="text-xs sm:text-sm text-gray-600">Listings with photos and prices</dt>
+            <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white flex flex-col justify-between">
+              <dt className="text-xs sm:text-sm text-gray-600">Live listings</dt>
               <dd className="text-2xl font-bold text-navy">12</dd>
             </div>
-            <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white">
+            <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white flex flex-col justify-between">
               <dt className="text-xs sm:text-sm text-gray-600">Partner agencies</dt>
               <dd className="text-2xl font-bold text-navy">13</dd>
             </div>
@@ -117,8 +126,13 @@ export default function AboutPage() {
       <div className="grid gap-4 mt-4 sm:grid-cols-2">
         {WORK.map((w) => (
           <article key={w.title} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
+            {/* PARITY 24 Nov 2026, Section 1: the Files card is a
+                document, not a photo. The old h-36 object-cover
+                sliced the E-STAMP letter through "MGH PAKISTAN" and
+                "S/O D/O W/O:". Now a tall white frame with
+                object-contain, so the whole letter shows, uncropped. */}
             {w.img ? (
-              <Image src={`/img/${w.img}`} alt={w.alt} width={1200} height={675} className="w-full h-36 object-cover" loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" />
+              <Image src={`/img/${w.img}`} alt={w.alt} width={1200} height={675} className={w.title === "Files" ? "w-full h-80 object-contain bg-white p-2" : "w-full h-36 object-cover"} loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" />
             ) : (
               <div className="w-full h-36 bg-navy flex items-center justify-center px-4">
                 <p className="text-white font-bold text-center">MGH Zamindar File<br /><span className="text-sm font-normal text-blue-100">5 Marla, 125 sq yards, Mangla</span></p>
