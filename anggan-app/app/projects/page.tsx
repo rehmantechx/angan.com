@@ -23,11 +23,14 @@ export default function ProjectsPage() {
         {projects.map((p, i) => (
           <article key={p.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full w-full sm:w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]">
             {p.img ? (
-              // The Global Homes clean crop is a tall portrait house
-              // photo: object-contain on white, so the whole house
-              // shows with its roof intact and no blurred sidebars.
-              // Every other card stays object-cover.
-              <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} width={1200} height={675} className={(p.cardImg || p.img) === "global-zamzam-house-clean.jpg" ? "w-full h-48 object-contain bg-white" : "w-full h-48 object-cover bg-navy"} loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+              // LIVE-FAIL FIX 24 Nov 2026: the Global Homes cover is
+              // now a true 16/10 wide crop of the real house photo
+              // (global-zamzam-house-wide.jpg). object-cover object-top
+              // fills the h-48 card with the roof intact and no side
+              // pillars. The old clean file was a tall portrait, which
+              // object-contain squeezed into a narrow strip with white
+              // pillars. Every other card stays object-cover.
+              <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} width={1200} height={675} className={(p.cardImg || p.img) === "global-zamzam-house-wide.jpg" ? "w-full h-48 object-cover object-top bg-navy" : "w-full h-48 object-cover bg-navy"} loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
             ) : (
               <ProjectFallback name={p.name} loc={p.loc} />
             )}

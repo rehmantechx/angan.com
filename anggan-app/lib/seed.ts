@@ -264,12 +264,17 @@ export const PROJECTS: Project[] = [
     "city": "Lahore",
     "page": "project-global.html",
     "img": "global-zamzam-2.jpg",
-    // PARITY 24 Nov 2026, Section 5: the old card cover was a crop
-    // of the real flyer with purple/blue blurred sidebars and a roof
-    // touching the top edge. global-zamzam-house-clean.jpg is the same
-    // real house photo, centre-cropped in code (PIL) to drop the
-    // blurred sidebars, roof intact, no AI, no new photo.
-    "cardImg": "global-zamzam-house-clean.jpg",
+    // LIVE-FAIL FIX 24 Nov 2026: the previous card cover,
+    // global-zamzam-house-clean.jpg, is a TALL PORTRAIT crop of the
+    // real house photo. In a 16/10 card with object-contain it renders
+    // as a narrow tall photo with white side pillars, which is exactly
+    // what the live check still showed. The live Firestore proj-2 doc
+    // has NO cardImg (verified by node SDK read 24 Nov), so the seed
+    // cardImg is what the live card actually uses. The new cover,
+    // global-zamzam-house-wide.jpg, is a true 16/10 crop of that same
+    // real house photo (PIL, roof + top floor + balcony), so it fills
+    // the card with no pillars and no blur. No AI, no new photo.
+    "cardImg": "global-zamzam-house-wide.jpg",
     "note": "Zam Zam City, Lahore. LDA approved."
   },
   {

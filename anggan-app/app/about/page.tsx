@@ -58,12 +58,17 @@ export default function AboutPage() {
 
       <div className="grid gap-6 mt-6 lg:grid-cols-2 items-start">
         <figure className="border border-gray-200 rounded-lg p-4 bg-white max-w-md w-full">
-          {/* PARITY 24 Nov 2026, Section 2: ceo.jpg is the original
-              unpadded photo again (1024x683). Clean rounded frame,
+          {/* LIVE-FAIL FIX 24 Nov 2026: ceo-flat.jpg is the original
+              unpadded photo (1024x683) with its radial-gradient
+              studio backdrop flattened in the file itself to uniform
+              grey 199 (PIL, border-connected backdrop mask only).
+              The gradient's darker top strip was the grey band seen
+              live on both pages. Do NOT "restore" the git-history
+              original, that brings the band back. Clean rounded frame,
               object-cover object-top, max-height so it never
               stretches pixelated. No grey letterbox band. */}
           <Image
-            src="/img/ceo.jpg"
+            src="/img/ceo-flat.jpg"
             alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan"
             width={1024}
             height={683}

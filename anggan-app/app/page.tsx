@@ -42,11 +42,11 @@ const HERO_PHOTOS = [
 // angan-e2e-evidence/famous-city-pics-2026-11-23/ for the source
 // URL of each photo. No AI images, no listing photos.
 const CITY_CARDS = [
-  { name: "Lahore", img: "city-lahore-badshahi.jpg", alt: "Badshahi Mosque, Lahore", href: "/properties?city=Lahore", kind: "listings" },
-  { name: "Islamabad", img: "city-islamabad-faisal.jpg", alt: "Faisal Mosque, Islamabad", href: "/properties?city=Islamabad", kind: "listings" },
-  { name: "Karachi", img: "city-karachi-mazar.jpg", alt: "Mazar-e-Quaid, Karachi", href: "/properties?city=Karachi", kind: "listings" },
+  { name: "Lahore", img: "city-lahore-badshahi-sky.jpg", alt: "Badshahi Mosque, Lahore", href: "/properties?city=Lahore", kind: "listings" },
+  { name: "Islamabad", img: "city-islamabad-faisal-sky.jpg", alt: "Faisal Mosque, Islamabad", href: "/properties?city=Islamabad", kind: "listings" },
+  { name: "Karachi", img: "city-karachi-mazar-sky.jpg", alt: "Mazar-e-Quaid, Karachi", href: "/properties?city=Karachi", kind: "listings" },
   { name: "Rawalpindi", img: "city-rawalpindi-raja-bazaar.jpg", alt: "Raja Bazaar, Rawalpindi", href: "/properties?city=Rawalpindi", kind: "listings" },
-  { name: "Multan", img: "city-multan-shah-rukn.jpg", alt: "Tomb of Shah Rukn-e-Alam, Multan", href: "/properties?city=Multan", kind: "listings" },
+  { name: "Multan", img: "city-multan-shah-rukn-sky.jpg", alt: "Tomb of Shah Rukn-e-Alam, Multan", href: "/properties?city=Multan", kind: "listings" },
   { name: "Mangla", img: "city-mangla-dam.jpg", alt: "Mangla Dam, seen from Ramkot Fort", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan" },
   { name: "Kashmir", img: "city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City" },
   { name: "All cities", img: "urban-drone.jpg", alt: "Urban City, Lahore, drone view", href: "/properties", kind: "all", sub: "12 homes" },
@@ -347,7 +347,15 @@ export default function Home() {
                 {/* PARITY 24 Nov 2026, Section 2: object-top, not
                     object-center, and taller 4/3 cards, so the tops
                     of Badshahi Mosque, Faisal Mosque, Mazar-e-Quaid
-                    and Shah Rukn-e-Alam are not chopped off. */}
+                    and Shah Rukn-e-Alam are not chopped off.
+                    LIVE-FAIL FIX 24 Nov 2026: the sky in the four
+                    city files was also extended upward in PIL
+                    (Faisal +150px black, Mazar +250px blue,
+                    Badshahi +80px, Multan +60px, column-wise top-row
+                    replication), so the domes/minarets sit well below
+                    the top edge with sky above them even if a card
+                    ever crops from the top again. Do NOT replace these
+                    files with the pre-pad originals. */}
                 <Image src={`/img/${c.img}`} alt={c.alt} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover object-top" />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                 <span className="absolute bottom-0 left-0 right-0 p-3 text-white">
@@ -463,12 +471,15 @@ export default function Home() {
             <Link key={p.id} href={`/projects/${p.id}`} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[16/10] bg-navy w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]" aria-label={`${p.name}, open project`}>
               {p.img || p.cardImg ? (
                 <>
-                  {/* The Global Homes clean crop is a tall portrait
-                      house photo: object-contain on white, so the
-                      whole house shows with its roof intact and no
-                      blurred sidebars. Every other card stays
-                      object-cover. */}
-                  <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-clean.jpg" ? "object-contain bg-white" : "object-cover"} />
+                  {/* LIVE-FAIL FIX 24 Nov 2026: the Global Homes
+                      cover is now a true 16/10 wide crop of the real
+                      house photo (global-zamzam-house-wide.jpg), so it
+                      fills the card with object-cover object-top, roof
+                      intact, no side pillars. The old clean file was a
+                      tall portrait, which object-contain squeezed into
+                      a narrow strip with white pillars. Every other
+                      card stays object-cover. */}
+                  <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-wide.jpg" ? "object-cover object-top" : "object-cover"} />
                   <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                   <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg md:text-xl leading-tight drop-shadow">{p.name}</span>
                 </>
@@ -520,14 +531,19 @@ export default function Home() {
       <section className="mt-10">
         <div className="grid gap-6 md:grid-cols-2 items-center">
           <div className="flex justify-center md:justify-start">
-            {/* PARITY 24 Nov 2026, Section 2: ceo.jpg is the original
-                unpadded photo again (1024x683, restored from git
-                history). No grey letterbox band, no extra padding.
+            {/* LIVE-FAIL FIX 24 Nov 2026: ceo-flat.jpg is the original
+                unpadded photo (1024x683) AND its radial-gradient
+                studio backdrop was flattened in the file itself to
+                uniform grey 199 (PIL, border-connected backdrop mask
+                only; skin, shirt, hair, eyes untouched). The gradient
+                was the real cause of the grey band: its darker top
+                strip read as a band on both pages. Do NOT "restore"
+                the git-history ceo.jpg original, that brings the band back.
                 md:w-[450px], not md:w-auto: w-auto + h-auto left the
                 lazy image at 0x0 before it loaded, so on a slow
                 connection it never triggered loading at all. A fixed
                 width gives it layout size up front. */}
-            <Image src="/img/ceo.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full md:w-[450px] md:max-h-[300px] h-auto object-contain object-top rounded-lg" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+            <Image src="/img/ceo-flat.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full md:w-[450px] md:max-h-[300px] h-auto object-contain object-top rounded-lg" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>
