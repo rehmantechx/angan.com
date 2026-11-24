@@ -42,14 +42,25 @@ const HERO_PHOTOS = [
 // angan-e2e-evidence/famous-city-pics-2026-11-23/ for the source
 // URL of each photo. No AI images, no listing photos.
 const CITY_CARDS = [
-  { name: "Lahore", img: "city-lahore-badshahi-sky.jpg", alt: "Badshahi Mosque, Lahore", href: "/properties?city=Lahore", kind: "listings" },
-  { name: "Islamabad", img: "city-islamabad-faisal-sky.jpg", alt: "Faisal Mosque, Islamabad", href: "/properties?city=Islamabad", kind: "listings" },
-  { name: "Karachi", img: "city-karachi-mazar-sky.jpg", alt: "Mazar-e-Quaid, Karachi", href: "/properties?city=Karachi", kind: "listings" },
-  { name: "Rawalpindi", img: "city-rawalpindi-raja-bazaar.jpg", alt: "Raja Bazaar, Rawalpindi", href: "/properties?city=Rawalpindi", kind: "listings" },
-  { name: "Multan", img: "city-multan-shah-rukn-sky.jpg", alt: "Tomb of Shah Rukn-e-Alam, Multan", href: "/properties?city=Multan", kind: "listings" },
-  { name: "Mangla", img: "city-mangla-dam.jpg", alt: "Mangla Dam, seen from Ramkot Fort", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan" },
-  { name: "Kashmir", img: "city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City" },
-  { name: "All cities", img: "urban-drone.jpg", alt: "Urban City, Lahore, drone view", href: "/properties", kind: "all", sub: "12 homes" },
+  { name: "Lahore", img: "city-lahore-badshahi-sky.jpg", alt: "Badshahi Mosque, Lahore", href: "/properties?city=Lahore", kind: "listings", pos: "object-top" },
+  { name: "Islamabad", img: "city-islamabad-faisal-sky.jpg", alt: "Faisal Mosque, Islamabad", href: "/properties?city=Islamabad", kind: "listings", pos: "object-top" },
+  { name: "Karachi", img: "city-karachi-mazar-sky.jpg", alt: "Mazar-e-Quaid, Karachi", href: "/properties?city=Karachi", kind: "listings", pos: "object-top" },
+  { name: "Rawalpindi", img: "city-rawalpindi-raja-bazaar.jpg", alt: "Raja Bazaar, Rawalpindi", href: "/properties?city=Rawalpindi", kind: "listings", pos: "object-top" },
+  // MULTAN LEFT-EDGE FIX 25 Nov 2026: the tomb sits at the far LEFT
+  // of city-multan-shah-rukn-sky.jpg (building base wall from x=33,
+  // dome x=150-270 of 1000), while the card is 4/3 and the photo is
+  // 1000x586 (aspect 1.706), so object-cover with centred
+  // object-top crops 10.9% off EACH side and slices the building's
+  // left flank, leaving the dome flush against the card's left edge.
+  // object-left-top keeps the crop on the right (expendable trees
+  // and road) and the whole tomb in frame with a margin on the left.
+  // Sky above the dome was already fixed by the +60px PIL extension.
+  // Real photo only, no AI, no image edit needed. All other cities
+  // keep object-top, their subjects are centred.
+  { name: "Multan", img: "city-multan-shah-rukn-sky.jpg", alt: "Tomb of Shah Rukn-e-Alam, Multan", href: "/properties?city=Multan", kind: "listings", pos: "object-left-top" },
+  { name: "Mangla", img: "city-mangla-dam.jpg", alt: "Mangla Dam, seen from Ramkot Fort", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan", pos: "object-top" },
+  { name: "Kashmir", img: "city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City", pos: "object-top" },
+  { name: "All cities", img: "urban-drone.jpg", alt: "Urban City, Lahore, drone view", href: "/properties", kind: "all", sub: "12 homes", pos: "object-top" },
 ] as const;
 function cityCount(city: string) {
   return LISTINGS.filter((l) => l.liveStatus === "live" && l.city === city).length;
@@ -356,7 +367,7 @@ export default function Home() {
                     the top edge with sky above them even if a card
                     ever crops from the top again. Do NOT replace these
                     files with the pre-pad originals. */}
-                <Image src={`/img/${c.img}`} alt={c.alt} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover object-top" />
+                <Image src={`/img/${c.img}`} alt={c.alt} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className={`object-cover ${c.pos}`} />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                 <span className="absolute bottom-0 left-0 right-0 p-3 text-white">
                   <span className="block text-lg md:text-xl font-extrabold leading-tight drop-shadow">{c.name}</span>
