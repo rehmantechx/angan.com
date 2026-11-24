@@ -24,27 +24,13 @@ export type SessionUser = {
   demo: boolean;
 };
 
-// TEMPORARY PUBLIC TEST MODE (user order 2026-11-24 17:52 PKT, short
-// test only, revert soon). When true, /admin opens with NO Google
-// sign-in: the auth provider hands out the public test user below
-// (Full access, not a demo user, not demo@anngan.com) and never calls
-// Firebase Auth, so the login redirect on /admin never fires and
-// /admin/login redirects straight to /admin. The Google sign-in code
-// in lib/auth.tsx is NOT removed, it is only skipped while this flag
-// is true. REVERT: set this back to false AND republish the
-// pre-test firestore.rules (commit 8891e08) in the Firebase console.
-// Until both are done, anyone on the internet can edit and delete
-// dashboard data. See REVERT.md in
-// ~/workspace/angan-e2e-evidence/admin-public-test-2026-11-24/.
-export const PUBLIC_TEST_MODE = true;
-
-export const PUBLIC_TEST_USER: SessionUser = {
-  uid: "public-test",
-  email: "Public test (no login)",
-  name: "Public test",
-  role: "Full access",
-  demo: false,
-};
+// PUBLIC TEST MODE was true for a short test on 2026-11-24 (user
+// order 17:52 PKT: /admin public, no Google sign-in). REVERTED
+// 2026-11-24: false again, Google-only login restored. The public
+// test user below is removed. The Firestore rules in the repo file
+// were also restored to the 8891e08 office-only version; the rules
+// still need publishing in the Firebase console to take effect live.
+export const PUBLIC_TEST_MODE = false;
 
 type AuthCtx = {
   user: SessionUser | null;

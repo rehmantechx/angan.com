@@ -51,7 +51,7 @@ export default function ServicePage({ params }: { params: { id: string } }) {
               Angan Tech, Anngan Technologies Pvt. Ltd, Paragon City, Lahore.
             </p>
             <div className="flex gap-2 mt-5 flex-wrap">
-              <a href="tel:+923041111698" className="btn btn-red">
+              <a href="tel:+923041111698" className="btn btn-navy">
                 Call +92 304 1111 698
               </a>
               <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green">
@@ -124,7 +124,7 @@ export default function ServicePage({ params }: { params: { id: string } }) {
           <p className="text-blue-100 text-sm mt-1">Call or WhatsApp, the office answers.</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <a href="tel:+923041111698" className="btn btn-red">
+          <a href="tel:+923041111698" className="btn btn-navy">
             Call +92 304 1111 698
           </a>
           <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green">

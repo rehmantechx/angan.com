@@ -89,7 +89,8 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
             ))}
           </dl>
           <div className="flex gap-2 mt-4 flex-wrap">
-            <a href="tel:+923041111698" className="btn btn-red">Call +92 304 1111 698</a>
+            {/* PHN-01: Call is blue everywhere, WhatsApp green. */}
+            <a href="tel:+923041111698" className="btn btn-navy">Call +92 304 1111 698</a>
             <a href={whatsappFor(l.title, l.city, formatPrice(l.n, l.status))} target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
           </div>
           {others.length > 0 ? (

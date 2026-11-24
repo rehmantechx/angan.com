@@ -145,7 +145,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
             <h2 className="font-bold text-navy text-lg">Talk to the office about {project.name}</h2>
             <div className="flex gap-2 mt-3 flex-wrap">
-              <a href="tel:+923041111698" className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">
+              <a href="tel:+923041111698" className="bg-[#004274] text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">
                 Call +92 304 1111 698
               </a>
               <a

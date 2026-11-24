@@ -13,6 +13,9 @@ const NAV_LINKS = [
   { href: "/projects", label: "PROJECTS" },
   { href: "/properties", label: "PROPERTIES" },
   { href: "/societies", label: "SOCIETIES GUIDE" },
+  // PHN-04: TOOLS in the top red navbar, so a dealer can be guided
+  // to the calculators over the phone. No Tools strip on home.
+  { href: "/tools", label: "TOOLS" },
   { href: "/contact", label: "CONTACT" },
   { href: "/companies", label: "ANNGAN COMPANIES" },
   { href: "/services", label: "ANGAN TECH" },
@@ -200,7 +203,7 @@ export function Header() {
               )}
             </nav>
             <div className="px-4 pb-4 flex flex-col gap-2">
-              <a href="tel:+923041111698" className="btn btn-red w-full text-center">
+              <a href="tel:+923041111698" className="btn btn-navy w-full text-center">
                 Call +92 304 1111 698
               </a>
               <a
@@ -297,6 +300,12 @@ export function Footer() {
               <li><Link href="/companies" className="inline-flex items-center min-h-[32px] hover:underline">Anngan Companies</Link></li>
               <li><Link href="/services" className="inline-flex items-center min-h-[32px] hover:underline">Angan Tech</Link></li>
               <li><Link href="/create-listing" className="inline-flex items-center min-h-[32px] hover:underline">Create a Listing</Link></li>
+              {/* PAR-02: legal links, as on the old anngan.com. The
+                  secondary phone +92 320 5966 664 is NOT added: the
+                  audit said to confirm it with the client first. */}
+              <li><Link href="/privacy" className="inline-flex items-center min-h-[32px] hover:underline">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="inline-flex items-center min-h-[32px] hover:underline">Terms and Conditions</Link></li>
+              <li><Link href="/disclaimer" className="inline-flex items-center min-h-[32px] hover:underline">Disclaimer</Link></li>
             </ul>
           </div>
           <div className="lg:col-span-2">

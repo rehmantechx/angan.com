@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../lib/auth";
-import { DEMO_EMAIL, PUBLIC_TEST_MODE } from "../../lib/auth-context";
+import { DEMO_EMAIL } from "../../lib/auth-context";
 import {
   getListings,
   getProjects,
@@ -67,6 +67,11 @@ export default function AdminPage() {
   const [confirmDelete, setConfirmDelete] = useState<{ kind: "listing" | "enquiry" | "agency"; id: string; label: string } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [msgError, setMsgError] = useState(false);
+  // CRUD-03: true while the first Firestore load is running. The
+  // Overview shows loading skeletons instead of 0, the Seed button
+  // stays hidden until loading finishes, and the missing-listings
+  // warning (CRUD-05) stays hidden, so nothing flashes a false 0.
+  const [loadingData, setLoadingData] = useState(true);
   // FIX-08: agency add/edit form state, same pattern as ListingForm.
   const [agencyEdit, setAgencyEdit] = useState<Agency | null>(null);
   const [showAgencyAdd, setShowAgencyAdd] = useState(false);
@@ -82,24 +87,29 @@ export default function AdminPage() {
     // Parallel, not sequential: the old version awaited 8 reads one after
     // another, so a refresh after Delete/Hide took many seconds and the
     // page looked unchanged. All reads have their own timeouts.
-    const [l, p, b, a, s, e, st, sd] = await Promise.all([
-      getListings(),
-      getProjects(),
-      getBlogs(),
-      getAgencies(),
-      getServices(),
-      getEnquiries(),
-      getSettings(),
-      isFirestoreSeeded(),
-    ]);
-    setListings(l);
-    setProjects(p);
-    setBlogs(b);
-    setAgencies(a);
-    setServices(s);
-    setEnquiries(e);
-    setSettings(st);
-    setSeeded(sd);
+    setLoadingData(true);
+    try {
+      const [l, p, b, a, s, e, st, sd] = await Promise.all([
+        getListings(),
+        getProjects(),
+        getBlogs(),
+        getAgencies(),
+        getServices(),
+        getEnquiries(),
+        getSettings(),
+        isFirestoreSeeded(),
+      ]);
+      setListings(l);
+      setProjects(p);
+      setBlogs(b);
+      setAgencies(a);
+      setServices(s);
+      setEnquiries(e);
+      setSettings(st);
+      setSeeded(sd);
+    } finally {
+      setLoadingData(false);
+    }
   }
 
   useEffect(() => {
@@ -157,13 +167,28 @@ export default function AdminPage() {
       setMsg("Demo mode, view only. Changes are not saved.");
       return;
     }
+    // CRUD-02: update the row in local state at once, so Hide / Show
+    // live (and Approve / Edit / Add) is visible immediately, with a
+    // toast, instead of the row staying frozen until the reload.
+    // If the Firestore write fails, the reload below puts the row back.
+    const isHide = l.liveStatus === "hidden" || l.visible === false;
+    const isShow = l.liveStatus === "live" && l.visible !== false;
+    setListings((prev) => {
+      if (prev.some((x) => x.id === l.id)) return prev.map((x) => (x.id === l.id ? l : x));
+      return [l, ...prev];
+    });
+    setMsgError(false);
+    if (isHide) setMsg("Listing hidden. It is gone from the public site.");
+    else if (isShow) setMsg("Listing is live on the public site.");
     try {
       await saveListing(l);
       setEdit(null);
       setShowAdd(false);
-      setMsg("Saved. The public site uses the same data, so it updates too.");
+      if (!isHide && !isShow) setMsg("Saved. The public site uses the same data, so it updates too.");
+      else setMsg(isHide ? "Listing hidden. It is gone from the public site." : "Listing is live on the public site.");
     } catch (err) {
       const e = err as { message?: string };
+      setMsgError(true);
       setMsg("Could not save: " + (e.message || "permission denied") + " The signed-in user needs the Full access or Staff role.");
     }
     await reload();
@@ -223,14 +248,10 @@ export default function AdminPage() {
           Signed in as {user.email} · {user.role}
         </span>
       </div>
-      {/* TEMPORARY PUBLIC TEST MODE (2026-11-24, revert soon): no login,
-          anyone on the internet can edit and delete here. Remove with
-          the PUBLIC_TEST_MODE flag, do not leave it up. */}
-      {PUBLIC_TEST_MODE ? (
-        <div role="alert" className="bg-red-600 text-white font-bold text-sm rounded p-3 mt-3">
-          PUBLIC TEST MODE, no login, anyone can edit, revert soon
-        </div>
-      ) : null}
+      {/* CRUD-01: public test mode reverted 2026-11-24. The red
+          PUBLIC TEST MODE banner is removed with the flag: /admin is
+          Google-only again, and the SIGN OUT link in the header only
+          shows for a signed-in office user. */}
       {isDemo ? (
         <div className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3 flex gap-3 items-center flex-wrap">
           <span className="flex-1 min-w-0 break-words">Demo mode, view only. Changes are not saved. Sign in with an authorized office account for the real office dashboard.</span>
@@ -259,11 +280,11 @@ export default function AdminPage() {
           Firebase is connected. Changes save to Firestore and show on the public site.
         </p>
       ) : null}
-      {/* FIX-07: the toast has a close button and a success toast
-          auto-dismisses after 5 seconds, so it never stacks under the
-          permanent "Firebase is connected" banner forever. */}
+      {/* CRUD-07: the toast is fixed at the bottom of the screen, so
+          it never pushes the tab bar (or any content) up and down
+          when it appears and auto-dismisses. */}
       {msg ? (
-        <p role="status" className={(msgError ? "bg-red-50 text-red-900 " : "bg-green-50 text-green-900 ") + "text-sm rounded p-3 mt-3 flex gap-3 items-start"}>
+        <p role="status" className={(msgError ? "bg-red-50 text-red-900 " : "bg-green-50 text-green-900 ") + "fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] w-[calc(100%-2rem)] max-w-xl text-sm rounded-lg p-3 shadow-lg flex gap-3 items-start"}>
           <span className="flex-1 min-w-0 break-words">{msg}</span>
           <button type="button" onClick={() => setMsg("")} aria-label="Close message" className="shrink-0 px-2 py-0.5 rounded hover:bg-black/10 font-bold min-h-[32px] min-w-[32px]">
             &#10005;
@@ -287,22 +308,41 @@ export default function AdminPage() {
 
       {tab === "Overview" && (
         <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* CRUD-03: while the first Firestore load is running, show
+              loading skeletons, never a false 0. The counts only
+              render once loading finishes. */}
+          {loadingData ? (
+            <>
+              {["Live listings", "Waiting for approval", "Enquiries", "Projects", "Blogs", "Agencies"].map((label) => (
+                <div key={label} className="border rounded p-4" aria-label={"Loading " + label}>
+                  <p className="h-8 w-16 bg-gray-200 rounded animate-pulse" aria-hidden="true">&nbsp;</p>
+                  <p className="text-gray-500 text-sm mt-2">Loading {label.toLowerCase()}...</p>
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{live.length}</p><p>Live listings on the public site</p></div>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{pending.length}</p><p>Waiting for approval</p></div>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{enquiries.length}</p><p>Enquiries ({newEnq} new)</p></div>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{projects.length}</p><p>Projects</p></div>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{blogs.length}</p><p>Blogs</p></div>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{agencies.length}</p><p>Agencies</p></div>
+            </>
+          )}
           <div className="border rounded p-4 sm:col-span-2">
             <p className="font-bold">Enquiries by stage</p>
-            <p className="text-sm mt-1">{STAGES.map((s) => `${s}: ${enquiries.filter((e) => e.stage === s).length}`).join(" | ")}</p>
+            <p className="text-sm mt-1">{loadingData ? "Loading..." : STAGES.map((s) => `${s}: ${enquiries.filter((e) => e.stage === s).length}`).join(" | ")}</p>
           </div>
           <div className="border rounded p-4 sm:col-span-2">
             <p className="font-bold">Listings by city</p>
             <p className="text-sm mt-1">
-              {["Lahore", "Rawalpindi", "Multan", "Islamabad", "Karachi"].map((c) => `${c}: ${listings.filter((l) => l.city === c).length}`).join(" | ")}
+              {loadingData ? "Loading..." : ["Lahore", "Rawalpindi", "Multan", "Islamabad", "Karachi"].map((c) => `${c}: ${listings.filter((l) => l.city === c).length}`).join(" | ")}
             </p>
-            {firebaseOn() && !isDemo && !seeded ? (
+            {/* CRUD-03: the Seed button only appears once loading has
+                finished AND the database is confirmed empty. It never
+                shows while counts are still loading. */}
+            {firebaseOn() && !isDemo && !seeded && !loadingData ? (
               <button className={btnNavy + " mt-3"} onClick={async () => { setMsg(await seedFirestore()); await reload(); }}>
                 Upload seed data to Firestore
               </button>
@@ -342,7 +382,10 @@ export default function AdminPage() {
           {/* FIX-01: name the missing real listing instead of silently
               showing 11 of 12. Restore writes only that seed row, by id,
               so no existing record is duplicated. */}
-          {missing.length > 0 ? (
+          {/* CRUD-05: the missing-listings warning is gated behind
+              !loadingData, so it never flashes a false "12 real
+              listings are missing" while Firestore is still loading. */}
+          {missing.length > 0 && !loadingData ? (
             <div className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">
               <p className="font-semibold">{missing.length} real listing{missing.length > 1 ? "s are" : " is"} missing from Firestore: {missing.map((l) => l.title + " (" + l.id + ")").join("; ")}.</p>
               <p className="mt-1">This is a data gap, not a filter. Nothing was duplicated.</p>
@@ -416,13 +459,22 @@ export default function AdminPage() {
               </div>
             ))}
           </div>
-          {hidden.length > 0 ? <p className="text-sm text-gray-600 mt-2">{hidden.length} hidden listings do not show on the public site.</p> : null}
+          {hidden.length > 0 ? <p className="text-sm text-gray-600 mt-2">{hidden.length} hidden listing{hidden.length === 1 ? "" : "s"} do{hidden.length === 1 ? "es" : ""} not show on the public site.</p> : null}
+          {/* CRUD-04: the Create/Edit listing form opens as a centered
+              modal, not at the bottom of the page below all 14 rows,
+              so it is visible the moment Add listing or Edit is
+              clicked. */}
           {(showAdd || edit) && canEdit ? (
-            <ListingForm
-              initial={edit || undefined}
-              onCancel={() => { setEdit(null); setShowAdd(false); }}
-              onSave={doSave}
-            />
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-label={edit ? "Edit listing" : "Add listing"}>
+              <div className="absolute inset-0 bg-black/50" onClick={() => { setEdit(null); setShowAdd(false); }} />
+              <div className="relative bg-white rounded-lg w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-lg">
+                <ListingForm
+                  initial={edit || undefined}
+                  onCancel={() => { setEdit(null); setShowAdd(false); }}
+                  onSave={doSave}
+                />
+              </div>
+            </div>
           ) : null}
         </div>
       )}
@@ -657,21 +709,26 @@ function agencyInitials(name: string): string {
   return (first + second).toUpperCase();
 }
 
-// Fixed-size agency mark. A real logo shows in a fixed 40px square box;
-// when no logo is stored, or the logo file fails to load, a navy
-// circular monogram with the agency initials shows instead, so every
-// row aligns. No fake logos are invented.
+// Fixed-size agency mark. A real logo shows in a fixed 56px square
+// box on a light grey tile, so a pale logo (ADARSH Associates is
+// mostly light grey art) and a thin black mark (ASA) both read as a
+// logo instead of a blank white slot. When no logo is stored, or the
+// logo file fails to load, a navy circular monogram with the agency
+// initials shows instead, so every row aligns. Logo paths verified
+// 2026-11-24 against live Firestore and public/img: agency-1
+// partner-adarsh.png and agency-3 partner-asa.png are correct, the
+// files exist and are valid PNGs. No fake logos are invented.
 function AgencyAvatar({ agency }: { agency: Agency }) {
   const [failed, setFailed] = useState(false);
   const src = agency.logoUrl || (agency.logo ? `/img/${agency.logo}` : "");
   if (!src || failed) {
     return (
-      <span aria-hidden="true" className="w-10 h-10 shrink-0 rounded-full bg-navy text-white inline-flex items-center justify-center text-sm font-bold">
+      <span aria-hidden="true" className="w-14 h-14 shrink-0 rounded-full bg-navy text-white inline-flex items-center justify-center text-base font-bold">
         {agencyInitials(agency.name)}
       </span>
     );
   }
-  return <img src={src} alt="" width={40} height={40} onError={() => setFailed(true)} className="w-10 h-10 shrink-0 rounded object-contain bg-white" />;
+  return <img src={src} alt="" width={56} height={56} onError={() => setFailed(true)} className="w-14 h-14 shrink-0 rounded-lg object-contain bg-gray-100 border border-gray-200 p-1" />;
 }
 
 // FIX-08: agency add/edit form. Logo is a file name from the site

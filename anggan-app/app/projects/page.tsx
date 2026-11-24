@@ -32,10 +32,12 @@ export default function ProjectsPage() {
               </h3>
               <p className="text-gray-600 text-sm">{p.loc}</p>
               <p className="text-sm mt-1">{p.note}</p>
+              {/* PHN-01 / PHN-02: same order and colors as ListingCard:
+                  View first, then Call (blue), then WhatsApp (green). */}
               <div className="flex gap-2 mt-auto pt-3 flex-wrap">
-                <Link href={`/projects/${p.id}`} className="border border-navy text-navy text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">View project</Link>
-                <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center">Call</a>
-                <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="bg-green-700 text-white text-sm px-3 py-2.5 rounded min-h-[48px] inline-flex items-center">WhatsApp</a>
+                <Link href={`/projects/${p.id}`} className="btn btn-outline-navy text-sm">View project</Link>
+                <a href="tel:+923041111698" className="btn btn-navy text-sm">Call</a>
+                <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green text-sm">WhatsApp</a>
               </div>
             </div>
           </article>

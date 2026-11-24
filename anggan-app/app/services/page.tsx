@@ -40,7 +40,7 @@ export default function ServicesPage() {
                 <Link href={`/services/${s.id}`} className="bg-slate-100 text-navy text-sm px-3 rounded font-semibold min-h-[48px] inline-flex items-center justify-center flex-1 text-center whitespace-nowrap">
                   What&apos;s included
                 </Link>
-                <a href="tel:+923041111698" className="bg-anngan text-white text-sm px-4 rounded min-h-[48px] inline-flex items-center justify-center font-semibold flex-1 text-center">Call</a>
+                <a href="tel:+923041111698" className="bg-[#004274] text-white text-sm px-4 rounded min-h-[48px] inline-flex items-center justify-center font-semibold flex-1 text-center">Call</a>
               </div>
             </div>
           </article>

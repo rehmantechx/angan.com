@@ -29,7 +29,11 @@ export function ListingCard({ l }: { l: Listing }) {
           <span className={`absolute top-3 left-3 ${pillCls} text-white text-xs font-extrabold px-3 py-1.5 rounded-full shadow`}>{pill}</span>
         </Link>
       ) : (
-        <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-600 text-sm px-4 text-center">
+        // CRUD-07: an imageless card gets the same FOR SALE / FOR RENT
+        // pill as a photo card, on the grey placeholder, so a new
+        // listing without a photo is still clearly marked.
+        <div className="relative w-full h-48 bg-gray-100 flex items-center justify-center text-gray-600 text-sm px-4 text-center">
+          <span className={`absolute top-3 left-3 ${pillCls} text-white text-xs font-extrabold px-3 py-1.5 rounded-full shadow`}>{pill}</span>
           No photo for this property yet
         </div>
       )}
@@ -43,10 +47,15 @@ export function ListingCard({ l }: { l: Listing }) {
           <span className="inline-flex items-center gap-1"><SizeIcon size={18} /> {l.size}</span>
           <span className="inline-flex items-center gap-1"><HomeIcon size={18} /> {l.type}</span>
         </div>
+        {/* PHN-01 / PHN-02: one site-wide color rule, Green = WhatsApp,
+            Blue = Call, Red = Search / View / Primary. Button order is
+            the same on every card: Details first, then Call (blue),
+            then WhatsApp (green), so "click the first button" always
+            means Details. */}
         <div className="flex gap-2 mt-auto pt-3 flex-wrap">
-          <a href="tel:+923041111698" className="btn btn-red">Call</a>
-          <a href={whatsappFor(l.title, l.city, price)} target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
           <Link href={`/properties/${l.id}`} className="btn btn-outline-navy">Details</Link>
+          <a href="tel:+923041111698" className="btn btn-navy">Call</a>
+          <a href={whatsappFor(l.title, l.city, price)} target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
         </div>
       </div>
     </article>

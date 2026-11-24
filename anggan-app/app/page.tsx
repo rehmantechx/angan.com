@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getProjects } from "../lib/db";
 import { Project, PROJECTS, LISTINGS } from "../lib/seed";
+import { ListingCard } from "../components/ListingCard";
 import { ProjectFallback } from "../components/ProjectFallback";
 import { AGENCIES } from "../lib/seed";
 import { BuildingIcon, HomeIcon, UsersIcon } from "../lib/icons";
@@ -177,15 +178,19 @@ export default function Home() {
           the page about 15px wider than the viewport.
           Search lives BELOW the hero in the old-style panel, and it
           goes to /properties: no listing cards render on home. */}
-      {/* Hero is compact so header + hero + search + the Browse by
-          city heading and first row fit one desktop screen
-          (1280x800): hero about 260px at desktop, 240px on mobile,
-          text centred vertically with breathing room, not a thin
-          strip and not too large. URGENT 2026-11-23: the city cards
-          were cut off below the fold, so the hero was cut from 340px
-          to 260px and the city cards from 4/3 to 16/10. */}
+      {/* HERO-FULL (user order 2026-11-24 21:12 PKT, URGENT): the hero
+          picture must be FULL like the old anngan.com, not a short
+          dark strip. This supersedes the compact-hero orders (hero
+          cut to 340px, then 260px, HEAD 394b021 and 9f69f50, so the
+          city cards fit one screen). Old site hero was about 600px
+          at 1280 / 520px at 390, so this hero is the same: tall,
+          photo-first, picture fully visible. The photo is now at
+          full opacity, the dark navy gradient is a light scrim only
+          (25% top, clear middle, 35% bottom), and the white H1 and
+          tagline stay readable with a soft text shadow. H1 text,
+          tagline text, search panel and header are unchanged. */}
       <section
-        className="relative w-full bg-navy overflow-hidden min-h-[240px] md:min-h-[260px] flex flex-col justify-center"
+        className="relative w-full bg-navy overflow-hidden min-h-[520px] md:min-h-[600px] flex flex-col justify-center"
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
@@ -198,7 +203,7 @@ export default function Home() {
             fill
             quality={75}
             sizes="100vw"
-            className="absolute inset-0 w-full h-full object-cover opacity-45"
+            className="absolute inset-0 w-full h-full object-cover opacity-100"
           />
         ) : null}
         <Image
@@ -210,7 +215,7 @@ export default function Home() {
           quality={75}
           sizes="100vw"
           className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
-          style={{ opacity: heroIn ? 0.45 : 0 }}
+          style={{ opacity: heroIn ? 1 : 0 }}
         />
         {/* Next photo, invisible, downloaded 5 seconds in so its turn is instant. */}
         {heroPreload ? (
@@ -226,12 +231,12 @@ export default function Home() {
             className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
           />
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/20 to-navy/60 pointer-events-none" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/25 via-transparent to-navy/35 pointer-events-none" aria-hidden="true" />
         <div className="relative w-full max-w-6xl mx-auto px-4 py-5 md:py-6 text-center">
-          <h1 className="text-white text-2xl sm:text-4xl md:text-5xl font-extrabold mx-auto leading-tight md:whitespace-nowrap">
+          <h1 className="text-white text-2xl sm:text-5xl md:text-6xl font-extrabold mx-auto leading-tight md:whitespace-nowrap [text-shadow:0_2px_12px_rgba(0,0,0,0.55)]">
             WELCOME TO ANNGAN.COM
           </h1>
-          <p className="text-white text-lg md:text-xl font-light mt-2 md:whitespace-nowrap">
+          <p className="text-white text-lg md:text-2xl font-light mt-3 md:whitespace-nowrap [text-shadow:0_2px_10px_rgba(0,0,0,0.55)]">
             Pakistan&apos;s Most Trusted Real Estate Service Providers
           </p>
         </div>
@@ -260,21 +265,28 @@ export default function Home() {
             { value: "", label: "All Status" },
             { value: "rent", label: "For Rent" },
             { value: "sale", label: "For Sale" },
-          ].map((t) => (
-            <button
-              key={t.value || "all"}
-              type="button"
-              role="tab"
-              aria-selected={searchStatus === t.value}
-              onClick={() => setSearchStatus(t.value)}
-              className={
-                "px-3 py-1 min-h-[32px] rounded-t-lg font-bold text-sm text-white " +
-                (searchStatus === t.value ? "bg-[#005F90]" : "bg-[#2F96CD] hover:bg-[#005F90]")
-              }
-            >
-              {t.label}
-            </button>
-          ))}
+          ].map((t) => {
+            // PHN-03: tabs are color-coded like the card badges, not
+            // both light blue. For Sale is red, For Rent is blue, so
+            // "click the red Sale button" works on the homepage too.
+            const activeCls =
+              t.value === "sale" ? "bg-[#DD3333]" : t.value === "rent" ? "bg-[#005F90]" : "bg-[#005F90]";
+            return (
+              <button
+                key={t.value || "all"}
+                type="button"
+                role="tab"
+                aria-selected={searchStatus === t.value}
+                onClick={() => setSearchStatus(t.value)}
+                className={
+                  "px-3 py-1 min-h-[32px] rounded-t-lg font-bold text-sm text-white " +
+                  (searchStatus === t.value ? activeCls : "bg-[#2F96CD] hover:bg-[#005F90]")
+                }
+              >
+                {t.label}
+              </button>
+            );
+          })}
         </div>
         <form onSubmit={submitSearch} className="max-w-4xl mx-auto mt-0 bg-white rounded-lg shadow p-2 grid gap-2 grid-cols-2 lg:grid-cols-5 items-end">
           <div>
@@ -348,12 +360,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2026-11-23 user order: Featured Properties and Property Tools
-          REMOVED from home. Home is pictorial, like the old anngan.com,
-          for dealers who cannot read English: hero, search, Browse by
-          city, Societies, Our projects, Who is Anngan. Listings stay
-          live at /properties (all 12) and tools stay live at /tools;
-          nothing was deleted, only the two home sections. */}
+      {/* 2026-11-24 user order (audit PAR-01): Featured Properties
+          are back on home, pictorial, 6 real listings. Property Tools
+          stay off home: tools live at /tools and in the top nav. Home
+          is pictorial, like the old anngan.com, for dealers who
+          cannot read English: hero, search, Browse by city, Featured
+          Properties, Societies, Our projects, Who is Anngan. */}
+
+      {/* PAR-01 (audit 2026-11-24, user order 2026-11-24 20:49 PKT,
+          supersedes the 23 Nov removal for this item): Featured
+          Properties back on home, pictorial, 6 real listings, same
+          6 as PIC-01. Listings stay live at /properties too; nothing
+          was deleted, only the home section was restored. */}
+      <section className="mt-10" aria-label="Featured properties">
+        <div className="flex items-baseline justify-between flex-wrap gap-2">
+          <h2 className="text-2xl font-bold text-navy">Featured Properties</h2>
+          <Link href="/properties" className="text-anngan-dark font-semibold text-sm">All 12 properties &rarr;</Link>
+        </div>
+        <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
+          {["karachi-shamsi", "dha-stunning", "dha-defence4", "dha-u7", "dha-1kanal", "bahria-luxury"].map((id) => {
+            const l = LISTINGS.find((x) => x.id === id);
+            return l ? <ListingCard key={l.id} l={l} /> : null;
+          })}
+        </div>
+      </section>
 
       {/* PIC-01: compact Societies and partner agencies strip. Societies
           are real photo chips; agencies are their real logos from the
@@ -375,10 +405,14 @@ export default function Home() {
           ))}
         </div>
         <h3 className="font-bold text-navy mt-6">Partner agencies</h3>
-        <div className="flex flex-wrap gap-4 mt-3 items-center">
+        <div className="flex flex-wrap gap-4 mt-3 items-start">
           {AGENCIES.map((a) => (
-            <Link key={a.id} href="/contact" aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
-              <Image src={`/img/${a.logo}`} alt={a.name} width={240} height={210} className="h-24 w-auto md:h-32 object-contain" loading="lazy" />
+            // PHN-05: every logo tile carries its agency name under
+            // the logo, so the bare stylised P (Pioneer Estate) is
+            // named and no tile is an unlabeled picture.
+            <Link key={a.id} href="/contact" aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm flex flex-col items-center gap-2 w-[160px] md:w-[180px]">
+              <Image src={`/img/${a.logo}`} alt={a.name + " logo"} width={240} height={210} className="h-24 w-auto md:h-32 object-contain" loading="lazy" />
+              <span className="text-xs font-bold text-navy text-center leading-tight">{a.name}</span>
             </Link>
           ))}
         </div>
@@ -416,6 +450,30 @@ export default function Home() {
               )}
             </Link>
           ))}
+        </div>
+        {/* PAR-01: the MGH YouTube walkthrough, embedded cleanly in
+            the MGH spotlight section (Our projects), for dealers who
+            prefer watching to reading. Video ID UxOpwyG6YJA,
+            "Zamindar File, MGH Pakistan, best property in Pakistan",
+            629 views, 4 Feb 2023, verified from the real Anngan
+            YouTube channel (@annganpk) in app/about/page.tsx. It is
+            the channel's Zamindar File walkthrough, the closest
+            verified match to the old site's MGH walkthrough video.
+            No ID was guessed. */}
+        <div className="mt-6 max-w-3xl mx-auto">
+          <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-sm bg-navy">
+            <iframe
+              src="https://www.youtube-nocookie.com/embed/UxOpwyG6YJA"
+              title="MGH Pakistan, Zamindar File walkthrough"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+              className="absolute inset-0 w-full h-full"
+            />
+          </div>
+          <p className="text-center text-sm mt-2">
+            <a href="https://www.youtube.com/watch?v=UxOpwyG6YJA" target="_blank" rel="noopener" className="text-anngan-dark font-semibold underline">Watch on YouTube: MGH Pakistan, Zamindar File</a>
+          </p>
         </div>
       </section>
 

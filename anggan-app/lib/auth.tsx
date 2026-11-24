@@ -5,7 +5,7 @@
 // never download the Firebase SDK.
 "use client";
 import { useEffect, useState, ReactNode } from "react";
-import { AuthContext, Role, SessionUser, useAuth, PUBLIC_TEST_MODE, PUBLIC_TEST_USER } from "./auth-context";
+import { AuthContext, Role, SessionUser, useAuth } from "./auth-context";
 import { getFirebaseAuth, getDb, isFirebaseConfigured } from "./firebase";
 
 export type { Role, SessionUser };
@@ -18,15 +18,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const firebaseOn = isFirebaseConfigured();
 
   useEffect(() => {
-    // TEMPORARY PUBLIC TEST MODE (2026-11-24, revert soon): no Google
-    // sign-in, no Firebase Auth listener. The dashboard runs as the
-    // public test user (Full access). The Google code below is kept
-    // intact and runs again as soon as PUBLIC_TEST_MODE is false.
-    if (PUBLIC_TEST_MODE) {
-      setUser(PUBLIC_TEST_USER);
-      setLoading(false);
-      return;
-    }
+    // PUBLIC_TEST_MODE is false (reverted 2026-11-24): Google sign-in
+    // only, as before the short public test. The flag is kept so the
+    // revert is visible in one place; the branches that skipped
+    // Firebase Auth while it was true are removed.
     if (!firebaseOn) {
       setLoading(false);
       return;
@@ -96,9 +91,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [firebaseOn]);
 
   async function signInGoogle(): Promise<string | null> {
-    // TEMPORARY PUBLIC TEST MODE: no sign-in is needed, /admin is
-    // already open. Google sign-in code below is unchanged for revert.
-    if (PUBLIC_TEST_MODE) return null;
     const auth = await getFirebaseAuth();
     if (!auth) return "Firebase is not connected. Fill in .env.local first.";
     try {
@@ -112,11 +104,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
-    // TEMPORARY PUBLIC TEST MODE: signing out would drop the public
-    // test user and flip the header back to Office login, so sign-out
-    // is a no-op while the test is on. Normal sign-out below is
-    // unchanged for revert.
-    if (PUBLIC_TEST_MODE) return;
     const auth = await getFirebaseAuth();
     if (auth) {
       try {

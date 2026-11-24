@@ -136,7 +136,9 @@ function PropertiesPage() {
           <option value="">All cities</option>
           {cities.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="For sale or rent" className="border border-gray-300 rounded px-3 py-2 min-w-0 w-full min-h-[48px]">
+        {/* PHN-05: the status dropdown is wide enough that "For sale
+            or rent" fits completely, not clipped to "For sale or ren". */}
+        <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="For sale or rent" className="border border-gray-300 rounded px-3 py-2 min-w-[170px] w-full min-h-[48px]">
           <option value="">For sale or rent</option>
           <option value="sale">For sale</option>
           <option value="rent">For rent</option>
