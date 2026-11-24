@@ -577,8 +577,33 @@ export default function Home() {
                       zenith), house shifted down 64px, bottom
                       cropped to portrait row 330. Topmost red pixel
                       is now at y=64, pyramid roof tip intact below
-                      it. Every other card stays object-cover. */}
-                  <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-wide.jpg" ? "object-cover object-top" : "object-cover"} />
+                      it. Every other card stays object-cover.
+                      LIVE-FAIL 25 Nov 01:10-01:18 PKT, ROOT CAUSE
+                      (proven, not guessed): the file was fine and
+                      the boxes were fine (home 362x226, 16/10, same
+                      ratio as the file; /projects 360x192 h-48
+                      object-top, top rows preserved), but the
+                      browser rendered the OLD v0 file: roof at the
+                      top edge, sky only at the sides. Proof: the
+                      AVIF served for
+                      /_next/image?...global-zamzam-house-wide.jpg...
+                      decoded with only 46% blue at the top rows
+                      (v0), while the same URL as JPEG/WebP and the
+                      raw file decoded with 93% blue (v2), and the
+                      element canvas sampled the same 46%. Next
+                      caches optimized images by URL
+                      (minimumCacheTTL 31536000, immutable /img
+                      headers), and the filename never changed
+                      across e3635e3 v0 and 21fbac3 v2, so the stale
+                      AVIF entry kept being served (x-nextjs-cache:
+                      HIT). Fix v3: the file is RENAMED to
+                      global-zamzam-house-wide-v3.jpg (same v2 bytes,
+                      64px sky), so every optimizer URL is new and
+                      no stale entry of any size or format can be
+                      served, on Vercel or locally. Rule learned:
+                      NEVER change an image file's pixels without
+                      renaming it. */}
+                  <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-wide-v3.jpg" ? "object-cover object-top" : "object-cover"} />
                   <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                   <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg md:text-xl leading-tight drop-shadow">{p.name}</span>
                 </>
@@ -630,39 +655,26 @@ export default function Home() {
       <section className="mt-10">
         <div className="grid gap-6 md:grid-cols-2 items-center">
           <div className="flex justify-center md:justify-start">
-            {/* LIVE-FAIL FIX 24 Nov 2026: ceo-flat.jpg is the original
-                unpadded photo (1024x683) AND its radial-gradient
-                studio backdrop was flattened in the file itself to
-                uniform grey 199 (PIL, border-connected backdrop mask
-                only; skin, shirt, hair, eyes untouched). The gradient
-                was the real cause of the grey band: its darker top
-                strip read as a band on both pages. Do NOT "restore"
-                the git-history ceo.jpg original, that brings the band back.
-                POLISH-02 25 Nov 2026: the wide object-contain box
-                showed the whole 3:2 photo, so the subject sat small
-                with flat grey backdrop on both sides and his hair
-                nearly touching the top edge of the frame. Now the
-                same taller portrait box as /about: fixed height
-                380px (420px sm and up), object-cover object-top,
-                so the subject fills the frame and the grey side
-                margins are gone. md:w-[400px], not md:w-auto: w-auto
-                + h-auto left the lazy image at 0x0 before it loaded,
-                so on a slow connection it never triggered loading at
-                all. A fixed width gives it layout size up front.
-                LIVE-FAIL 25 Nov 00:55 PKT: that box STILL left about
-                15% flat grey on each side, because the grey is IN
-                the photo: the subject spans only x=271..758 of the
-                1024px file, so object-cover on the full file can
-                never fill the frame with him. Fix: ceo-tight.jpg,
-                the same real photo cropped to x=258..772 (514x683,
-                measured non-grey bbox x=271..758, y=12..682, so 13px
-                grey margin each side, 2.5%, hair headroom 12px
-                kept), and the box now follows the tight file's own
-                aspect (w-full md:w-[400px], h-auto), so the image
-                fills it edge-to-edge with no crop at all. /about
-                keeps ceo-flat.jpg and its own box, unchanged: it
-                passed the live check. */}
-            <Image src="/img/ceo-tight.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={514} height={683} className="w-full md:w-[400px] h-auto object-cover object-top rounded-lg bg-white" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+            {/* LIVE-FAIL 25 Nov 2026, ROOT CAUSE: ceo-tight.jpg
+                did NOT fill the frame, and no box fix could make
+                it: the file was cropped to the FULL-HEIGHT bbox
+                (shoulders x=271..758 of 1024, 486px wide), but the
+                HEAD is only x=448..604, 156px wide, measured
+                per-row in PIL. In a 514px-wide file the head is
+                30% of the frame, so at head height there are
+                37% grey bands each side plus a full-width grey
+                band above the hair, exactly what the live check
+                saw. The box was fine (400x532, exact file ratio,
+                h-auto, no crop). Fix: ceo-portrait.jpg, a true
+                head-and-shoulders crop of the same real photo,
+                x=380..660, y=0..440 (280x440): the head is 63%
+                of the frame width, the blue shirt fills the
+                frame edge-to-edge from the shoulders down, hair
+                intact with 13px headroom (3%). The box follows
+                the new file's own aspect, so the image fills it
+                with no crop at all. /about keeps ceo-flat.jpg
+                and its own box, unchanged: it passed live. */}
+            <Image src="/img/ceo-portrait.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={280} height={440} className="w-full md:w-[400px] h-auto object-cover object-top rounded-lg bg-white" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>

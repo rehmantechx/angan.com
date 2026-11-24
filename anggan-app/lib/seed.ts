@@ -281,7 +281,13 @@ export const PROJECTS: Project[] = [
     // Topmost red pixel is at y=64; the source portrait itself cuts
     // the top roof's ridge at y=0, so no tip beyond the source exists
     // to restore, and none was invented.
-    "cardImg": "global-zamzam-house-wide.jpg",
+    // LIVE-FAIL 25 Nov 01:10-01:18 PKT: live STILL showed the roof
+    // cut, because the AVIF the optimizer served was a stale v0
+    // entry (46% blue at top rows, x-nextjs-cache HIT); the filename
+    // never changed across v0/v2, so the cache never busted. Fix v3:
+    // same v2 bytes, RENAMED to global-zamzam-house-wide-v3.jpg.
+    // Never change an image's pixels without renaming it.
+    "cardImg": "global-zamzam-house-wide-v3.jpg",
     "note": "Zam Zam City, Lahore. LDA approved."
   },
   {

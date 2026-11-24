@@ -30,7 +30,7 @@ export default function ProjectsPage() {
               // pillars. The old clean file was a tall portrait, which
               // object-contain squeezed into a narrow strip with white
               // pillars. Every other card stays object-cover.
-              <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} width={1200} height={675} className={(p.cardImg || p.img) === "global-zamzam-house-wide.jpg" ? "w-full h-48 object-cover object-top bg-navy" : "w-full h-48 object-cover bg-navy"} loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+              <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} width={1200} height={675} className={(p.cardImg || p.img) === "global-zamzam-house-wide-v3.jpg" ? "w-full h-48 object-cover object-top bg-navy" : "w-full h-48 object-cover bg-navy"} loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
             ) : (
               <ProjectFallback name={p.name} loc={p.loc} />
             )}
