@@ -115,7 +115,11 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               <h2 className="text-xl font-bold text-navy">What you can buy here</h2>
               <ul className="mt-3 space-y-3">
                 {d.products.map((p) => (
-                  <li key={p.title} className="border border-gray-200 rounded-lg p-3 bg-white">
+                  // NAV-01: MGH sub-menu anchors land on these products.
+                  // Zamindar File -> #zamindar-file, Affidavit MGH ->
+                  // #affidavit-mgh, Serene Farm Houses ->
+                  // #serene-farm-houses.
+                  <li key={p.title} id={p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")} className="border border-gray-200 rounded-lg p-3 bg-white scroll-mt-24">
                     <p className="font-semibold">{p.title}</p>
                     <p className="text-sm text-gray-600 mt-1">{p.text}</p>
                   </li>

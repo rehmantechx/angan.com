@@ -9,8 +9,7 @@ export default function CompaniesPage() {
       <h1 className="text-3xl font-bold text-navy mt-1">Anngan Companies</h1>
       <p className="text-gray-600 mt-1">The group behind Anngan.</p>
       <div className="grid gap-4 mt-6 md:grid-cols-3">
-        <article className="rounded-xl border border-gray-200 bg-white shadow-sm h-full flex flex-col overflow-hidden">
-          <div className="bg-navy px-5 pt-5 pb-4 text-white"><span className="text-[#DDB78B]"><ServiceIcon id="service-1" size={36} /></span></div>
+        <article id="technologies" className="rounded-xl border border-gray-200 bg-white shadow-sm h-full flex flex-col overflow-hidden scroll-mt-24">
           <div className="w-10 h-1 bg-anngan ml-5 -mt-0.5" aria-hidden="true" />
           <div className="p-5 flex flex-col flex-1">
           <h2 className="font-bold text-navy text-lg">Angan Tech</h2>
@@ -18,8 +17,7 @@ export default function CompaniesPage() {
           <div className="mt-auto pt-3"><Link href="/services" className="bg-anngan text-white text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center">Open Angan Tech</Link></div>
           </div>
         </article>
-        <article className="rounded-xl border border-gray-200 bg-white shadow-sm h-full flex flex-col overflow-hidden">
-          <div className="bg-navy px-5 pt-5 pb-4 text-white"><span className="text-[#DDB78B]"><BuildingIcon size={36} /></span></div>
+        <article id="construction" className="rounded-xl border border-gray-200 bg-white shadow-sm h-full flex flex-col overflow-hidden scroll-mt-24">
           <div className="w-10 h-1 bg-anngan ml-5 -mt-0.5" aria-hidden="true" />
           <div className="p-5 flex flex-col flex-1">
           <h2 className="font-bold text-navy text-lg">Anngan Construction</h2>
@@ -27,8 +25,7 @@ export default function CompaniesPage() {
           <div className="mt-auto pt-3"><a href="tel:+923041111698" className="border border-navy text-navy text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center">Ask the team</a></div>
           </div>
         </article>
-        <article className="rounded-xl border border-gray-200 bg-white shadow-sm h-full flex flex-col overflow-hidden">
-          <div className="bg-navy px-5 pt-5 pb-4 text-white"><span className="text-[#DDB78B]"><MegaphoneIcon size={36} /></span></div>
+        <article id="marketing" className="rounded-xl border border-gray-200 bg-white shadow-sm h-full flex flex-col overflow-hidden scroll-mt-24">
           <div className="w-10 h-1 bg-anngan ml-5 -mt-0.5" aria-hidden="true" />
           <div className="p-5 flex flex-col flex-1">
           <h2 className="font-bold text-navy text-lg">Corporate Angle Marketing</h2>

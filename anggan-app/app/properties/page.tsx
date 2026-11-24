@@ -137,8 +137,10 @@ function PropertiesPage() {
           {cities.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         {/* PHN-05: the status dropdown is wide enough that "For sale
-            or rent" fits completely, not clipped to "For sale or ren". */}
-        <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="For sale or rent" className="border border-gray-300 rounded px-3 py-2 min-w-[170px] w-full min-h-[48px]">
+            or rent" fits completely, not clipped to "For sale or ren".
+            FLT-01: pr-8 gives the native chevron room of its own, so
+            the text and the chevron never collide with the next select. */}
+        <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="For sale or rent" className="border border-gray-300 rounded px-3 py-2 pr-8 min-w-[190px] w-full min-h-[48px]">
           <option value="">For sale or rent</option>
           <option value="sale">For sale</option>
           <option value="rent">For rent</option>

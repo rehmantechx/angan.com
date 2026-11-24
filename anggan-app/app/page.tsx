@@ -388,7 +388,7 @@ export default function Home() {
       {/* PIC-01: compact Societies and partner agencies strip. Societies
           are real photo chips; agencies are their real logos from the
           repo, linking to /contact (no public agencies page exists). */}
-      <section className="mt-10" aria-label="Societies and partner agencies">
+      <section id="partner-agencies" className="mt-10 scroll-mt-24" aria-label="Societies and partner agencies">
         <h2 className="text-2xl font-bold text-navy">Societies</h2>
         <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
           {[

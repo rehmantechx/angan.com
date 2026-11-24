@@ -6,18 +6,63 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "../lib/auth-context";
 import { PROJECTS, SERVICES } from "../lib/seed";
 
-// Decided nav, in the exact order of the static site.
-const NAV_LINKS = [
+// NAV-01 / NAV-02 / NAV-03 (24 Nov 2026): PROJECTS and ANNGAN
+// COMPANIES are dropdowns matching the original anngan.com structure,
+// AGENCIES links to the home partner strip. Flat items stay as they were.
+type NavSub = { href: string; label: string };
+type NavGroup = { href: string; label: string; children?: NavSub[] };
+type NavItem = { href: string; label: string; dropdown?: NavGroup[] };
+const NAV_LINKS: NavItem[] = [
   { href: "/", label: "HOME" },
   { href: "/about", label: "ABOUT US" },
-  { href: "/projects", label: "PROJECTS" },
+  {
+    href: "/projects",
+    label: "PROJECTS",
+    dropdown: [
+      {
+        href: "/projects/proj-1",
+        label: "MGH Pakistan, Mangla",
+        children: [
+          { href: "/projects/proj-1#zamindar-file", label: "Zamindar File" },
+          { href: "/projects/proj-1#affidavit-mgh", label: "Affidavit MGH" },
+          { href: "/projects/proj-1#serene-farm-houses", label: "Serene Farm Houses" },
+        ],
+      },
+      { href: "/projects/proj-3", label: "Al Ghani, Phase 7 Lahore" },
+      {
+        href: "/projects",
+        label: "Lahore Projects",
+        children: [
+          { href: "/projects/proj-2", label: "Global Homes, Lahore" },
+          { href: "/projects/proj-4", label: "Urban City, Lahore" },
+          { href: "/projects/proj-5", label: "China Town, Lahore" },
+        ],
+      },
+      { href: "/projects/proj-6", label: "Pak China Grain Market, Multan (Coming Soon)" },
+      { href: "/projects/proj-7", label: "Kashmir Modern City (Sold Out)" },
+      { href: "/properties?type=Commercial", label: "Commercial" },
+    ],
+  },
   { href: "/properties", label: "PROPERTIES" },
   { href: "/societies", label: "SOCIETIES GUIDE" },
+  // NAV-03: AGENCIES, as on the original anngan.com. The home partner
+  // strip carries id="partner-agencies", so this anchor lands on it.
+  // BLOGS stays out of the navbar: no full-text articles exist yet.
+  { href: "/#partner-agencies", label: "AGENCIES" },
   // PHN-04: TOOLS in the top red navbar, so a dealer can be guided
   // to the calculators over the phone. No Tools strip on home.
   { href: "/tools", label: "TOOLS" },
   { href: "/contact", label: "CONTACT" },
-  { href: "/companies", label: "ANNGAN COMPANIES" },
+  {
+    href: "/companies",
+    label: "ANNGAN COMPANIES",
+    dropdown: [
+      { href: "/services", label: "Anngan Technologies" },
+      // NAV-02: the /companies cards carry these ids, verified below.
+      { href: "/companies#construction", label: "Anngan Construction" },
+      { href: "/companies#marketing", label: "Corporate Angle Marketing" },
+    ],
+  },
   { href: "/services", label: "ANGAN TECH" },
 ];
 
@@ -32,6 +77,12 @@ const SOCIAL_LINKS = [
 export function Header() {
   const { user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  // NAV-01/02: which desktop dropdown is open, and which nested
+  // sub-menu inside it. Mobile drawer accordions use the same labels.
+  const [openDrop, setOpenDrop] = useState<string | null>(null);
+  const [openSub, setOpenSub] = useState<string | null>(null);
+  const [mobileDrop, setMobileDrop] = useState<string | null>(null);
+  const [mobileSub, setMobileSub] = useState<string | null>(null);
   const pathname = usePathname();
   // Active page: exact match, or a detail page under its section
   // (/projects/proj-1 is still Projects, /services/service-3 is Angan Tech,
@@ -72,7 +123,17 @@ export function Header() {
               info@anngan.com
             </a>
           </span>
-          <span className="hidden md:inline">57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore</span>
+          <span className="hidden md:inline">57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore, Pakistan</span>
+          {/* HDR-01: the 5 compact social icons from the footer, in the
+              top bar like anngan.com. 18px, md and up only, so the
+              mobile top bar stays Call + Email. */}
+          <span className="ml-auto hidden md:flex items-center gap-2">
+            {SOCIAL_LINKS.map((s) => (
+              <a key={s.href} href={s.href} target="_blank" rel="noopener" aria-label={`Anngan on ${s.label}, @annganpk`} className="inline-flex items-center">
+                <SocialIcon label={s.label} size={18} />
+              </a>
+            ))}
+          </span>
         </div>
       </div>
       <div className="bg-white">
@@ -117,12 +178,83 @@ export function Header() {
           >
             MENU &#9776;
           </button>
-          <div className="hidden xl:flex items-center gap-2 text-xs font-bold whitespace-nowrap max-w-7xl mx-auto px-4 sm:px-6 py-1">
-            {NAV_LINKS.map((l) => (
-              <Link key={l.href} href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)}>
-                {l.label}
-              </Link>
-            ))}
+          <div className="hidden xl:flex items-center gap-1 text-xs font-bold whitespace-nowrap max-w-7xl mx-auto px-4 sm:px-6 py-1">
+            {NAV_LINKS.map((l) =>
+              l.dropdown ? (
+                // NAV-01/02 desktop dropdown: hover opens it, the label
+                // is still a plain link to /projects or /companies, the
+                // chevron button toggles it on click, Escape closes it.
+                <div
+                  key={l.href + l.label}
+                  className="relative shrink-0"
+                  onMouseEnter={() => { setOpenDrop(l.label); setOpenSub(null); }}
+                  onMouseLeave={() => setOpenDrop(null)}
+                  onKeyDown={(e) => { if (e.key === "Escape") { setOpenDrop(null); setOpenSub(null); } }}
+                >
+                  <span className={"inline-flex items-center " + (isActive(l.href) ? "bg-white text-navy font-extrabold rounded" : "")}>
+                    <Link href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)} onFocus={() => setOpenDrop(l.label)}>
+                      {l.label}
+                    </Link>
+                    <button
+                      type="button"
+                      aria-haspopup="true"
+                      aria-expanded={openDrop === l.label}
+                      aria-label={`${l.label} menu`}
+                      // Click keeps it open: hover already opens the
+                      // menu, so toggling here would close it the moment
+                      // a user clicks the chevron. Escape or moving the
+                      // mouse away closes it.
+                      onClick={() => { setOpenDrop(l.label); setOpenSub(null); }}
+                      onFocus={() => setOpenDrop(l.label)}
+                      className={"inline-flex items-center min-h-[40px] px-1 rounded " + (isActive(l.href) ? "text-navy" : "text-white hover:bg-white/15")}
+                    >
+                      {openDrop === l.label ? "\u25B2" : "\u25BC"}
+                    </button>
+                  </span>
+                  {openDrop === l.label ? (
+                    <div className="absolute left-0 top-full z-50 w-80 bg-white text-navy shadow-lg rounded-b-lg border border-gray-200 py-1 normal-case" role="menu">
+                      {l.dropdown.map((g) =>
+                        g.children ? (
+                          <div key={g.href + g.label} className="border-b border-gray-100 last:border-b-0">
+                            <div className="flex items-stretch">
+                              <Link href={g.href} onClick={() => setOpenDrop(null)} className="flex-1 px-4 py-2.5 min-h-[44px] inline-flex items-center font-bold hover:bg-blue-50">
+                                {g.label}
+                              </Link>
+                              <button
+                                type="button"
+                                aria-expanded={openSub === g.label}
+                                aria-label={`${g.label} sub-menu`}
+                                onClick={() => setOpenSub(openSub === g.label ? null : g.label)}
+                                className="px-3 min-w-[44px] inline-flex items-center justify-center hover:bg-blue-50"
+                              >
+                                {openSub === g.label ? "\u25BE" : "\u25B8"}
+                              </button>
+                            </div>
+                            {openSub === g.label ? (
+                              <div className="bg-blue-50/60 border-l-4 border-l-anngan ml-4">
+                                {g.children.map((c) => (
+                                  <Link key={c.href} href={c.href} onClick={() => setOpenDrop(null)} className="block px-4 py-2.5 min-h-[44px] hover:bg-blue-50">
+                                    {c.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <Link key={g.href + g.label} href={g.href} onClick={() => setOpenDrop(null)} className="block px-4 py-2.5 min-h-[44px] hover:bg-blue-50 border-b border-gray-100 last:border-b-0">
+                            {g.label}
+                          </Link>
+                        ),
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <Link key={l.href} href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)}>
+                  {l.label}
+                </Link>
+              ),
+            )}
             <Link href="/create-listing" aria-current={isActive("/create-listing") ? "page" : undefined} className={"btn bg-[#2F96CD] hover:bg-[#005F90] text-white px-3 shrink-0 min-h-[40px] py-2 " + (isActive("/create-listing") ? "ring-2 ring-white" : "")}>
               CREATE A LISTING
             </Link>
@@ -166,17 +298,80 @@ export function Header() {
             </div>
             <nav className="px-4 py-3 flex flex-col gap-1 text-sm font-bold" aria-label="Menu links">
               <p className="text-xs text-gray-600 font-bold tracking-wide pt-1">Anngan</p>
-              {NAV_LINKS.map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  onClick={() => setMenuOpen(false)}
-                  aria-current={isActive(l.href) ? "page" : undefined}
-                  className={drawerCls(l.href)}
-                >
-                  {l.label} &rsaquo;
-                </Link>
-              ))}
+              {NAV_LINKS.map((l) =>
+                l.dropdown ? (
+                  // NAV-01/02 mobile accordion: tap the label to go to the
+                  // section, tap the chevron to open its sub-items.
+                  <div key={l.href + l.label} className="border-b border-gray-100">
+                    <div className="flex items-stretch">
+                      <Link
+                        href={l.href}
+                        onClick={() => setMenuOpen(false)}
+                        aria-current={isActive(l.href) ? "page" : undefined}
+                        className={"flex-1 py-3 min-h-[48px] flex items-center " + (isActive(l.href) ? "text-navy font-extrabold bg-blue-50 border-l-4 border-l-anngan pl-3" : "text-navy hover:text-anngan-dark")}
+                      >
+                        {l.label}
+                      </Link>
+                      <button
+                        type="button"
+                        aria-expanded={mobileDrop === l.label}
+                        aria-label={`${l.label} menu`}
+                        onClick={() => { setMobileDrop(mobileDrop === l.label ? null : l.label); setMobileSub(null); }}
+                        className="px-3 min-w-[48px] min-h-[48px] inline-flex items-center justify-center text-navy"
+                      >
+                        {mobileDrop === l.label ? "\u25BE" : "\u25B8"}
+                      </button>
+                    </div>
+                    {mobileDrop === l.label ? (
+                      <div className="pb-2 pl-4 border-l-4 border-l-anngan ml-1">
+                        {l.dropdown.map((g) =>
+                          g.children ? (
+                            <div key={g.href + g.label}>
+                              <div className="flex items-stretch">
+                                <Link href={g.href} onClick={() => setMenuOpen(false)} className="flex-1 py-2.5 min-h-[44px] flex items-center text-navy font-bold">
+                                  {g.label}
+                                </Link>
+                                <button
+                                  type="button"
+                                  aria-expanded={mobileSub === g.label}
+                                  aria-label={`${g.label} sub-menu`}
+                                  onClick={() => setMobileSub(mobileSub === g.label ? null : g.label)}
+                                  className="px-3 min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-navy"
+                                >
+                                  {mobileSub === g.label ? "\u25BE" : "\u25B8"}
+                                </button>
+                              </div>
+                              {mobileSub === g.label ? (
+                                <div className="pl-4 pb-1">
+                                  {g.children.map((c) => (
+                                    <Link key={c.href} href={c.href} onClick={() => setMenuOpen(false)} className="block py-2.5 min-h-[44px] text-navy">
+                                      {c.label}
+                                    </Link>
+                                  ))}
+                                </div>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <Link key={g.href + g.label} href={g.href} onClick={() => setMenuOpen(false)} className="block py-2.5 min-h-[44px] text-navy">
+                              {g.label}
+                            </Link>
+                          ),
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setMenuOpen(false)}
+                    aria-current={isActive(l.href) ? "page" : undefined}
+                    className={drawerCls(l.href)}
+                  >
+                    {l.label} &rsaquo;
+                  </Link>
+                ),
+              )}
               <Link
                 href="/create-listing"
                 onClick={() => setMenuOpen(false)}
@@ -224,30 +419,30 @@ export function Header() {
 
 // One 24px brand icon per social link, same size and shape for all five,
 // so no link is text-only while another has an icon.
-function SocialIcon({ label }: { label: string }) {
+function SocialIcon({ label, size = 24 }: { label: string; size?: number }) {
   const box = "shrink-0";
   if (label === "Facebook") {
     return (
-      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#1877F2" /><path d="M13.8 21v-6.9h2.3l.4-2.7h-2.7V9.6c0-.8.3-1.3 1.4-1.3h1.4V5.9c-.3 0-1.1-.1-2-.1-2 0-3.4 1.2-3.4 3.5v2.1H8.9v2.7h2.3V21h2.6z" fill="#fff" /></svg>
+      <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#1877F2" /><path d="M13.8 21v-6.9h2.3l.4-2.7h-2.7V9.6c0-.8.3-1.3 1.4-1.3h1.4V5.9c-.3 0-1.1-.1-2-.1-2 0-3.4 1.2-3.4 3.5v2.1H8.9v2.7h2.3V21h2.6z" fill="#fff" /></svg>
     );
   }
   if (label === "X") {
     return (
-      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#000" /><path d="M6 5.5 13.4 15l-7 3.5h2.6l5.2-2.6 4.1 2.6H20l-7.8-10 6.6-3H16l-4.9 2.4L7.4 5.5H6z" fill="#fff" transform="scale(0.92) translate(1,1)" /></svg>
+      <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#000" /><path d="M6 5.5 13.4 15l-7 3.5h2.6l5.2-2.6 4.1 2.6H20l-7.8-10 6.6-3H16l-4.9 2.4L7.4 5.5H6z" fill="#fff" transform="scale(0.92) translate(1,1)" /></svg>
     );
   }
   if (label === "LinkedIn") {
     return (
-      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#0A66C2" /><rect x="6" y="10" width="2.6" height="8" fill="#fff" /><circle cx="7.3" cy="7.3" r="1.5" fill="#fff" /><path d="M11 18v-4.4c0-1.5.8-2.4 2.1-2.4 1.2 0 1.9.8 1.9 2.4V18h2.6v-4.8c0-2.8-1.5-4.2-3.9-4.2-1.5 0-2.5.7-3.1 1.7V10H11v8z" fill="#fff" transform="translate(-1.4,0)" /></svg>
+      <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#0A66C2" /><rect x="6" y="10" width="2.6" height="8" fill="#fff" /><circle cx="7.3" cy="7.3" r="1.5" fill="#fff" /><path d="M11 18v-4.4c0-1.5.8-2.4 2.1-2.4 1.2 0 1.9.8 1.9 2.4V18h2.6v-4.8c0-2.8-1.5-4.2-3.9-4.2-1.5 0-2.5.7-3.1 1.7V10H11v8z" fill="#fff" transform="translate(-1.4,0)" /></svg>
     );
   }
   if (label === "Instagram") {
     return (
-      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#C13584" /><rect x="5.5" y="5.5" width="13" height="13" rx="4" fill="none" stroke="#fff" strokeWidth="1.8" /><circle cx="12" cy="12" r="3.2" fill="none" stroke="#fff" strokeWidth="1.8" /><circle cx="16" cy="8" r="1.2" fill="#fff" /></svg>
+      <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#C13584" /><rect x="5.5" y="5.5" width="13" height="13" rx="4" fill="none" stroke="#fff" strokeWidth="1.8" /><circle cx="12" cy="12" r="3.2" fill="none" stroke="#fff" strokeWidth="1.8" /><circle cx="16" cy="8" r="1.2" fill="#fff" /></svg>
     );
   }
   return (
-    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#FF0000" /><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#fff" /></svg>
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" className={box}><rect width="24" height="24" rx="5" fill="#FF0000" /><path d="M10 8.5v7l6-3.5-6-3.5z" fill="#fff" /></svg>
   );
 }
 
