@@ -405,14 +405,24 @@ export default function Home() {
           ))}
         </div>
         <h3 className="font-bold text-navy mt-6">Partner agencies</h3>
-        <div className="flex flex-wrap gap-4 mt-3 items-start">
+        {/* 2026-11-24 user order: the 2-per-row flex strip was tall
+            with huge empty white space and small logos, on mobile
+            and desktop. Rebuilt as a compact grid, 3 per row mobile,
+            4 tablet, 6 desktop. Each card is a fixed aspect-ratio
+            logo box (5/4, close to the real logos' 500x438) that the
+            logo fills with object-contain, tight padding, tight
+            label under it, no extra empty rows. Same 13 logos,
+            same order, same /contact links, same name labels. */}
+        <div className="grid gap-2 sm:gap-3 mt-3 grid-cols-3 sm:grid-cols-4 lg:grid-cols-6">
           {AGENCIES.map((a) => (
             // PHN-05: every logo tile carries its agency name under
             // the logo, so the bare stylised P (Pioneer Estate) is
             // named and no tile is an unlabeled picture.
-            <Link key={a.id} href="/contact" aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm flex flex-col items-center gap-2 w-[160px] md:w-[180px]">
-              <Image src={`/img/${a.logo}`} alt={a.name + " logo"} width={240} height={210} className="h-24 w-auto md:h-32 object-contain" loading="lazy" />
-              <span className="text-xs font-bold text-navy text-center leading-tight">{a.name}</span>
+            <Link key={a.id} href="/contact" aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm flex flex-col items-center gap-1">
+              <span className="relative block w-full aspect-[5/4]">
+                <Image src={`/img/${a.logo}`} alt={a.name + " logo"} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-contain" loading="lazy" />
+              </span>
+              <span className="text-[11px] sm:text-xs font-bold text-navy text-center leading-tight">{a.name}</span>
             </Link>
           ))}
         </div>
