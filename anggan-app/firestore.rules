@@ -11,41 +11,56 @@ service cloud.firestore {
       return isSignedIn() &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
-    // Public read only for live listings. Office can read every listing.
-    // A signed-in user may create a listing only as pending (office approval
-    // makes it live). Only the office can update or delete listings.
-    // NOTE: the published rules had no explicit list allowance, and an
-    // unfiltered list query was denied whenever any doc was not live
-    // (rules are not filters). The app now queries by liveStatus, which
-    // the rules can prove, but publish this file so an office list query
-    // is also explicitly allowed.
+    // ============================================================
+    // TEMPORARY PUBLIC TEST MODE, 2026-11-24, REVERT SOON.
+    // User order 2026-11-24 17:52 PKT: /admin public for a short test,
+    // no Google sign-in. The rules below allow ANYONE on the internet,
+    // signed in or not, to read, create, update and delete listings,
+    // projects, blogs, agencies, services, enquiries and settings.
+    // The office helpers above (isOffice, isOfficeAnyRole) are kept
+    // intact so the revert is one step.
+    // WHAT CHANGED, collection by collection (was -> now):
+    // - listings: read live-only / office list, create office-or-
+    //   pending, update/delete office only -> read, list, create,
+    //   update, delete for anyone.
+    // - projects, blogs, agencies, services: read public, create/
+    //   update/delete office only -> read, create, update, delete
+    //   for anyone.
+    // - enquiries: create public, read/update office, delete office
+    //   -> create, read, update, delete for anyone.
+    // - settings: read public, write office only -> read, write for
+    //   anyone.
+    // - users: UNCHANGED, still signed-in only. Nothing in the test
+    //   reads or writes user documents.
+    // THIS FILE ALONE DOES NOTHING: rules only take effect when
+    // published in the Firebase console (Firestore Database > Rules >
+    // paste this file > Publish). The app code change (PUBLIC_TEST_MODE
+    // in lib/auth-context.tsx) ships with the Vercel deploy, the rules
+    // do not. Publish this file, then test, then revert.
+    // REVERT (one step): restore this file from commit 8891e08
+    // (git checkout 8891e08 -- anggan-app/firestore.rules), publish
+    // THAT version in the Firebase console, and set PUBLIC_TEST_MODE
+    // to false in lib/auth-context.tsx. See REVERT.md in
+    // ~/workspace/angan-e2e-evidence/admin-public-test-2026-11-24/.
+    // ============================================================
     match /listings/{id} {
-      allow read: if resource.data.liveStatus == 'live' || isOfficeAnyRole();
-      allow list: if isOfficeAnyRole();
-      allow create: if isOffice() || (isSignedIn() && request.resource.data.liveStatus == 'pending');
-      allow update, delete: if isOffice();
+      allow read, list, create, update, delete: if true; // TEMP PUBLIC TEST 2026-11-24, revert soon
     }
     match /projects/{id} {
-      allow read: if true;
-      allow create, update, delete: if isOffice();
+      allow read, create, update, delete: if true; // TEMP PUBLIC TEST 2026-11-24, revert soon
     }
     match /blogs/{id} {
-      allow read: if true;
-      allow create, update, delete: if isOffice();
+      allow read, create, update, delete: if true; // TEMP PUBLIC TEST 2026-11-24, revert soon
     }
     match /agencies/{id} {
-      allow read: if true;
-      allow create, update, delete: if isOffice();
+      allow read, create, update, delete: if true; // TEMP PUBLIC TEST 2026-11-24, revert soon
     }
     match /services/{id} {
-      allow read: if true;
-      allow create, update, delete: if isOffice();
+      allow read, create, update, delete: if true; // TEMP PUBLIC TEST 2026-11-24, revert soon
     }
     // Enquiries: public can create only, office can read and update stage
     match /enquiries/{id} {
-      allow create: if true;
-      allow read, update: if isOfficeAnyRole();
-      allow delete: if isOffice();
+      allow create, read, update, delete: if true; // TEMP PUBLIC TEST 2026-11-24, revert soon
     }
     // Users: a signed-in user may read their own document and may create
     // their own document only as View only. The owner then raises the role
@@ -59,8 +74,7 @@ service cloud.firestore {
     }
     // Settings: public read, office write only
     match /settings/{id} {
-      allow read: if true;
-      allow write: if isOffice();
+      allow read, write: if true; // TEMP PUBLIC TEST 2026-11-24, revert soon
     }
   }
 }

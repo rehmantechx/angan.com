@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../lib/auth";
-import { DEMO_EMAIL } from "../../lib/auth-context";
+import { DEMO_EMAIL, PUBLIC_TEST_MODE } from "../../lib/auth-context";
 import {
   getListings,
   getProjects,
@@ -223,6 +223,14 @@ export default function AdminPage() {
           Signed in as {user.email} · {user.role}
         </span>
       </div>
+      {/* TEMPORARY PUBLIC TEST MODE (2026-11-24, revert soon): no login,
+          anyone on the internet can edit and delete here. Remove with
+          the PUBLIC_TEST_MODE flag, do not leave it up. */}
+      {PUBLIC_TEST_MODE ? (
+        <div role="alert" className="bg-red-600 text-white font-bold text-sm rounded p-3 mt-3">
+          PUBLIC TEST MODE, no login, anyone can edit, revert soon
+        </div>
+      ) : null}
       {isDemo ? (
         <div className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3 flex gap-3 items-center flex-wrap">
           <span className="flex-1 min-w-0 break-words">Demo mode, view only. Changes are not saved. Sign in with an authorized office account for the real office dashboard.</span>
