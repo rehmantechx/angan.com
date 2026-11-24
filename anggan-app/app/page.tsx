@@ -7,7 +7,7 @@ import { getProjects } from "../lib/db";
 import { Project, PROJECTS, LISTINGS } from "../lib/seed";
 import { ProjectFallback } from "../components/ProjectFallback";
 import { AGENCIES } from "../lib/seed";
-import { PhoneIcon, WhatsAppIcon, BuildingIcon, HomeIcon, UsersIcon, MapIcon } from "../lib/icons";
+import { BuildingIcon, HomeIcon, UsersIcon } from "../lib/icons";
 
 // Hero background slider, like the original anngan.com: the photo
 // changes every 10 seconds, crossfade, loop. Real photos only, all
@@ -161,8 +161,9 @@ export default function Home() {
     return () => clearTimeout(t);
   }, []);
 
-  const mgh = projects.find((p) => p.id === "proj-1");
-  const otherProjects = projects.filter((p) => p.id !== "proj-1");
+  // Home project cards are pictorial only, all 7 the same size:
+  // one large real photo, the project name on the photo, click it
+  // and you are on that project page. No featured card, no panel.
 
   return (
     <>
@@ -384,46 +385,36 @@ export default function Home() {
       </section>
 
       <div>
-      <section className="mt-10 bg-slate-50 -mx-4 px-4 py-8">
+      {/* Pictorial only, 2026-11-24 user order: Our projects on home
+          is photo cards only, like the old anngan.com, for dealers
+          who cannot read English. All 7 projects the same size, one
+          large real photo each, project name on the photo, click the
+          photo and you are on that project page. No featured big
+          card, no MGH panel, no location, no chips, no description,
+          no Open / Call / WhatsApp buttons. Full info, Call and
+          WhatsApp stay on the project detail pages only. Pak China
+          Grain Market has no real photo at all (VIS-01), so its card
+          keeps the honest "Photo coming soon" fallback, no invented
+          photo. Photos are the seed cardImg where one exists
+          (Al Ghani aerial, Global Homes house), else the seed img. */}
+      <section className="mt-10 bg-slate-50 -mx-4 px-4 py-8" aria-label="Our projects">
         <div className="flex items-baseline justify-between flex-wrap gap-2">
           <h2 className="text-2xl font-bold text-navy">Our projects</h2>
           <Link href="/projects" className="text-anngan-dark font-semibold text-sm">All 7 projects &rarr;</Link>
         </div>
-        {mgh ? (
-          <article className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm mt-4 md:flex">
-            <div className="relative md:w-1/2">
-              <Image src={`/img/${mgh.img}`} alt="Mangla Lake aerial view, MGH Pakistan" width={1200} height={675} className="w-full h-56 md:h-full object-cover bg-navy" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
-              <span className="absolute top-3 left-3 bg-anngan text-white text-xs font-bold px-2 py-1 rounded">Our main project</span>
-            </div>
-            <div className="p-5 md:w-1/2">
-              <h3 className="font-bold text-navy text-xl">MGH Pakistan</h3>
-              <p className="text-sm text-gray-600 mt-1 flex items-center gap-1"><MapIcon size={16} /> Mangla, 7KM Mangla Gaddari Road</p>
-              <div className="flex gap-2 mt-3 flex-wrap">
-                <span className="border border-gray-200 rounded-full px-3 py-1 text-sm bg-white">Zamindar File</span>
-                <span className="border border-gray-200 rounded-full px-3 py-1 text-sm bg-white">Affidavit MGH</span>
-                <span className="border border-gray-200 rounded-full px-3 py-1 text-sm bg-white">Serene Farm Houses</span>
-              </div>
-              <div className="flex gap-2 mt-4 flex-wrap">
-                <Link href="/projects/proj-1" className="btn btn-red">Open MGH Pakistan</Link>
-                <a href="tel:+923041111698" className="btn btn-navy inline-flex items-center gap-1"><PhoneIcon size={18} /> Call</a>
-                <a href="https://wa.me/923041111698?text=Hi%20Anngan%2C%20I%20am%20asking%20about%20MGH%20Pakistan%2C%20Mangla." target="_blank" rel="noopener" className="btn btn-green inline-flex items-center gap-1"><WhatsAppIcon size={18} /> WhatsApp</a>
-              </div>
-            </div>
-          </article>
-        ) : null}
-        <div className="grid gap-4 mt-4 md:grid-cols-2">
-          {otherProjects.map((p) => (
-            <article key={p.id} className="card border border-gray-200 rounded-lg bg-white shadow-sm p-4 flex gap-4 items-start h-full">
-              {p.img ? (
-                <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} width={256} height={192} className="w-28 h-24 object-cover rounded shrink-0" loading="lazy" sizes="112px" />
+        <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-3">
+          {projects.map((p) => (
+            <Link key={p.id} href={`/projects/${p.id}`} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[16/10] bg-navy" aria-label={`${p.name}, open project`}>
+              {p.img || p.cardImg ? (
+                <>
+                  <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className="object-cover" />
+                  <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
+                  <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg md:text-xl leading-tight drop-shadow">{p.name}</span>
+                </>
               ) : (
-                <ProjectFallback name={p.name} loc={p.loc} className="w-28 h-24 rounded shrink-0" compact />
+                <ProjectFallback name={p.name} loc={p.loc} className="absolute inset-0 w-full h-full" />
               )}
-              <div className="min-w-0">
-                <h3 className="font-bold text-navy">{p.name}</h3>
-                <Link href={`/projects/${p.id}`} className="btn btn-outline-navy mt-2">Open project</Link>
-              </div>
-            </article>
+            </Link>
           ))}
         </div>
       </section>
