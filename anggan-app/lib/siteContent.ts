@@ -8,12 +8,11 @@
 // works before the office edits anything.
 // IMAGES: every image field accepts a file already on the site
 // ("/img/...") or a full http(s) URL. Photo UPLOAD is wired in
-// lib/upload.ts (Firebase Storage), but Storage is NOT enabled on
-// project anngan-7a3ff and cannot be enabled on the free Spark plan:
-// since 3 Feb 2026 Cloud Storage needs the Blaze plan, a card on
-// file. Until the owner approves Blaze, uploads show a clear blocked
-// message and the URL field stays the way to set a photo. Never a
-// fake upload, never a local-only path the live site cannot serve.
+// lib/upload.ts (Cloudinary free tier, unsigned preset, no card, no
+// Blaze). Until the owner creates the free Cloudinary account and
+// preset, uploads show a clear setup message and the URL field stays
+// the way to set a photo. Never a fake upload, never a local-only path
+// the live site cannot serve.
 import { getSettings, saveSettings } from "./db";
 import {
   DEFAULT_ABOUT_FAQ,
@@ -87,6 +86,11 @@ export type SiteContent = {
   legalPrivacy: string;
   legalTerms: string;
   legalDisclaimer: string;
+  // Top navbar sections hidden by the office in /admin. Labels are
+  // the navbar labels (TOOLS, BLOGS, AGENCIES, ...). HOME is never
+  // hidden, so navigation can never be broken from here. BLOGS is
+  // hidden by default, as before, until the office turns it on.
+  navHidden: string[];
 };
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
@@ -122,6 +126,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   legalPrivacy: DEFAULT_LEGAL_PRIVACY,
   legalTerms: DEFAULT_LEGAL_TERMS,
   legalDisclaimer: DEFAULT_LEGAL_DISCLAIMER,
+  navHidden: ["BLOGS"],
 };
 
 // A stored slide is usable only when it has a real image URL.
@@ -274,8 +279,17 @@ export function cleanCompanies(rows: unknown): CompanyCard[] {
   return out;
 }
 
-function cleanHeadings(v: unknown): HomeHeadings {
-  const d = DEFAULT_HOME_HEADINGS;
+const NAV_TOGGLE_LABELS = ["PROJECTS", "PROPERTIES", "SOCIETIES GUIDE", "AGENCIES", "BLOGS", "TOOLS", "ANNGAN COMPANIES", "ABOUT US", "CONTACT"];
+
+export { NAV_TOGGLE_LABELS };
+
+export function cleanNavHidden(v: unknown): string[] {
+  if (!Array.isArray(v)) return ["BLOGS"];
+  const out = v.filter((x): x is string => typeof x === "string" && NAV_TOGGLE_LABELS.includes(x.toUpperCase()));
+  return out.map((x) => x.toUpperCase());
+}
+
+function cleanHeadings(v: unknown): HomeHeadings {  const d = DEFAULT_HOME_HEADINGS;
   if (!v || typeof v !== "object") return d;
   const t = (k: keyof HomeHeadings) => String((v as Record<string, unknown>)[k] || "").trim() || d[k];
   return { browseCities: t("browseCities"), featured: t("featured"), societies: t("societies"), partnerAgencies: t("partnerAgencies"), ourProjects: t("ourProjects"), whoIsAnngan: t("whoIsAnngan") };
@@ -335,6 +349,7 @@ export function siteContentFromSettings(s: OfficeSettings): SiteContent {
     legalPrivacy: (s.legalPrivacy || "").trim() || DEFAULT_LEGAL_PRIVACY,
     legalTerms: (s.legalTerms || "").trim() || DEFAULT_LEGAL_TERMS,
     legalDisclaimer: (s.legalDisclaimer || "").trim() || DEFAULT_LEGAL_DISCLAIMER,
+    navHidden: cleanNavHidden(s.navHidden),
   };
 }
 
@@ -397,6 +412,7 @@ export async function saveSiteContent(c: SiteContent): Promise<void> {
     legalPrivacy: c.legalPrivacy.trim() || DEFAULT_LEGAL_PRIVACY,
     legalTerms: c.legalTerms.trim() || DEFAULT_LEGAL_TERMS,
     legalDisclaimer: c.legalDisclaimer.trim() || DEFAULT_LEGAL_DISCLAIMER,
+    navHidden: cleanNavHidden(c.navHidden),
   });
 }
 

@@ -1,9 +1,9 @@
 // Image field for /admin: pick a photo from the computer or phone
-// and upload it, or paste an image URL. Upload is wired to Firebase
-// Storage (lib/upload.ts), but Storage is NOT enabled on this project
-// and needs the Blaze plan, so until the owner approves Blaze the
-// upload shows a clear blocked message and the URL field stays the
-// way to set a photo. Never a fake upload, never a local-only path.
+// and upload it, or paste an image URL. Upload is wired to the free
+// Cloudinary unsigned preset (lib/upload.ts). Until the owner sets
+// up the free Cloudinary account and preset, the upload shows a
+// clear setup message and the URL field stays the way to set a
+// photo. Never a fake upload, never a local-only path.
 "use client";
 import { useRef, useState } from "react";
 import { uploadImage, UPLOAD_BLOCKED_MESSAGE } from "../lib/upload";

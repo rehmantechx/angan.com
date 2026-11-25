@@ -417,8 +417,8 @@ export async function getProjects(): Promise<Project[]> {
   if (demoMode) return demoStore().projects;
 
   const rows = await readCollection<Project>("projects");
-  if (rows && rows.length > 0) return mergeSeedProjects(rows);
-  return mergeSeedProjects(loadLocal().projects);
+  if (rows && rows.length > 0) return sortByOrder(mergeSeedProjects(rows));
+  return sortByOrder(mergeSeedProjects(loadLocal().projects));
 }
 
 export async function getBlogs(): Promise<Blog[]> {
@@ -432,14 +432,14 @@ export async function getAgencies(): Promise<Agency[]> {
   if (demoMode) return demoStore().agencies;
 
   const rows = await readCollection<Agency>("agencies");
-  return rows && rows.length > 0 ? rows : loadLocal().agencies;
+  return rows && rows.length > 0 ? sortByOrder(rows) : sortByOrder(loadLocal().agencies);
 }
 
 export async function getServices(): Promise<Service[]> {
   if (demoMode) return demoStore().services;
 
   const rows = await readCollection<Service>("services");
-  return rows && rows.length > 0 ? rows : loadLocal().services;
+  return rows && rows.length > 0 ? sortByOrder(rows) : sortByOrder(loadLocal().services);
 }
 
 export async function saveService(s: Service): Promise<void> {
@@ -474,6 +474,130 @@ export async function saveBlog(b: Blog): Promise<void> {
   if (i >= 0) store.blogs[i] = b;
   else store.blogs.unshift(b);
   saveLocal(store);
+}
+
+export async function deleteBlog(id: string): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
+  const db = await getDb();
+  if (db) {
+    const { deleteDoc, doc } = await fs();
+    await withTimeout(deleteDoc(doc(db, "blogs", id)), WRITE_TIMEOUT_MS, "Deleting the blog post");
+    return;
+  }
+  const store = loadLocal();
+  store.blogs = store.blogs.filter((x) => x.id !== id);
+  saveLocal(store);
+}
+
+export async function deleteService(id: string): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
+  const db = await getDb();
+  if (db) {
+    const { deleteDoc, doc } = await fs();
+    await withTimeout(deleteDoc(doc(db, "services", id)), WRITE_TIMEOUT_MS, "Deleting the service");
+    return;
+  }
+  const store = loadLocal();
+  store.services = store.services.filter((x) => x.id !== id);
+  saveLocal(store);
+}
+
+// ---- Order: up/down reorder for Projects, Agencies and Services.
+// Each row carries an optional numeric order; rows without one keep
+// their seed order after the ordered rows. saveOrder writes the new
+// order for every row in the list, so the order survives a reload.
+function sortByOrder<T extends { order?: number }>(rows: T[]): T[] {
+  return [...rows].sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+}
+
+export async function saveOrder(
+  kind: "projects" | "agencies" | "services",
+  orderedIds: string[]
+): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+  const db = await getDb();
+  if (db) {
+    const { doc, setDoc } = await fs();
+    for (let i = 0; i < orderedIds.length; i++) {
+      await withTimeout(
+        setDoc(doc(db, kind, orderedIds[i]), { order: i }, { merge: true }),
+        WRITE_TIMEOUT_MS,
+        "Saving the order"
+      );
+    }
+    return;
+  }
+  const store = loadLocal();
+  const byId = new Map(store[kind].map((x) => [x.id, x]));
+  const reordered = orderedIds
+    .map((id) => byId.get(id))
+    .filter((x): x is (typeof store)[typeof kind][number] => Boolean(x));
+  for (const x of store[kind]) if (!orderedIds.includes(x.id)) reordered.push(x);
+  reordered.forEach((x, i) => {
+    x.order = i;
+  });
+  if (kind === "projects") store.projects = reordered as Project[];
+  else if (kind === "agencies") store.agencies = reordered as Agency[];
+  else store.services = reordered as Service[];
+  saveLocal(store);
+}
+
+// ---- Staff access: office users (Firestore users collection).
+// The owner (ceo@anngan.com) sees this list in /admin and toggles
+// Full access / View only here instead of the Firebase console.
+// Firestore rules allow list for any office user and update only for
+// the office (Full access or Staff), so a View-only user can never
+// raise their own role. In local test mode the two office accounts
+// are the list, kept in localStorage.
+export type OfficeUser = { id: string; email: string; name: string; role: "Full access" | "Staff" | "View only" };
+
+const LOCAL_USERS_KEY = "anngan-local-users-v1";
+
+function localUsers(): OfficeUser[] {
+  if (typeof window === "undefined") return seedOfficeUsers();
+  try {
+    const raw = window.localStorage.getItem(LOCAL_USERS_KEY);
+    if (!raw) return seedOfficeUsers();
+    const parsed = JSON.parse(raw) as OfficeUser[];
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : seedOfficeUsers();
+  } catch {
+    return seedOfficeUsers();
+  }
+}
+
+function seedOfficeUsers(): OfficeUser[] {
+  return [
+    { id: "ceo@anngan.com", email: "ceo@anngan.com", name: "Office owner (CEO)", role: "Full access" },
+    { id: "seo@anngan.com", email: "seo@anngan.com", name: "Office (SEO)", role: "Full access" },
+  ];
+}
+
+export async function getOfficeUsers(): Promise<OfficeUser[]> {
+  if (demoMode) return seedOfficeUsers();
+  const rows = await readCollection<OfficeUser>("users");
+  if (rows && rows.length > 0) {
+    return rows.map((r) => ({
+      id: r.id,
+      email: r.email || "",
+      name: r.name || r.email || "",
+      role: r.role === "Full access" || r.role === "Staff" ? r.role : "View only",
+    }));
+  }
+  return localUsers();
+}
+
+export async function updateOfficeUserRole(id: string, role: OfficeUser["role"]): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+  const db = await getDb();
+  if (db) {
+    const { doc, updateDoc } = await fs();
+    await withTimeout(updateDoc(doc(db, "users", id), { role }), WRITE_TIMEOUT_MS, "Updating the staff role");
+    return;
+  }
+  const users = localUsers().map((u) => (u.id === id ? { ...u, role } : u));
+  if (typeof window !== "undefined") window.localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
 }
 
 // ---- Agencies ----

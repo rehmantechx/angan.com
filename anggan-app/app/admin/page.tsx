@@ -12,6 +12,8 @@ import {
   getServices,
   getEnquiries,
   getSettings,
+  getOfficeUsers,
+  updateOfficeUserRole,
   saveListing,
   saveProject,
   deleteProject,
@@ -19,6 +21,10 @@ import {
   saveAgency,
   deleteAgency,
   saveService,
+  deleteService,
+  saveBlog,
+  deleteBlog,
+  saveOrder,
   missingSeedListings,
   restoreMissingSeedListings,
   addEnquiry,
@@ -29,14 +35,24 @@ import {
   isFirestoreSeeded,
   firebaseOn,
   setDemoMode,
+  OfficeUser,
 } from "../../lib/db";
-import { getSiteContent, saveSiteContent, SiteContent, DEFAULT_SITE_CONTENT } from "../../lib/siteContent";
+import { getSiteContent, saveSiteContent, SiteContent, DEFAULT_SITE_CONTENT, NAV_TOGGLE_LABELS } from "../../lib/siteContent";
 import { Listing, Project, ProjectStatus, Blog, Agency, Service, Enquiry, OfficeSettings, HeroSlide, TeamMember, SocialLink, CityCard, SocietyGuide, CompanyCard, AboutVideo, AboutFaq, HomeSocietyChip } from "../../lib/seed";
 import { ImageUploadField } from "../../components/ImageUploadField";
-import { UPLOAD_BLOCKED_MESSAGE } from "../../lib/upload";
+import { uploadConfigured } from "../../lib/upload";
 
-type Tab = "Overview" | "Listings" | "Enquiries" | "Projects" | "Blogs" | "Agencies" | "Services" | "Hero and banners" | "About and team" | "Header and footer" | "Home page" | "Societies" | "Companies" | "Contact and legal" | "Settings";
-const ALL_TABS: Tab[] = ["Overview", "Listings", "Enquiries", "Projects", "Blogs", "Agencies", "Services", "Hero and banners", "About and team", "Header and footer", "Home page", "Societies", "Companies", "Contact and legal", "Settings"];
+type Tab = "Overview" | "Listings" | "Enquiries" | "Projects" | "Blogs" | "Agencies" | "Services" | "Hero and banners" | "About and team" | "Header and footer" | "Home page" | "Societies" | "Companies" | "Contact and legal" | "Settings" | "Staff Access";
+const ALL_TABS: Tab[] = ["Overview", "Listings", "Enquiries", "Projects", "Blogs", "Agencies", "Services", "Hero and banners", "About and team", "Header and footer", "Home page", "Societies", "Companies", "Contact and legal", "Settings", "Staff Access"];
+
+// PRO-01: the dedicated admin sidebar groups the 16 tabs into 4
+// buckets, so the office finds a section without scanning 16 pills.
+const TAB_GROUPS: { label: string; tabs: Tab[] }[] = [
+  { label: "Operations", tabs: ["Overview", "Listings", "Enquiries"] },
+  { label: "Catalog", tabs: ["Projects", "Societies", "Agencies", "Services", "Companies", "Blogs"] },
+  { label: "Website CMS", tabs: ["Home page", "Hero and banners", "About and team", "Header and footer", "Contact and legal", "Settings"] },
+  { label: "Office", tabs: ["Staff Access"] },
+];
 
 const PROJECT_STATUSES: ProjectStatus[] = ["Available", "Coming Soon", "Sold Out"];
 
@@ -46,6 +62,34 @@ const btnNavy = "bg-navy text-white px-3 py-2.5 rounded min-h-[48px] inline-flex
 const btnLine = "border border-navy text-navy px-3 py-2.5 rounded min-h-[48px] inline-flex items-center text-sm";
 
 const STAGES: Enquiry["stage"][] = ["New", "Called", "Visit", "Deal Done"];
+
+// PRO-01: one small line icon per sidebar tab, drawn in code, no
+// emoji, no photos. A simple shape per section, same stroke style.
+function TabIcon({ tab, size = 18 }: { tab: Tab; size?: number }) {
+  const paths: Record<Tab, React.ReactNode> = {
+    Overview: (<><rect x="3" y="3" width="8" height="8" rx="1" /><rect x="13" y="3" width="8" height="8" rx="1" /><rect x="3" y="13" width="8" height="8" rx="1" /><rect x="13" y="13" width="8" height="8" rx="1" /></>),
+    Listings: (<><path d="M4 6h16M4 12h16M4 18h10" /></>),
+    Enquiries: (<><path d="M4 5h16v11H8l-4 4V5z" /></>),
+    Projects: (<><path d="M4 11 12 3l8 8" /><path d="M6 10v10h12V10" /></>),
+    Blogs: (<><path d="M5 4h14v16H5z" /><path d="M9 9h6M9 13h6M9 17h4" /></>),
+    Agencies: (<><circle cx="8" cy="8" r="3.5" /><circle cx="16" cy="8" r="3.5" /><path d="M3 20c0-3 2-5 5-5s5 2 5 5M11 20c0-3 2-5 5-5s5 2 5 5" /></>),
+    Services: (<><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z" /></>),
+    "Hero and banners": (<><rect x="3" y="4" width="18" height="12" rx="1" /><path d="M3 16l5-5 4 4 3-3 6 6" /></>),
+    "About and team": (<><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></>),
+    "Header and footer": (<><path d="M3 5h18M3 12h18M3 19h18" /></>),
+    "Home page": (<><path d="M4 11 12 3l8 8" /><path d="M6 10v10h12V10" /></>),
+    Societies: (<><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></>),
+    Companies: (<><rect x="4" y="4" width="16" height="16" rx="1" /><path d="M9 9h2M13 9h2M9 13h2M13 13h2M9 17h6" /></>),
+    "Contact and legal": (<><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" /></>),
+    Settings: (<><circle cx="12" cy="12" r="3.5" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" /></>),
+    "Staff Access": (<><rect x="4" y="10" width="16" height="10" rx="1" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>),
+  };
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+      {paths[tab]}
+    </svg>
+  );
+}
 
 export default function AdminPage() {
   const { user, loading, signOut } = useAuth();
@@ -78,7 +122,7 @@ export default function AdminPage() {
   // auto-dismisses native dialogs, so confirm returned false, the delete
   // never ran, and no message ever appeared. A real dialog in the page
   // cannot be auto-dismissed, and its Yes button is a normal click.
-  const [confirmDelete, setConfirmDelete] = useState<{ kind: "listing" | "enquiry" | "agency" | "project"; id: string; label: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ kind: "listing" | "enquiry" | "agency" | "project" | "blog" | "service"; id: string; label: string } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [msgError, setMsgError] = useState(false);
   // CRUD-03: true while the first Firestore load is running. The
@@ -95,6 +139,15 @@ export default function AdminPage() {
   // SERVICE EDIT 25 Nov 2026: services were display-only before.
   const [serviceEdit, setServiceEdit] = useState<Service | null>(null);
   const [showServiceAdd, setShowServiceAdd] = useState(false);
+  // BLOG CRUD 25 Nov 2026: the office adds, edits and deletes posts.
+  const [blogEdit, setBlogEdit] = useState<Blog | null>(null);
+  const [showBlogAdd, setShowBlogAdd] = useState(false);
+  // PRO-04: log a walk-in or phone lead, in a modal, never a test form.
+  const [showWalkIn, setShowWalkIn] = useState(false);
+  // PRO-03: the one-line photo upload notice can be dismissed.
+  const [noticeDismissed, setNoticeDismissed] = useState(false);
+  // CMS-04: office users, owner only (ceo@anngan.com).
+  const [officeUsers, setOfficeUsers] = useState<OfficeUser[]>([]);
   // FIX-07: a success toast auto-dismisses after 5 seconds. Error
   // messages stay until closed, so a failed save is never missed.
   useEffect(() => {
@@ -148,6 +201,14 @@ export default function AdminPage() {
       const drafts: Record<string, { status: ProjectStatus; cardImg: string }> = {};
       for (const pr of p) drafts[pr.id] = { status: pr.status || "Available", cardImg: pr.cardImg || "" };
       setProjectDrafts(drafts);
+      // CMS-04: the owner loads the staff list with the rest.
+      if ((user?.email || "").toLowerCase() === "ceo@anngan.com") {
+        try {
+          setOfficeUsers(await getOfficeUsers());
+        } catch {
+          setOfficeUsers([]);
+        }
+      }
     } finally {
       setLoadingData(false);
     }
@@ -187,6 +248,9 @@ export default function AdminPage() {
   if (loading || !user) return <p>Loading...</p>;
 
   const canEdit = user.role === "Full access" || user.role === "Staff";
+  // CMS-04: Staff Access is visible only to the office owner.
+  const isOwner = (user.email || "").toLowerCase() === "ceo@anngan.com";
+  const visibleTabs: Tab[] = ALL_TABS.filter((t) => t !== "Staff Access" || isOwner);
   // Temporary demo credential (demo@anngan.com, created in the Firebase
   // console, role View only). Remove it from Firebase when testing is done.
   const isDemo = user.demo === true || user.email === DEMO_EMAIL;
@@ -267,6 +331,8 @@ export default function AdminPage() {
     if (target.kind === "listing") setListings((prev) => prev.filter((l) => l.id !== target.id));
     else if (target.kind === "agency") setAgencies((prev) => prev.filter((a) => a.id !== target.id));
     else if (target.kind === "project") setProjects((prev) => prev.filter((p) => p.id !== target.id));
+    else if (target.kind === "blog") setBlogs((prev) => prev.filter((b) => b.id !== target.id));
+    else if (target.kind === "service") setServices((prev) => prev.filter((s) => s.id !== target.id));
     else setEnquiries((prev) => prev.filter((e) => e.id !== target.id));
     setMsgError(false);
     setMsg("Deleting...");
@@ -274,15 +340,17 @@ export default function AdminPage() {
       if (target.kind === "listing") await deleteListing(target.id);
       else if (target.kind === "agency") await deleteAgency(target.id);
       else if (target.kind === "project") await deleteProject(target.id);
+      else if (target.kind === "blog") await deleteBlog(target.id);
+      else if (target.kind === "service") await deleteService(target.id);
       else await deleteEnquiry(target.id);
       setMsgError(false);
-      setMsg(target.kind === "listing" ? "Deleted. It is gone from the public site too." : target.kind === "agency" ? "Agency deleted." : target.kind === "project" ? "Project deleted. It is gone from the public site too." : "Enquiry deleted.");
+      setMsg(target.kind === "listing" ? "Deleted. It is gone from the public site too." : target.kind === "agency" ? "Agency deleted." : target.kind === "project" ? "Project deleted. It is gone from the public site too." : target.kind === "blog" ? "Blog post deleted. It is gone from the public site too." : target.kind === "service" ? "Service deleted. It is gone from the public site too." : "Enquiry deleted.");
     } catch (err) {
       const e = err as { message?: string };
       setMsgError(true);
       setMsg(
         "Could not delete " +
-          (target.kind === "listing" ? "the listing" : target.kind === "agency" ? "the agency" : target.kind === "project" ? "the project" : "the enquiry") +
+          (target.kind === "listing" ? "the listing" : target.kind === "agency" ? "the agency" : target.kind === "project" ? "the project" : target.kind === "blog" ? "the blog post" : target.kind === "service" ? "the service" : "the enquiry") +
           ": " +
           (e.message || "permission denied") +
           " The signed-in user needs the Full access or Staff role. The item is still there, try again."
@@ -293,33 +361,106 @@ export default function AdminPage() {
     await reload();
   }
 
+  // CMS-03: up/down reorder for Projects, Agencies and Services.
+  // Swaps the two rows in local state at once, then saves the new
+  // order, so the change is visible immediately and survives reload.
+  async function moveItem(kind: "projects" | "agencies" | "services", id: string, dir: number) {
+    if (isDemo) { setMsg("Demo mode, view only. Changes are not saved."); return; }
+    const list = kind === "projects" ? projects : kind === "agencies" ? agencies : services;
+    const i = list.findIndex((x) => x.id === id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= list.length) return;
+    const next = [...list];
+    [next[i], next[j]] = [next[j], next[i]];
+    if (kind === "projects") setProjects(next as Project[]);
+    else if (kind === "agencies") setAgencies(next as Agency[]);
+    else setServices(next as Service[]);
+    try {
+      await saveOrder(kind, next.map((x) => x.id));
+      setMsgError(false);
+      setMsg("Order saved. The public site shows the new order.");
+    } catch (err) {
+      const e2 = err as { message?: string };
+      setMsgError(true);
+      setMsg("Could not save the order: " + (e2.message || "permission denied"));
+      await reload();
+    }
+  }
+
   // FIX-01: the 12 real seed listings, by id, and any that are missing
   // from the loaded list. Shown in the Listings tab, never auto-fixed.
   const missing = missingSeedListings(listings);
 
   return (
     <div className="w-full max-w-full min-w-0 bg-slate-50 -mx-4 md:-mx-6 px-4 md:px-6 py-4 sm:py-6">
-      <div className="rounded-xl bg-navy px-5 py-5 sm:px-6 shadow-sm flex flex-wrap items-center gap-3 justify-between">
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Anngan office dashboard</h1>
-          <p className="text-blue-100 text-sm mt-1">Everything on the website, in your hands. No developer needed.</p>
-        </div>
+      <div className="flex flex-col lg:flex-row gap-4 items-start">
+      {/* PRO-01: dedicated admin shell. Slim dark-navy left sidebar,
+          grouped into Operations, Catalog, Website CMS and Office,
+          with icons and pending/new badges. The public header, footer
+          and navbar never render here (see components/SiteChrome). */}
+      <aside className="w-full lg:w-60 shrink-0 lg:sticky lg:top-4 bg-[#0f2440] text-white rounded-xl p-3" aria-label="Dashboard sections">
+        <p className="px-2 pt-1 pb-2 font-bold text-base">Anngan office</p>
+        <nav className="grid gap-4" role="tablist" aria-label="Dashboard sections">
+          {TAB_GROUPS.map((g) => {
+            const groupTabs = g.tabs.filter((t) => visibleTabs.includes(t));
+            if (groupTabs.length === 0) return null;
+            return (
+              <div key={g.label}>
+                <p className="px-2 text-[11px] font-bold uppercase tracking-wider text-blue-200">{g.label}</p>
+                <div className="grid gap-1 mt-1">
+                  {groupTabs.map((t) => (
+                    <button
+                      key={t}
+                      role="tab"
+                      aria-selected={tab === t}
+                      onClick={() => setTab(t)}
+                      className={
+                        (tab === t
+                          ? "bg-white text-navy font-semibold "
+                          : "text-white hover:bg-white/10 ") +
+                        "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg min-h-[44px] text-sm text-left"
+                      }
+                    >
+                      <TabIcon tab={t} />
+                      <span className="flex-1 min-w-0">{t}</span>
+                      {t === "Enquiries" && newEnq > 0 ? <span className="shrink-0 bg-anngan text-white text-xs font-bold rounded-full px-2 py-0.5">{newEnq} new</span> : null}
+                      {t === "Listings" && pending.length > 0 ? <span className="shrink-0 bg-amber-400 text-navy text-xs font-bold rounded-full px-2 py-0.5">{pending.length} pending</span> : null}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </nav>
+        <p className="px-2 pt-3 text-xs text-blue-200">Signed in as {user.email}</p>
+      </aside>
+      <div className="flex-1 min-w-0 w-full">
+      {/* PRO-01: clean top bar with breadcrumb, View live site link,
+          signed-in user pill and Sign out. */}
+      <div className="flex flex-wrap items-center gap-2 justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+        <nav aria-label="Breadcrumb" className="text-sm min-w-0">
+          <span className="text-gray-600">Dashboard</span>
+          <span className="text-gray-400 mx-1" aria-hidden="true">/</span>
+          <span className="font-bold text-navy">{tab}</span>
+        </nav>
         <div className="flex gap-2 items-center flex-wrap">
-          <span className="text-sm text-white bg-white/15 rounded-full px-3 py-2 min-w-0 break-words">
-            Signed in as {user.email} · {user.role}
+          <span className="text-sm text-navy bg-blue-50 border border-blue-100 rounded-full px-3 py-2 min-w-0 break-words">
+            {user.email} · {user.role}
           </span>
-          <Link href="/" className="bg-white text-navy px-3 py-2.5 rounded-full min-h-[48px] inline-flex items-center text-sm font-semibold">View site</Link>
-          <button type="button" className="border border-white/60 text-white px-3 py-2.5 rounded-full min-h-[48px] inline-flex items-center text-sm font-semibold" onClick={async () => { await signOut(); router.push("/office-login"); }}>Sign out</button>
+          <Link href="/" className="bg-navy text-white px-3 py-2 rounded-full min-h-[40px] inline-flex items-center text-sm font-semibold">View live site</Link>
+          <button type="button" className="border border-navy text-navy px-3 py-2 rounded-full min-h-[40px] inline-flex items-center text-sm font-semibold" onClick={async () => { await signOut(); router.push("/office-login"); }}>Sign out</button>
         </div>
       </div>
-      {/* Photo upload status, honest and always visible: Firebase
-          Storage needs the Blaze plan (a card on file). Nothing is
-          charged without the owner's approval. Until then, upload
-          buttons say so and the photo link field still works. */}
-      <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm rounded-xl p-4 mt-4">
-        <p className="font-bold">Photo upload is blocked on Blaze, for now</p>
-        <p className="mt-1">{UPLOAD_BLOCKED_MESSAGE} Until the owner approves Blaze, use the photo link field under each upload button: paste a link to a real photo, or a file already on the site such as /img/mgh-lake-aerial.jpg.</p>
-      </div>
+      {/* PRO-03: photo upload notice, one concise dismissible line.
+          It only shows while the free Cloudinary upload is not set
+          up; once the cloud name and preset are set, uploads work
+          and the notice is gone. */}
+      {!noticeDismissed && !uploadConfigured() ? (
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm rounded-xl px-4 py-2.5 mt-4 flex gap-3 items-start">
+          <p className="flex-1 min-w-0">Photo upload is not set up yet, it needs a free Cloudinary account and upload preset. Until then, use the photo link field under each upload button.</p>
+          <button type="button" onClick={() => setNoticeDismissed(true)} aria-label="Dismiss photo upload notice" className="shrink-0 px-2 py-0.5 rounded hover:bg-black/10 font-bold min-h-[32px] min-w-[32px]">&#10005;</button>
+        </div>
+      ) : null}
       {/* OFFICE LOGIN (user order 2026-11-25): /admin is office
           only, email and password at the hidden /office-login page.
           The SIGN OUT link in the header only shows for a signed-in
@@ -364,22 +505,6 @@ export default function AdminPage() {
         </p>
       ) : null}
 
-      <div className="flex gap-2 mt-4 flex-wrap w-full max-w-full min-w-0" role="tablist" aria-label="Dashboard sections">
-        {ALL_TABS.map((t) => (
-          <button
-            key={t}
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={tab === t ? "bg-navy text-white px-4 py-2.5 rounded-full min-h-[48px] inline-flex items-center text-sm font-semibold shadow-sm" : "bg-white border border-gray-300 text-navy px-4 py-2.5 rounded-full min-h-[48px] inline-flex items-center text-sm font-semibold hover:border-navy"}
-          >
-            {t}
-            {t === "Enquiries" && newEnq > 0 ? ` (${newEnq} new)` : ""}
-            {t === "Listings" && pending.length > 0 ? ` (${pending.length} pending)` : ""}
-          </button>
-        ))}
-      </div>
-
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 mt-4">
       {tab === "Overview" && (
         <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -399,6 +524,10 @@ export default function AdminPage() {
             <>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{live.length}</p><p>Live listings on the public site</p></div>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{pending.length}</p><p>Waiting for approval</p></div>
+          {/* PRO-05: the Hidden count was missing, so Live 12 plus
+              Waiting 1 never added up to the 14 in Listings by city.
+              Live plus Waiting plus Hidden now equals All listings. */}
+          <div className="border rounded p-4"><p className="text-2xl font-bold">{hidden.length}</p><p>Hidden listings</p></div>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{enquiries.length}</p><p>Enquiries ({newEnq} new)</p></div>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{projects.length}</p><p>Projects</p></div>
           <div className="border rounded p-4"><p className="text-2xl font-bold">{blogs.length}</p><p>Blogs</p></div>
@@ -410,7 +539,7 @@ export default function AdminPage() {
             <p className="text-sm mt-1">{loadingData ? "Loading..." : STAGES.map((s) => `${s}: ${enquiries.filter((e) => e.stage === s).length}`).join(" | ")}</p>
           </div>
           <div className="border rounded p-4 sm:col-span-2">
-            <p className="font-bold">Listings by city</p>
+            <p className="font-bold">All listings by city ({listings.length})</p>
             <p className="text-sm mt-1">
               {loadingData ? "Loading..." : ["Lahore", "Rawalpindi", "Multan", "Islamabad", "Karachi"].map((c) => `${c}: ${listings.filter((l) => l.city === c).length}`).join(" | ")}
             </p>
@@ -425,47 +554,47 @@ export default function AdminPage() {
           </div>
           <div className="border rounded p-4 sm:col-span-2 lg:col-span-4">
             <p className="font-bold">Website content, no code needed</p>
-            <p className="text-sm text-gray-600 mt-1">Change these here and they show on the live site straight away, no redeploy. Every photo field has an upload button: pick a real photo from your computer or phone. Upload needs Firebase Storage, which is blocked until the owner approves the Blaze plan (a card on file, nothing is charged without approval). Until then the upload button says so honestly, and the photo link field below it still works: paste a link to a real photo, or a file already on the site such as /img/mgh-lake-aerial.jpg.</p>
+            <p className="text-sm text-gray-600 mt-1">Change these here and they show on the live site straight away, no redeploy. Every photo field has an upload button: pick a real photo from your computer or phone. Upload works once the owner sets up the free Cloudinary account (see the notice at the top of this page). Until then the upload button says so honestly, and the photo link field below it still works: paste a link to a real photo, or a file already on the site such as /img/mgh-lake-aerial.jpg.</p>
             <div className="grid gap-2 mt-3 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="border rounded p-3">
+              <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">Hero and banners</p>
                 <p className="text-sm text-gray-600 mt-1">Home hero photos, title and tagline, and the banner photos behind the search panel.</p>
-                <button className={btnNavy + " mt-2"} onClick={() => setTab("Hero and banners")}>Edit hero and banners</button>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Hero and banners")}>Edit hero and banners</button>
               </div>
-              <div className="border rounded p-3">
+              <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">About and team</p>
                 <p className="text-sm text-gray-600 mt-1">Our Story text and Our Team members on the About page.</p>
-                <button className={btnNavy + " mt-2"} onClick={() => setTab("About and team")}>Edit About and team</button>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("About and team")}>Edit About and team</button>
               </div>
-              <div className="border rounded p-3">
+              <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">Projects</p>
                 <p className="text-sm text-gray-600 mt-1">Project status (Available, Coming Soon, Sold Out) and card photo. The status badge shows on home, /projects and the project page.</p>
-                <button className={btnNavy + " mt-2"} onClick={() => setTab("Projects")}>Edit projects</button>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Projects")}>Edit projects</button>
               </div>
-              <div className="border rounded p-3">
+              <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">Partner agencies</p>
                 <p className="text-sm text-gray-600 mt-1">Agency name, logo link and website link. Agencies run in the circular strip on the home page.</p>
-                <button className={btnNavy + " mt-2"} onClick={() => setTab("Agencies")}>Edit agencies</button>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Agencies")}>Edit agencies</button>
               </div>
-              <div className="border rounded p-3">
+              <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">Header and footer</p>
                 <p className="text-sm text-gray-600 mt-1">Social links, footer text and copyright, shown on every page.</p>
-                <button className={btnNavy + " mt-2"} onClick={() => setTab("Header and footer")}>Edit header and footer</button>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Header and footer")}>Edit header and footer</button>
               </div>
-              <div className="border rounded p-3">
+              <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">Home page</p>
                 <p className="text-sm text-gray-600 mt-1">Section headings, city cards, societies strip and the MGH spotlight text.</p>
-                <button className={btnNavy + " mt-2"} onClick={() => setTab("Home page")}>Edit home page</button>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Home page")}>Edit home page</button>
               </div>
-              <div className="border rounded p-3">
+              <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">Societies, companies, contact and legal</p>
                 <p className="text-sm text-gray-600 mt-1">Societies guide, group companies, contact intro and the privacy, terms and disclaimer texts.</p>
-                <button className={btnNavy + " mt-2"} onClick={() => setTab("Societies")}>Edit societies</button>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Societies")}>Edit societies</button>
               </div>
-              <div className="border rounded p-3">
+              <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">Services</p>
                 <p className="text-sm text-gray-600 mt-1">Service names, short notes and the office long text on each service page.</p>
-                <button className={btnNavy + " mt-2"} onClick={() => setTab("Services")}>Edit services</button>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Services")}>Edit services</button>
               </div>
             </div>
           </div>
@@ -604,7 +733,16 @@ export default function AdminPage() {
         <div className="mt-4">
           <h2 className="font-bold text-lg">Enquiries ({enquiries.length})</h2>
           <p className="text-sm text-gray-600">Enquiries from the website form appear here.{canEdit ? " Change the stage as you work them." : ""}</p>
-          {enquiries.length === 0 ? <p className="text-sm mt-2">No enquiries yet.</p> : null}
+          {enquiries.length === 0 ? (
+            <div className="border border-dashed border-gray-300 rounded-xl p-6 mt-3 text-center bg-slate-50">
+              <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mx-auto text-gray-400">
+                <path d="M4 5h16v11H8l-4 4V5z" />
+                <path d="M8 9h8M8 12h5" />
+              </svg>
+              <p className="font-semibold mt-2">No enquiries yet</p>
+              <p className="text-sm text-gray-600 mt-1">Enquiries from the website form, and walk-in or phone leads you log, will show here.</p>
+            </div>
+          ) : null}
           <div className="grid gap-3 mt-2">
             {enquiries.map((e) => (
               <div key={e.id} className="border rounded p-3">
@@ -646,9 +784,14 @@ export default function AdminPage() {
           </div>
           {canEdit ? (
             <div className="mt-4 border-t pt-3">
-              <p className="font-semibold text-sm">Add a test enquiry (phone or WhatsApp)</p>
-              <TestEnquiryForm onDone={async () => { setMsg("Test enquiry added."); await reload(); }} />
+              <button className={btnNavy} onClick={() => setShowWalkIn(true)}>Log walk-in / phone lead</button>
             </div>
+          ) : null}
+          {showWalkIn && canEdit ? (
+            <WalkInLeadForm
+              onCancel={() => setShowWalkIn(false)}
+              onDone={async () => { setShowWalkIn(false); setMsg("Walk-in lead logged."); await reload(); }}
+            />
           ) : null}
         </div>
       )}
@@ -685,11 +828,17 @@ export default function AdminPage() {
             />
           ) : null}
           <div className="grid gap-3 mt-2">
-          {projects.map((p) => {
+          {projects.map((p, pi) => {
             const draft = projectDrafts[p.id] || { status: p.status || "Available", cardImg: p.cardImg || "" };
             return (
             <div key={p.id} className="border rounded p-3">
-              <p className="font-semibold">{p.name} · {p.loc}</p>
+              <div className="flex gap-2 items-start justify-between">
+                <p className="font-semibold">{p.name} · {p.loc}</p>
+                <span className="flex gap-1 shrink-0">
+                  <button type="button" disabled={!canEdit || pi === 0} onClick={() => moveItem("projects", p.id, -1)} aria-label={"Move " + p.name + " up"} title="Move up" className={btnLine + " disabled:opacity-40"}>&uarr;</button>
+                  <button type="button" disabled={!canEdit || pi === projects.length - 1} onClick={() => moveItem("projects", p.id, 1)} aria-label={"Move " + p.name + " down"} title="Move down" className={btnLine + " disabled:opacity-40"}>&darr;</button>
+                </span>
+              </div>
               <p className="text-sm text-gray-600">{p.note}</p>
               <div className="grid gap-3 mt-3 sm:grid-cols-[180px_1fr] items-start">
                 <label className="text-sm font-semibold">Status
@@ -765,11 +914,45 @@ export default function AdminPage() {
       {tab === "Blogs" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Blogs ({blogs.length})</h2>
+          <p className="text-sm text-gray-600">Post market news here, no developer needed. The 23 historic 2022-2023 articles stay exactly as they are unless you edit one. A new post shows on /blogs and its own page straight away.</p>
+          {!canEdit ? <p className="text-sm text-gray-600 mt-1">Your role is View only. You can see blog posts but not change them.</p> : null}
+          {canEdit && !showBlogAdd && !blogEdit ? (
+            <button className={btnRed + " mt-3"} onClick={() => { setBlogEdit(null); setShowBlogAdd(true); }}>Add blog post</button>
+          ) : null}
+          {(showBlogAdd || blogEdit) && canEdit ? (
+            <BlogForm
+              initial={blogEdit || undefined}
+              onCancel={() => { setShowBlogAdd(false); setBlogEdit(null); }}
+              onSave={async (b) => {
+                if (isDemo) { setMsg("Demo mode, view only. Changes are not saved."); return; }
+                try {
+                  await saveBlog(b);
+                  setBlogs((prev) => (prev.some((x) => x.id === b.id) ? prev.map((x) => (x.id === b.id ? b : x)) : [b, ...prev]));
+                  setShowBlogAdd(false);
+                  setBlogEdit(null);
+                  setMsgError(false);
+                  setMsg(blogEdit ? "Blog post saved." : "Blog post added. It now shows on /blogs.");
+                } catch (err) {
+                  const e2 = err as { message?: string };
+                  setMsgError(true);
+                  setMsg("Could not save the blog post: " + (e2.message || "permission denied"));
+                }
+              }}
+            />
+          ) : null}
           <div className="grid gap-2 mt-2">
           {blogs.map((b) => (
             <div key={b.id} className="border rounded p-3 text-sm">
               <span className="text-gray-600">{b.date} · </span>
               <a href={`/blogs/${b.id}`} target="_blank" rel="noopener noreferrer" className="text-navy underline">{b.title}<span aria-hidden="true"> ↗</span><span className="sr-only"> (opens in a new tab)</span></a>
+              {b.coverImg ? <span className="text-gray-600"> · Cover photo set</span> : null}
+              {b.body ? <p className="text-gray-600 mt-1">{b.body.slice(0, 140)}{b.body.length > 140 ? "..." : ""}</p> : null}
+              {canEdit ? (
+                <span className="flex gap-2 mt-2 flex-wrap">
+                  <button className={btnLine} onClick={() => { setShowBlogAdd(false); setBlogEdit(b); }}>Edit</button>
+                  <button type="button" className={btnLine} disabled={deletingId === b.id} onClick={() => setConfirmDelete({ kind: "blog", id: b.id, label: b.title })}>{deletingId === b.id ? "Deleting..." : "Delete"}</button>
+                </span>
+              ) : null}
             </div>
           ))}
         </div>
@@ -791,12 +974,14 @@ export default function AdminPage() {
             <p className="text-sm text-gray-600 mt-2">Your role is View only. You can see agencies but not change them.</p>
           )}
           <div className="grid gap-3 mt-2 sm:grid-cols-2 w-full max-w-full min-w-0">
-          {agencies.map((a) => (
+          {agencies.map((a, ai) => (
             <div key={a.id} className="border rounded p-3 flex items-center gap-3 min-w-0 flex-wrap">
               <AgencyAvatar agency={a} />
               <span className="font-semibold min-w-0 break-words flex-1">{a.name}</span>
               {canEdit ? (
                 <span className="flex gap-2 shrink-0">
+                  <button type="button" disabled={ai === 0} onClick={() => moveItem("agencies", a.id, -1)} aria-label={"Move " + a.name + " up"} title="Move up" className={btnLine + " disabled:opacity-40"}>&uarr;</button>
+                  <button type="button" disabled={ai === agencies.length - 1} onClick={() => moveItem("agencies", a.id, 1)} aria-label={"Move " + a.name + " down"} title="Move down" className={btnLine + " disabled:opacity-40"}>&darr;</button>
                   <button className={btnLine} onClick={() => { setShowAgencyAdd(false); setAgencyEdit(a); }}>Edit</button>
                   <button type="button" className={btnLine} disabled={deletingId === a.id} onClick={() => setConfirmDelete({ kind: "agency", id: a.id, label: a.name })}>{deletingId === a.id ? "Deleting..." : "Delete"}</button>
                 </span>
@@ -858,14 +1043,21 @@ export default function AdminPage() {
             />
           ) : null}
           <div className="grid gap-3 mt-2">
-          {services.map((s) => (
+          {services.map((s, si) => (
             <div key={s.id} className="border rounded p-3">
-              <p className="font-semibold">{s.name}</p>
+              <div className="flex gap-2 items-start justify-between">
+                <p className="font-semibold">{s.name}</p>
+                <span className="flex gap-1 shrink-0">
+                  <button type="button" disabled={!canEdit || si === 0} onClick={() => moveItem("services", s.id, -1)} aria-label={"Move " + s.name + " up"} title="Move up" className={btnLine + " disabled:opacity-40"}>&uarr;</button>
+                  <button type="button" disabled={!canEdit || si === services.length - 1} onClick={() => moveItem("services", s.id, 1)} aria-label={"Move " + s.name + " down"} title="Move down" className={btnLine + " disabled:opacity-40"}>&darr;</button>
+                </span>
+              </div>
               <p className="text-sm text-gray-600">{s.note}</p>
               {s.details ? <p className="text-sm text-gray-600 mt-1">Office text: {s.details.slice(0, 120)}{s.details.length > 120 ? "..." : ""}</p> : null}
               <div className="flex gap-2 mt-2 flex-wrap items-center">
                 <a href={`/services/${s.id}`} target="_blank" rel="noopener noreferrer" className="text-navy underline text-sm inline-block">View service<span aria-hidden="true"> ↗</span><span className="sr-only"> (opens in a new tab)</span></a>
                 {canEdit ? <button className={btnLine} onClick={() => { setShowServiceAdd(false); setServiceEdit(s); }}>Edit</button> : null}
+                {canEdit ? <button type="button" className={btnLine} disabled={deletingId === s.id} onClick={() => setConfirmDelete({ kind: "service", id: s.id, label: s.name })}>{deletingId === s.id ? "Deleting..." : "Delete"}</button> : null}
               </div>
             </div>
           ))}
@@ -876,7 +1068,7 @@ export default function AdminPage() {
       {tab === "Hero and banners" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Hero and banners</h2>
-          <p className="text-sm text-gray-600">Changes here show on the home page straight away, no code change, no redeploy. Hero photos: upload a real photo or paste a photo link, remove, or move up and down. Upload needs Firebase Storage, blocked on Blaze approval until the owner approves it; until then the photo link field still works.</p>
+          <p className="text-sm text-gray-600">Changes here show on the home page straight away, no code change, no redeploy. Hero photos: upload a real photo or paste a photo link, remove, or move up and down. Upload works once the free Cloudinary account is set up; until then the photo link field still works.</p>
           <HeroForm
             initial={siteContent}
             canEdit={canEdit}
@@ -1000,6 +1192,29 @@ export default function AdminPage() {
         />
       )}
 
+      {tab === "Staff Access" && isOwner && (
+        <StaffAccessTab
+          users={officeUsers}
+          currentEmail={user.email || ""}
+          isDemo={isDemo}
+          onRoleChange={async (id, role) => {
+            if (isDemo) { setMsg("Demo mode, view only. Changes are not saved."); return; }
+            try {
+              await updateOfficeUserRole(id, role);
+              setOfficeUsers(await getOfficeUsers());
+              setMsgError(false);
+              setMsg("Staff role updated.");
+            } catch (err) {
+              const e2 = err as { message?: string };
+              setMsgError(true);
+              setMsg("Could not update the staff role: " + (e2.message || "permission denied"));
+            }
+          }}
+        />
+      )}
+
+      </div>
+      </div>
       </div>
       {detail ? (
         <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-label="Listing details">
@@ -1041,10 +1256,10 @@ export default function AdminPage() {
       ) : null}
 
       {confirmDelete ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="alertdialog" aria-label={confirmDelete.kind === "listing" ? "Delete this listing?" : confirmDelete.kind === "agency" ? "Delete this agency?" : confirmDelete.kind === "project" ? "Delete this project?" : "Delete this enquiry?"}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="alertdialog" aria-label={confirmDelete.kind === "listing" ? "Delete this listing?" : confirmDelete.kind === "agency" ? "Delete this agency?" : confirmDelete.kind === "project" ? "Delete this project?" : confirmDelete.kind === "blog" ? "Delete this blog post?" : confirmDelete.kind === "service" ? "Delete this service?" : "Delete this enquiry?"}>
           <div className="absolute inset-0 bg-black/50" onClick={() => setConfirmDelete(null)} />
           <div className="relative bg-white rounded-lg p-5 w-full max-w-sm min-w-0">
-            <h2 className="font-bold text-lg text-navy">{confirmDelete.kind === "listing" ? "Delete this listing?" : confirmDelete.kind === "agency" ? "Delete this agency?" : confirmDelete.kind === "project" ? "Delete this project?" : "Delete this enquiry?"}</h2>
+            <h2 className="font-bold text-lg text-navy">{confirmDelete.kind === "listing" ? "Delete this listing?" : confirmDelete.kind === "agency" ? "Delete this agency?" : confirmDelete.kind === "project" ? "Delete this project?" : confirmDelete.kind === "blog" ? "Delete this blog post?" : confirmDelete.kind === "service" ? "Delete this service?" : "Delete this enquiry?"}</h2>
             <p className="text-sm text-gray-600 mt-2 break-words">
               {confirmDelete.kind === "listing"
                 ? "Delete listing: " + confirmDelete.label + "? It will be gone from the public site too. This cannot be undone."
@@ -1052,7 +1267,11 @@ export default function AdminPage() {
                   ? "Delete agency: " + confirmDelete.label + "? This cannot be undone."
                   : confirmDelete.kind === "project"
                     ? "Delete project: " + confirmDelete.label + "? It will be gone from the home page, /projects and its project page too. This cannot be undone."
-                    : "Delete enquiry from " + confirmDelete.label + "? This cannot be undone."}
+                    : confirmDelete.kind === "blog"
+                      ? "Delete blog post: " + confirmDelete.label + "? It will be gone from /blogs too. This cannot be undone."
+                      : confirmDelete.kind === "service"
+                        ? "Delete service: " + confirmDelete.label + "? It will be gone from the services list and its service page too. This cannot be undone."
+                        : "Delete enquiry from " + confirmDelete.label + "? This cannot be undone."}
             </p>
             <div className="flex gap-2 mt-4 flex-wrap">
               <button type="button" className={btnRed} disabled={deletingId === confirmDelete.id} onClick={confirmDeleteNow}>Yes, delete</button>
@@ -1229,39 +1448,49 @@ function HeroForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; 
     [next[i], next[j]] = [next[j], next[i]];
     setList(next);
   }
+  // PRO-06: each slide is a clean card: a header row with the slide
+  // number (Slide 1, Slide 2, ...) and tidy icon buttons for Move Up,
+  // Move Down and Remove, a crisp 16:9 thumbnail preview, then the
+  // photo upload field and the description.
   function slideRows(list: HeroSlide[], setList: (v: HeroSlide[]) => void, label: string) {
+    const isBanner = label.toLowerCase().indexOf("banner") !== -1;
     return (
       <div>
         <p className="font-semibold text-sm">{label} ({list.length})</p>
-        <div className="grid gap-2 mt-2">
+        <div className="grid gap-3 mt-2">
           {list.map((s, i) => (
-            <div key={i} className="flex gap-2 items-center flex-wrap border rounded p-2">
+            <div key={i} className="border rounded-lg p-3 bg-white">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-semibold text-sm">{isBanner ? "Banner " + (i + 1) : "Slide " + (i + 1)}</p>
+                <span className="flex gap-1 shrink-0">
+                  <button type="button" disabled={!canEdit || i === 0} onClick={() => move(list, setList, i, -1)} aria-label={"Move " + (isBanner ? "banner " : "slide ") + (i + 1) + " up"} title="Move up" className={btnLine + " disabled:opacity-40"}>&uarr;</button>
+                  <button type="button" disabled={!canEdit || i === list.length - 1} onClick={() => move(list, setList, i, 1)} aria-label={"Move " + (isBanner ? "banner " : "slide ") + (i + 1) + " down"} title="Move down" className={btnLine + " disabled:opacity-40"}>&darr;</button>
+                  <button type="button" disabled={!canEdit} onClick={() => setList(list.filter((_, j) => j !== i))} aria-label={"Remove " + (isBanner ? "banner " : "slide ") + (i + 1)} title="Remove" className={btnLine + " disabled:opacity-40"}>Remove</button>
+                </span>
+              </div>
               {s.src ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={s.src} alt="" className="w-20 h-12 object-cover rounded bg-gray-100 shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-              ) : null}
-              <span className="flex-1 min-w-[220px]">
+                <img src={s.src} alt={s.alt || (isBanner ? "Banner " + (i + 1) : "Slide " + (i + 1))} className="w-full max-w-sm aspect-video object-cover rounded-lg bg-gray-100 border border-gray-200 mt-2" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              ) : (
+                <div className="w-full max-w-sm aspect-video rounded-lg bg-gray-100 border border-gray-200 mt-2 flex items-center justify-center text-sm text-gray-500">No photo yet</div>
+              )}
+              <div className="mt-2">
                 <ImageUploadField
                   value={s.src}
                   onChange={(v) => setList(list.map((x, j) => (j === i ? { ...x, src: v } : x)))}
                   folder="hero"
-                  label={label + " photo " + (i + 1)}
+                  label={(isBanner ? "Banner " : "Slide ") + (i + 1) + " photo"}
                   disabled={!canEdit}
                 />
-              </span>
+              </div>
               <input
                 value={s.alt}
                 disabled={!canEdit}
                 onChange={(e) => setList(list.map((x, j) => (j === i ? { ...x, alt: e.target.value } : x)))}
                 placeholder="Short description, for example Mangla Lake aerial view"
                 aria-label={label + " description " + (i + 1)}
-                className={inputCls + " flex-1 min-w-[180px]"}
+                className={inputCls + " w-full mt-2"}
               />
-              <span className="flex gap-1 shrink-0">
-                <button type="button" disabled={!canEdit || i === 0} onClick={() => move(list, setList, i, -1)} aria-label="Move photo up" className={btnLine + " disabled:opacity-40"}>&uarr;</button>
-                <button type="button" disabled={!canEdit || i === list.length - 1} onClick={() => move(list, setList, i, 1)} aria-label="Move photo down" className={btnLine + " disabled:opacity-40"}>&darr;</button>
-                <button type="button" disabled={!canEdit} onClick={() => setList(list.filter((_, j) => j !== i))} aria-label="Remove photo" className={btnLine + " disabled:opacity-40"}>Remove</button>
-              </span>
             </div>
           ))}
         </div>
@@ -1463,6 +1692,7 @@ function HeaderFooterForm({ initial, canEdit, isDemo, onSave }: { initial: SiteC
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>(initial.socialLinks);
   const [footerAbout, setFooterAbout] = useState(initial.footerAbout);
   const [footerCopyright, setFooterCopyright] = useState(initial.footerCopyright);
+  const [navHidden, setNavHidden] = useState<string[]>(initial.navHidden || ["BLOGS"]);
   const [saving, setSaving] = useState(false);
   const [loadedFor, setLoadedFor] = useState(initial);
   if (loadedFor !== initial) {
@@ -1470,17 +1700,41 @@ function HeaderFooterForm({ initial, canEdit, isDemo, onSave }: { initial: SiteC
     setSocialLinks(initial.socialLinks);
     setFooterAbout(initial.footerAbout);
     setFooterCopyright(initial.footerCopyright);
+    setNavHidden(initial.navHidden || ["BLOGS"]);
   }
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (saving || isDemo) return;
     setSaving(true);
     const clean = socialLinks.filter((l) => l.href.trim()).map((l) => ({ label: l.label.trim() || "Facebook", href: l.href.trim() }));
-    Promise.resolve(onSave({ ...initial, socialLinks: clean, footerAbout: footerAbout.trim(), footerCopyright: footerCopyright.trim() })).finally(() => setSaving(false));
+    Promise.resolve(onSave({ ...initial, socialLinks: clean, footerAbout: footerAbout.trim(), footerCopyright: footerCopyright.trim(), navHidden })).finally(() => setSaving(false));
   }
   const fieldCls = canEdit ? inputCls : inputCls + " bg-gray-100 text-gray-500 cursor-not-allowed";
   return (
     <form onSubmit={submit} className="mt-4 grid gap-4 w-full min-w-0">
+      <div>
+        <p className="font-semibold text-sm">Top navbar sections</p>
+        <p className="text-sm text-gray-600 mt-1">Show or hide a section in the red top navbar. HOME is always shown, so navigation can never be broken from here. BLOGS is off until you turn it on.</p>
+        <div className="grid gap-2 mt-2 sm:grid-cols-2">
+          {NAV_TOGGLE_LABELS.map((label) => {
+            const shown = !navHidden.includes(label);
+            return (
+              <label key={label} className="border rounded-lg p-3 flex items-center gap-3 text-sm font-semibold cursor-pointer bg-white">
+                <input
+                  type="checkbox"
+                  checked={shown}
+                  disabled={!canEdit}
+                  onChange={() => setNavHidden(shown ? [...navHidden, label] : navHidden.filter((x) => x !== label))}
+                  aria-label={"Show " + label + " in the top navbar"}
+                  className="w-5 h-5 accent-[#0f2440]"
+                />
+                <span>{label.charAt(0) + label.slice(1).toLowerCase()}</span>
+                <span className="ml-auto text-xs font-normal text-gray-600">{shown ? "Shown" : "Hidden"}</span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
       <div>
         <p className="font-semibold text-sm">Social links ({socialLinks.length})</p>
         <p className="text-sm text-gray-600 mt-1">Shown in the header top bar and the footer, on every page. Network is the name, for example Facebook, X, LinkedIn, Instagram, YouTube. Link is the full profile URL.</p>
@@ -1796,6 +2050,108 @@ function ContactLegalForm({ initial, canEdit, isDemo, onSave }: { initial: SiteC
 // How it works) stay from the verified service details, only for the
 // 9 original services; a new service shows its name, note, office
 // text and the Call and WhatsApp band.
+// CMS-02: add or edit a blog post. Title, date, cover photo and a
+// short body. The 23 historic 2022-2023 articles keep their own ids
+// and are only changed when the office edits that one post.
+function BlogForm({ initial, onCancel, onSave }: { initial?: Blog; onCancel: () => void; onSave: (b: Blog) => Promise<void> | void }) {
+  const [title, setTitle] = useState(initial?.title || "");
+  const [date, setDate] = useState(initial?.date || new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }));
+  const [coverImg, setCoverImg] = useState(initial?.coverImg || "");
+  const [body, setBody] = useState(initial?.body || "");
+  const [url, setUrl] = useState(initial?.url || "");
+  const [saving, setSaving] = useState(false);
+  const [newId] = useState(() => "blog-" + Date.now().toString(36));
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim() || saving) return;
+    setSaving(true);
+    Promise.resolve(onSave({
+      id: initial?.id || newId,
+      date: date.trim() || new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
+      title: title.trim(),
+      url: url.trim() || "",
+      coverImg: coverImg.trim() || undefined,
+      body: body.trim() || undefined,
+    })).finally(() => setSaving(false));
+  }
+  return (
+    <form onSubmit={submit} className="border border-navy rounded-lg p-4 mt-4 bg-white grid gap-3 w-full max-w-xl min-w-0">
+      <h3 className="font-bold">{initial ? "Edit blog post" : "Add blog post"}</h3>
+      <label className="text-sm font-semibold">Title
+        <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Post title, for example Lahore property rates this month" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Date
+        <input value={date} onChange={(e) => setDate(e.target.value)} placeholder="For example 25 Nov 2026" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <div>
+        <ImageUploadField value={coverImg} onChange={setCoverImg} folder="blogs" label="Cover photo, real photo only, optional" />
+      </div>
+      <label className="text-sm font-semibold">Short body
+        <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={5} placeholder="A few lines of market news, in your own words. No invented rates or facts." className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Link, optional
+        <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Link to the full story, optional, for example https://example.com/story" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <div className="flex gap-2 flex-wrap">
+        <button type="submit" disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : initial ? "Save blog post" : "Add blog post"}</button>
+        <button type="button" onClick={onCancel} className={btnLine}>Cancel</button>
+      </div>
+    </form>
+  );
+}
+
+// CMS-04: staff access, visible only to the office owner
+// (ceo@anngan.com). Lists the authorized office emails and toggles
+// Full access / View only here, instead of the Firebase console.
+// The owner can never lower their own role. Firestore rules allow
+// the update only for the office, so a View-only user can never
+// raise their own role from here or anywhere else.
+function StaffAccessTab({ users, currentEmail, isDemo, onRoleChange }: { users: OfficeUser[]; currentEmail: string; isDemo: boolean; onRoleChange: (id: string, role: OfficeUser["role"]) => Promise<void> }) {
+  const [savingId, setSavingId] = useState<string | null>(null);
+  return (
+    <div className="mt-4">
+      <h2 className="font-bold text-lg">Staff access</h2>
+      <p className="text-sm text-gray-600">Only the office owner sees this tab. Authorized office emails and their access. Full access can change listings and content, View only can only look. Change a role here instead of the Firebase console.</p>
+      {isDemo ? <p className="text-sm text-gray-600 mt-2">Demo mode, view only. Changes are not saved.</p> : null}
+      {users.length === 0 ? <p className="text-sm mt-2">No office users found yet.</p> : null}
+      <div className="grid gap-3 mt-3">
+        {users.map((u) => {
+          const isSelf = u.email.toLowerCase() === currentEmail.toLowerCase();
+          const nextRole: OfficeUser["role"] = u.role === "Full access" ? "View only" : "Full access";
+          return (
+            <div key={u.id} className="border rounded p-3 flex gap-2 items-center flex-wrap">
+              <span className="flex-1 min-w-0">
+                <span className="font-semibold block break-words">{u.email}</span>
+                <span className="text-sm text-gray-600 block">{u.name || "Office user"} · {u.role}{isSelf ? " · You, the owner" : ""}</span>
+              </span>
+              {isSelf ? (
+                <span className="text-sm text-gray-600">The owner always keeps Full access.</span>
+              ) : (
+                <button
+                  type="button"
+                  className={btnLine}
+                  disabled={isDemo || savingId === u.id}
+                  onClick={async () => {
+                    setSavingId(u.id);
+                    try {
+                      await onRoleChange(u.id, nextRole);
+                    } finally {
+                      setSavingId(null);
+                    }
+                  }}
+                >
+                  {savingId === u.id ? "Saving..." : "Make " + (nextRole === "Full access" ? "Full access" : "View only")}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-sm text-gray-600 mt-3">New office accounts are still created in the Firebase console first (Authentication, Add user, then a users document with the role). They appear here once created.</p>
+    </div>
+  );
+}
+
 function ServiceForm({ initial, onCancel, onSave }: { initial?: Service; onCancel: () => void; onSave: (s: Service) => Promise<void> | void }) {
   const [name, setName] = useState(initial?.name || "");
   const [note, setNote] = useState(initial?.note || "");
@@ -1975,7 +2331,7 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
       <div>
         <ImageUploadField value={REAL_PHOTOS.includes(photo) ? "" : photo} onChange={setPhoto} folder="listings" label="Photo upload or link, optional" />
       </div>
-      <p className="text-sm text-gray-600">Upload needs Firebase Storage, blocked on Blaze approval until the owner approves it. Until then, pick a real photo from the site above, or paste a photo link.</p>
+      <p className="text-sm text-gray-600">Upload works once the free Cloudinary account is set up. Until then, pick a real photo from the site above, or paste a photo link.</p>
       <div className="flex gap-2">
         <button disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : "Save listing"}</button>
         <button type="button" disabled={saving} className={btnLine + " disabled:opacity-50"} onClick={onCancel}>Cancel</button>
@@ -1984,22 +2340,62 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
   );
 }
 
-function TestEnquiryForm({ onDone }: { onDone: () => void }) {
-  const [name, setName] = useState("Test Buyer");
-  const [phone, setPhone] = useState("+92 300 000 0000");
+// PRO-04: log a real walk-in or phone lead. Realistic placeholders,
+// never a test buyer. Opens as a modal, saves through addEnquiry.
+function WalkInLeadForm({ onCancel, onDone }: { onCancel: () => void; onDone: () => void }) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [asked, setAsked] = useState("");
+  const [how, setHow] = useState("Walk-in");
+  const [next, setNext] = useState("");
+  const [nameErr, setNameErr] = useState("");
+  const [phoneErr, setPhoneErr] = useState("");
+  const [saving, setSaving] = useState(false);
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    let ok = true;
+    if (!name.trim()) { setNameErr("Enter the lead name."); ok = false; } else setNameErr("");
+    if (!phone.trim()) { setPhoneErr("Enter a phone number."); ok = false; } else setPhoneErr("");
+    if (!ok || saving) return;
+    setSaving(true);
+    try {
+      await addEnquiry({ name: name.trim(), phone: phone.trim(), asked: asked.trim() || "Asked at the office", how, next: next.trim() || "Call back" });
+      onDone();
+    } finally {
+      setSaving(false);
+    }
+  }
   return (
-    <div className="flex gap-2 mt-2 flex-wrap w-full max-w-full min-w-0">
-      <input value={name} onChange={(e) => setName(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 max-w-full flex-1" />
-      <input value={phone} onChange={(e) => setPhone(e.target.value)} className="border border-gray-300 rounded px-3 py-2 min-w-0 max-w-full flex-1" />
-      <button
-        className={btnNavy}
-        onClick={async () => {
-          await addEnquiry({ name, phone, asked: "Test listing", how: "Dashboard test", next: "Call back" });
-          onDone();
-        }}
-      >
-        Add test enquiry
-      </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-label="Log walk-in or phone lead">
+      <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
+      <form onSubmit={submit} noValidate className="relative bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto shadow-lg p-5 grid gap-3">
+        <h3 className="font-bold text-lg text-navy">Log walk-in / phone lead</h3>
+        <label className="text-sm font-semibold">Name
+          <input value={name} onChange={(e) => { setName(e.target.value); if (nameErr) setNameErr(""); }} placeholder="Ahmed Raza" aria-invalid={!!nameErr} className={inputCls + " mt-1 font-normal"} />
+          {nameErr ? <span role="alert" className="text-red-700 text-sm font-normal block mt-1">{nameErr}</span> : null}
+        </label>
+        <label className="text-sm font-semibold">Phone
+          <input value={phone} onChange={(e) => { setPhone(e.target.value); if (phoneErr) setPhoneErr(""); }} placeholder="+92 300 1234567" inputMode="tel" aria-invalid={!!phoneErr} className={inputCls + " mt-1 font-normal"} />
+          {phoneErr ? <span role="alert" className="text-red-700 text-sm font-normal block mt-1">{phoneErr}</span> : null}
+        </label>
+        <label className="text-sm font-semibold">What they asked for
+          <input value={asked} onChange={(e) => setAsked(e.target.value)} placeholder="2-bed flat in DHA Lahore" className={inputCls + " mt-1 font-normal"} />
+        </label>
+        <label className="text-sm font-semibold">How they reached us
+          <select value={how} onChange={(e) => setHow(e.target.value)} className={inputCls + " mt-1 font-normal"}>
+            <option>Walk-in</option>
+            <option>Phone</option>
+            <option>WhatsApp</option>
+          </select>
+        </label>
+        <label className="text-sm font-semibold">Next step
+          <input value={next} onChange={(e) => setNext(e.target.value)} placeholder="Call back tomorrow" className={inputCls + " mt-1 font-normal"} />
+        </label>
+        <div className="flex gap-2 flex-wrap">
+          <button type="submit" disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : "Log lead"}</button>
+          <button type="button" onClick={onCancel} className={btnLine}>Cancel</button>
+        </div>
+      </form>
     </div>
   );
 }

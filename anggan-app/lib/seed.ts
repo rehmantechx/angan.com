@@ -7,20 +7,21 @@
 // which is not among the 12 real listings and is not included here.
 export type Listing = { id: string; title: string; price: string; n: number; beds: number; baths: number; size: string; city: string; loc: string; type: string; status: "sale" | "rent"; img: string; badge: string; url: string; liveStatus: "live" | "pending" | "hidden"; visible: boolean; createdAt: string; submittedBy?: string };
 export type ProjectStatus = "Available" | "Coming Soon" | "Sold Out";
-export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string; cardImg?: string; status?: ProjectStatus; details?: string };
-export type Blog = { id: string; date: string; title: string; url: string };
-export type Agency = { id: string; name: string; logo: string; logoUrl?: string; link?: string };
-export type Service = { id: string; name: string; note: string; page: string; details?: string };
+export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string; cardImg?: string; status?: ProjectStatus; details?: string; order?: number };
+export type Blog = { id: string; date: string; title: string; url: string; coverImg?: string; body?: string };
+export type Agency = { id: string; name: string; logo: string; logoUrl?: string; link?: string; order?: number };
+export type Service = { id: string; name: string; note: string; page: string; details?: string; order?: number };
 export type Enquiry = { id: string; name: string; phone: string; asked: string; how: string; stage: "New" | "Called" | "Visit" | "Deal Done"; next: string; date: string };
 export type HeroSlide = { src: string; alt: string };
 export type TeamMember = { id: string; name: string; role: string; photoUrl?: string; linkedinUrl?: string };
 // Site content the office edits in /admin, stored in Firestore
 // (settings/office, public read, office write only) and read live by
-// the public site. Everything is a URL, never an upload: Firebase
-// Storage is not enabled, so admin image fields are image-URL fields
-// only. Seed defaults below apply until the office saves its own
-// values, so the site works before any edit.
-export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string; ceoPhoto?: string; heroTitle?: string; heroTagline?: string; heroSlides?: HeroSlide[]; bannerImages?: HeroSlide[]; aboutStory?: string; team?: TeamMember[]; techTeam?: TeamMember[]; socialLinks?: SocialLink[]; footerAbout?: string; footerCopyright?: string; cityCards?: CityCard[]; homeHeadings?: HomeHeadings; homeMghTitle?: string; homeMghText?: string; homeSocieties?: HomeSocietyChip[]; societies?: SocietyGuide[]; societiesTitle?: string; societiesIntro?: string; aboutIntro?: string; aboutVideos?: AboutVideo[]; aboutFaq?: AboutFaq[]; aboutFilesImg?: string; aboutFilesNote?: string; companies?: CompanyCard[]; contactIntro?: string; legalPrivacy?: string; legalTerms?: string; legalDisclaimer?: string };
+// the public site. Photo upload goes through the free Cloudinary
+// unsigned preset (lib/upload.ts); until the owner sets that up,
+// admin image fields take a photo URL. Seed defaults below apply
+// until the office saves its own values, so the site works before
+// any edit.
+export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string; ceoPhoto?: string; heroTitle?: string; heroTagline?: string; heroSlides?: HeroSlide[]; bannerImages?: HeroSlide[]; aboutStory?: string; team?: TeamMember[]; techTeam?: TeamMember[]; socialLinks?: SocialLink[]; footerAbout?: string; footerCopyright?: string; cityCards?: CityCard[]; homeHeadings?: HomeHeadings; homeMghTitle?: string; homeMghText?: string; homeSocieties?: HomeSocietyChip[]; societies?: SocietyGuide[]; societiesTitle?: string; societiesIntro?: string; aboutIntro?: string; aboutVideos?: AboutVideo[]; aboutFaq?: AboutFaq[]; aboutFilesImg?: string; aboutFilesNote?: string; companies?: CompanyCard[]; contactIntro?: string; legalPrivacy?: string; legalTerms?: string; legalDisclaimer?: string; navHidden?: string[] };
 // "details" on Project and Service is the office's own extra text,
 // edited in /admin, shown on the project/service page under the
 // verified facts. The structured facts themselves (service included

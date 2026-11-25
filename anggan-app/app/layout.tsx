@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Nastaliq_Urdu } from "next/font/google";
 import "./globals.css";
-import { Header, Footer } from "../components/Site";
+import { SiteChrome } from "../components/SiteChrome";
 import { Providers } from "../components/Providers";
 
 // Urdu tagline font, self-hosted by Next.js (downloaded at build time,
@@ -24,9 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={urduFont.variable}>
       <body className="flex min-h-screen flex-col">
         <Providers>
-          <Header />
-          <main className="flex w-full flex-1 flex-col">{children}</main>
-          <Footer />
+          <SiteChrome>{children}</SiteChrome>
         </Providers>
       </body>
     </html>

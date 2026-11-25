@@ -112,8 +112,11 @@ const NAV_LINKS: NavItem[] = [
   { href: "/societies", label: "SOCIETIES GUIDE" },
   // NAV-03: AGENCIES, as on the original anngan.com. The home partner
   // strip carries id="partner-agencies", so this anchor lands on it.
-  // BLOGS stays out of the navbar: no full-text articles exist yet.
   { href: "/#partner-agencies", label: "AGENCIES" },
+  // BLOGS is hidden by default (site content navHidden) and the
+  // office can turn it on in /admin, Header and footer, Top navbar
+  // sections. The /blogs page itself exists either way.
+  { href: "/blogs", label: "BLOGS" },
   // PHN-04: TOOLS in the top red navbar, so a dealer can be guided
   // to the calculators over the phone. No Tools strip on home.
   { href: "/tools", label: "TOOLS" },
@@ -141,7 +144,7 @@ export function Header() {
   const SOCIAL_LINKS = content.socialLinks.length > 0 ? content.socialLinks : DEFAULT_SOCIAL_LINKS;
   const navLinks: NavItem[] = NAV_LINKS.map((l) =>
     l.label === "PROJECTS" ? { ...l, dropdown: buildProjectDropdown(projects) } : l
-  );
+  ).filter((l) => !content.navHidden.includes(l.label));
   const [menuOpen, setMenuOpen] = useState(false);
   // NAV-01/02: which desktop dropdown is open, and which nested
   // sub-menu inside it. Mobile drawer accordions use the same labels.
