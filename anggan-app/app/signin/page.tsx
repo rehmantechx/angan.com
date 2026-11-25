@@ -7,9 +7,9 @@ import { GoogleButton } from "../../components/GoogleButton";
 
 // Public sign-in, for people who want to list a property. This is NOT
 // the office login: it never says "Office team only", and it never sends
-// a public seller to /admin/login. A signed-in seller creates a listing
+// a public seller to /office-login. A signed-in seller creates a listing
 // as pending, the office approves it, and nothing goes live without
-// that approval. Office staff use /admin/login instead.
+// that approval. Office staff use /office-login instead.
 function SignInInner() {
   const { user, loading, signInGoogle } = useAuth();
   const [error, setError] = useState("");
@@ -35,7 +35,7 @@ function SignInInner() {
       </p>
       <p className="text-gray-600 mt-2 text-sm">
         Office staff, use the office login instead:{" "}
-        <Link href="/admin/login" className="text-anngan-dark font-semibold underline">Office login</Link>
+        <Link href="/office-login" className="text-anngan-dark font-semibold underline">Office login</Link>
       </p>
       {error ? <p role="alert" className="bg-red-50 text-red-800 text-sm rounded p-3 mt-4">{error}</p> : null}
       <div className="grid gap-3 mt-4">

@@ -5,7 +5,7 @@
 // never download the Firebase SDK.
 "use client";
 import { useEffect, useState, ReactNode } from "react";
-import { AuthContext, Role, SessionUser, useAuth } from "./auth-context";
+import { AuthContext, OFFICE_EMAILS, Role, SessionUser, useAuth } from "./auth-context";
 import { getFirebaseAuth, getDb, isFirebaseConfigured } from "./firebase";
 
 export type { Role, SessionUser };
@@ -103,6 +103,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Office login only (user order 2026-11-25): email and password,
+  // no Google. Only the two fixed office accounts in OFFICE_EMAILS
+  // can sign in here; any other account is signed straight out again.
+  // No password is stored anywhere in the code. The accounts must
+  // exist in Firebase Auth with the Email/Password provider enabled;
+  // until the owner creates them in the console, sign-in fails with
+  // a plain wrong-email-or-password error, never a fake credential.
+  async function signInEmail(email: string, password: string): Promise<string | null> {
+    const auth = await getFirebaseAuth();
+    if (!auth) return "Firebase is not connected. Fill in .env.local first.";
+    try {
+      const { signInWithEmailAndPassword, signOut: fbSignOut } = await import("firebase/auth");
+      const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
+      const signedIn = (cred.user.email || "").toLowerCase();
+      if (!OFFICE_EMAILS.includes(signedIn)) {
+        await fbSignOut(auth);
+        return "Only the two office accounts can sign in here.";
+      }
+      return null;
+    } catch (e) {
+      const err = e as { code?: string; message?: string };
+      if (err.code === "auth/operation-not-allowed") return "Email and password sign-in is not enabled yet in the Firebase console. Enable it under Authentication, Sign-in method.";
+      if (err.code === "auth/too-many-requests") return "Too many tries. Wait a bit and try again.";
+      if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password" || err.code === "auth/invalid-email") return "Wrong email or password.";
+      return err.message || "Sign-in failed.";
+    }
+  }
+
   async function signOut() {
     const auth = await getFirebaseAuth();
     if (auth) {
@@ -117,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <Ctx.Provider value={{ user, loading, firebaseOn, signInGoogle, signOut }}>
+    <Ctx.Provider value={{ user, loading, firebaseOn, signInGoogle, signInEmail, signOut }}>
       {children}
     </Ctx.Provider>
   );

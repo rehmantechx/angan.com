@@ -1,9 +1,8 @@
-// VIS-06: one shared Google sign-in button, used by /admin/login,
-// /signin and /create-listing, so all three auth gates look the same:
-// white button, border, official Google "G" SVG icon, navy text.
-// The old gates disagreed: /admin/login was navy with a G icon,
-// /signin was navy with no icon, /create-listing was a plain red
-// link with no icon.
+// VIS-06: one shared Google sign-in button, used by /signin and
+// /create-listing, so both auth gates look the same: white button,
+// border, official Google "G" SVG icon, navy text. The office login
+// no longer uses it: /office-login is email and password only, no
+// Google (user order 2026-11-25).
 import Link from "next/link";
 
 export function GoogleIcon() {

@@ -14,6 +14,7 @@ import {
   DEFAULT_HERO_TAGLINE,
   DEFAULT_HERO_TITLE,
   DEFAULT_TEAM,
+  DEFAULT_TECH_TEAM,
   HeroSlide,
   OfficeSettings,
   TeamMember,
@@ -26,6 +27,8 @@ export type SiteContent = {
   bannerImages: HeroSlide[];
   aboutStory: string;
   team: TeamMember[];
+  techTeam: TeamMember[];
+  ceoPhoto: string;
 };
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
@@ -35,6 +38,11 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   bannerImages: DEFAULT_BANNER_IMAGES,
   aboutStory: DEFAULT_ABOUT_STORY,
   team: DEFAULT_TEAM,
+  techTeam: DEFAULT_TECH_TEAM,
+  // Empty means the built-in CEO photos apply: ceo-portrait-v2.jpg on
+  // home, ceo-flat.jpg on About. When the office sets a photo link in
+  // /admin, home and About both use it.
+  ceoPhoto: "",
 };
 
 // A stored slide is usable only when it has a real image URL.
@@ -65,6 +73,7 @@ function cleanTeam(rows: unknown): TeamMember[] {
       name,
       role: String((r as { role?: unknown }).role || "").trim(),
       photoUrl: String((r as { photoUrl?: unknown }).photoUrl || "").trim() || undefined,
+      linkedinUrl: String((r as { linkedinUrl?: unknown }).linkedinUrl || "").trim() || undefined,
     });
   }
   return out;
@@ -73,14 +82,35 @@ function cleanTeam(rows: unknown): TeamMember[] {
 export function siteContentFromSettings(s: OfficeSettings): SiteContent {
   const heroSlides = cleanSlides(s.heroSlides);
   const bannerImages = cleanSlides(s.bannerImages);
+  const techTeam = cleanTeam(s.techTeam);
   return {
     heroTitle: (s.heroTitle || "").trim() || DEFAULT_HERO_TITLE,
     heroTagline: (s.heroTagline || "").trim() || DEFAULT_HERO_TAGLINE,
-    heroSlides: heroSlides.length > 0 ? heroSlides : DEFAULT_HERO_SLIDES,
+    // QUALITY MIGRATION 25 Nov 2026: the office saved the old hero
+    // slides once, so the stored settings/office document still lists
+    // the two blurry slides (Bahria Sky 630px, Neelum 1000px). The
+    // seed defaults alone cannot change them, because a stored list
+    // wins over the defaults. A stored slide that is one of the two
+    // replaced photos is swapped for its high-resolution replacement
+    // here, so the site shows the sharp photos and the office sees
+    // the same list in /admin. Any other stored slide (an office
+    // customisation) is kept exactly as stored.
+    heroSlides: heroSlides.length > 0 ? migrateHeroSlides(heroSlides) : DEFAULT_HERO_SLIDES,
     bannerImages: bannerImages.length > 0 ? bannerImages : DEFAULT_BANNER_IMAGES,
     aboutStory: (s.aboutStory || "").trim() || DEFAULT_ABOUT_STORY,
     team: cleanTeam(s.team),
+    techTeam: techTeam.length > 0 ? techTeam : DEFAULT_TECH_TEAM,
+    ceoPhoto: (s.ceoPhoto || "").trim(),
   };
+}
+
+// QUALITY MIGRATION 25 Nov 2026, see siteContentFromSettings above.
+const REPLACED_HERO_SLIDES: Record<string, HeroSlide> = {
+  "/img/chinatown-bahria-sky.jpg": { src: "/img/hero-bahria-talwar.jpg", alt: "Talwar Chowk, Bahria Town, Lahore" },
+  "/img/city-kashmir-neelum.jpg": { src: "/img/hero-sharda-valley.jpg", alt: "Sharda, Neelum Valley, Kashmir" },
+};
+export function migrateHeroSlides(rows: HeroSlide[]): HeroSlide[] {
+  return rows.map((r) => REPLACED_HERO_SLIDES[r.src] || r);
 }
 
 export async function getSiteContent(): Promise<SiteContent> {
@@ -101,6 +131,8 @@ export async function saveSiteContent(c: SiteContent): Promise<void> {
     bannerImages: cleanSlides(c.bannerImages),
     aboutStory: c.aboutStory.trim() || DEFAULT_ABOUT_STORY,
     team: cleanTeam(c.team),
+    techTeam: cleanTeam(c.techTeam),
+    ceoPhoto: (c.ceoPhoto || "").trim(),
   });
 }
 

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../lib/auth";
-import { DEMO_EMAIL } from "../../lib/auth-context";
+import { DEMO_EMAIL, OFFICE_EMAILS } from "../../lib/auth-context";
 import {
   getListings,
   getProjects,
@@ -14,6 +14,7 @@ import {
   getSettings,
   saveListing,
   saveProject,
+  deleteProject,
   deleteListing,
   saveAgency,
   deleteAgency,
@@ -73,7 +74,7 @@ export default function AdminPage() {
   // auto-dismisses native dialogs, so confirm returned false, the delete
   // never ran, and no message ever appeared. A real dialog in the page
   // cannot be auto-dismissed, and its Yes button is a normal click.
-  const [confirmDelete, setConfirmDelete] = useState<{ kind: "listing" | "enquiry" | "agency"; id: string; label: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ kind: "listing" | "enquiry" | "agency" | "project"; id: string; label: string } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [msgError, setMsgError] = useState(false);
   // CRUD-03: true while the first Firestore load is running. The
@@ -84,6 +85,8 @@ export default function AdminPage() {
   // FIX-08: agency add/edit form state, same pattern as ListingForm.
   const [agencyEdit, setAgencyEdit] = useState<Agency | null>(null);
   const [showAgencyAdd, setShowAgencyAdd] = useState(false);
+  // PROJECT ADD 25 Nov 2026: the office adds a project here, no code.
+  const [showProjectAdd, setShowProjectAdd] = useState(false);
   // FIX-07: a success toast auto-dismisses after 5 seconds. Error
   // messages stay until closed, so a failed save is never missed.
   useEffect(() => {
@@ -126,9 +129,23 @@ export default function AdminPage() {
     }
   }
 
+  // OFFICE LOGIN (user order 2026-11-25): the office login is the
+  // hidden /office-login page, email and password, two fixed office
+  // accounts only. A signed-in account that is not one of those two
+  // (for example a public seller who signed in with Google on
+  // /signin) is signed straight out again here, so /admin stays
+  // office only.
   useEffect(() => {
-    if (!loading && !user) router.push("/admin/login");
-  }, [loading, user, router]);
+    if (loading) return;
+    if (!user) {
+      router.push("/office-login");
+      return;
+    }
+    if (!OFFICE_EMAILS.includes((user.email || "").toLowerCase())) {
+      signOut();
+      router.push("/office-login");
+    }
+  }, [loading, user, router, signOut]);
 
   useEffect(() => {
     setDemoMode(user?.demo === true);
@@ -225,21 +242,23 @@ export default function AdminPage() {
     setDeletingId(target.id);
     if (target.kind === "listing") setListings((prev) => prev.filter((l) => l.id !== target.id));
     else if (target.kind === "agency") setAgencies((prev) => prev.filter((a) => a.id !== target.id));
+    else if (target.kind === "project") setProjects((prev) => prev.filter((p) => p.id !== target.id));
     else setEnquiries((prev) => prev.filter((e) => e.id !== target.id));
     setMsgError(false);
     setMsg("Deleting...");
     try {
       if (target.kind === "listing") await deleteListing(target.id);
       else if (target.kind === "agency") await deleteAgency(target.id);
+      else if (target.kind === "project") await deleteProject(target.id);
       else await deleteEnquiry(target.id);
       setMsgError(false);
-      setMsg(target.kind === "listing" ? "Deleted. It is gone from the public site too." : target.kind === "agency" ? "Agency deleted." : "Enquiry deleted.");
+      setMsg(target.kind === "listing" ? "Deleted. It is gone from the public site too." : target.kind === "agency" ? "Agency deleted." : target.kind === "project" ? "Project deleted. It is gone from the public site too." : "Enquiry deleted.");
     } catch (err) {
       const e = err as { message?: string };
       setMsgError(true);
       setMsg(
         "Could not delete " +
-          (target.kind === "listing" ? "the listing" : target.kind === "agency" ? "the agency" : "the enquiry") +
+          (target.kind === "listing" ? "the listing" : target.kind === "agency" ? "the agency" : target.kind === "project" ? "the project" : "the enquiry") +
           ": " +
           (e.message || "permission denied") +
           " The signed-in user needs the Full access or Staff role. The item is still there, try again."
@@ -262,16 +281,16 @@ export default function AdminPage() {
           Signed in as {user.email} · {user.role}
         </span>
       </div>
-      {/* CRUD-01: public test mode reverted 2026-11-24. The red
-          PUBLIC TEST MODE banner is removed with the flag: /admin is
-          Google-only again, and the SIGN OUT link in the header only
-          shows for a signed-in office user. */}
+      {/* OFFICE LOGIN (user order 2026-11-25): /admin is office
+          only, email and password at the hidden /office-login page.
+          The SIGN OUT link in the header only shows for a signed-in
+          office user. */}
       {isDemo ? (
         <div className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3 flex gap-3 items-center flex-wrap">
           <span className="flex-1 min-w-0 break-words">Demo mode, view only. Changes are not saved. Sign in with an authorized office account for the real office dashboard.</span>
           <button
             className="bg-navy text-white px-3 py-2 rounded min-h-[48px] inline-flex items-center text-sm"
-            onClick={async () => { await signOut(); router.push("/admin/login"); }}
+            onClick={async () => { await signOut(); router.push("/office-login"); }}
           >
             Exit demo
           </button>
@@ -575,8 +594,31 @@ export default function AdminPage() {
       {tab === "Projects" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Projects ({projects.length})</h2>
-          <p className="text-sm text-gray-600">Status and card photo are editable here and show on the live site straight away: the status badge appears on the home project card, on /projects and on the project page. Sold Out shows a red SOLD OUT badge, Coming Soon an amber COMING SOON badge, Available shows no badge. Card photo: a file already on the site, for example global-zamzam-house-wide-v3.jpg, or a full photo link.</p>
+          <p className="text-sm text-gray-600">Status and card photo are editable here and show on the live site straight away: the status badge appears on the home project card, on /projects and on the project page. Sold Out shows a red SOLD OUT badge, Coming Soon an amber COMING SOON badge, Available shows no badge. Card photo: a file already on the site, for example global-zamzam-house-wide-v3.jpg, or a full photo link. Add a project, or delete one, the same way: it shows on the home page, /projects and its project page straight away, no code change.</p>
           {!canEdit ? <p className="text-sm text-gray-600 mt-1">Your role is View only. You can see projects but not change them.</p> : null}
+          {canEdit && !showProjectAdd ? (
+            <button className={btnRed + " mt-3"} onClick={() => setShowProjectAdd(true)}>Add project</button>
+          ) : null}
+          {showProjectAdd ? (
+            <ProjectForm
+              onCancel={() => setShowProjectAdd(false)}
+              onSave={async (p) => {
+                if (isDemo) { setMsg("Demo mode, view only. Changes are not saved."); return; }
+                try {
+                  await saveProject(p);
+                  setProjects((prev) => [p, ...prev]);
+                  setProjectDrafts((prev) => ({ ...prev, [p.id]: { status: p.status || "Available", cardImg: p.cardImg || "" } }));
+                  setShowProjectAdd(false);
+                  setMsgError(false);
+                  setMsg(p.name + " added. It now shows on the home page, /projects and its project page.");
+                } catch (err) {
+                  const e2 = err as { message?: string };
+                  setMsgError(true);
+                  setMsg("Could not add " + p.name + ": " + (e2.message || "permission denied"));
+                }
+              }}
+            />
+          ) : null}
           <div className="grid gap-3 mt-2">
           {projects.map((p) => {
             const draft = projectDrafts[p.id] || { status: p.status || "Available", cardImg: p.cardImg || "" };
@@ -607,6 +649,7 @@ export default function AdminPage() {
                   />
                 </label>
                 {canEdit ? (
+                  <>
                   <button
                     className={btnNavy}
                     disabled={savingProjectId === p.id}
@@ -630,6 +673,15 @@ export default function AdminPage() {
                   >
                     {savingProjectId === p.id ? "Saving..." : "Save project"}
                   </button>
+                  <button
+                    type="button"
+                    className={btnLine}
+                    disabled={deletingId === p.id}
+                    onClick={() => setConfirmDelete({ kind: "project", id: p.id, label: p.name })}
+                  >
+                    {deletingId === p.id ? "Deleting..." : "Delete"}
+                  </button>
+                  </>
                 ) : null}
               </div>
             </div>
@@ -749,7 +801,7 @@ export default function AdminPage() {
       {tab === "About and team" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">About and team</h2>
-          <p className="text-sm text-gray-600">Changes here show on the About page straight away, no code change, no redeploy. Our Team starts empty: add a member only when the office gives the real name, role and photo link. Nothing is invented here.</p>
+          <p className="text-sm text-gray-600">Changes here show on the About page straight away, no code change, no redeploy. Our Team starts empty: add a member only when the office gives the real name, role and photo link. Nothing is invented here. Tech Team is the team who built this website, with a LinkedIn link per member. CEO photo: leave empty to keep the built-in photos, or set a photo link to change the CEO photo on home and About.</p>
           <AboutForm
             initial={siteContent}
             canEdit={canEdit}
@@ -823,16 +875,18 @@ export default function AdminPage() {
       ) : null}
 
       {confirmDelete ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="alertdialog" aria-label={confirmDelete.kind === "listing" ? "Delete this listing?" : confirmDelete.kind === "agency" ? "Delete this agency?" : "Delete this enquiry?"}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="alertdialog" aria-label={confirmDelete.kind === "listing" ? "Delete this listing?" : confirmDelete.kind === "agency" ? "Delete this agency?" : confirmDelete.kind === "project" ? "Delete this project?" : "Delete this enquiry?"}>
           <div className="absolute inset-0 bg-black/50" onClick={() => setConfirmDelete(null)} />
           <div className="relative bg-white rounded-lg p-5 w-full max-w-sm min-w-0">
-            <h2 className="font-bold text-lg text-navy">{confirmDelete.kind === "listing" ? "Delete this listing?" : confirmDelete.kind === "agency" ? "Delete this agency?" : "Delete this enquiry?"}</h2>
+            <h2 className="font-bold text-lg text-navy">{confirmDelete.kind === "listing" ? "Delete this listing?" : confirmDelete.kind === "agency" ? "Delete this agency?" : confirmDelete.kind === "project" ? "Delete this project?" : "Delete this enquiry?"}</h2>
             <p className="text-sm text-gray-600 mt-2 break-words">
               {confirmDelete.kind === "listing"
                 ? "Delete listing: " + confirmDelete.label + "? It will be gone from the public site too. This cannot be undone."
                 : confirmDelete.kind === "agency"
                   ? "Delete agency: " + confirmDelete.label + "? This cannot be undone."
-                  : "Delete enquiry from " + confirmDelete.label + "? This cannot be undone."}
+                  : confirmDelete.kind === "project"
+                    ? "Delete project: " + confirmDelete.label + "? It will be gone from the home page, /projects and its project page too. This cannot be undone."
+                    : "Delete enquiry from " + confirmDelete.label + "? This cannot be undone."}
             </p>
             <div className="flex gap-2 mt-4 flex-wrap">
               <button type="button" className={btnRed} disabled={deletingId === confirmDelete.id} onClick={confirmDeleteNow}>Yes, delete</button>
@@ -872,6 +926,74 @@ function AgencyAvatar({ agency }: { agency: Agency }) {
     );
   }
   return <img src={src} alt="" width={56} height={56} onError={() => setFailed(true)} className="w-14 h-14 shrink-0 rounded-lg object-contain bg-gray-100 border border-gray-200 p-1" />;
+}
+
+// PROJECT ADD 25 Nov 2026 (user order: the office adds and deletes
+// projects in /admin, no code). A new project gets its own page at
+// /projects/<id> automatically. Photo: a real photo only, file
+// already on the site or a photo link; leave it empty and the card
+// shows "Photo coming soon" instead of any AI image.
+function ProjectForm({ onCancel, onSave }: { onCancel: () => void; onSave: (p: Project) => Promise<void> | void }) {
+  const [name, setName] = useState("");
+  const [city, setCity] = useState("Lahore");
+  const [loc, setLoc] = useState("");
+  const [note, setNote] = useState("");
+  const [status, setStatus] = useState<ProjectStatus>("Available");
+  const [img, setImg] = useState("");
+  const [cardImg, setCardImg] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [newId] = useState(() => "proj-" + Date.now().toString(36));
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim() || saving) return;
+    setSaving(true);
+    Promise.resolve(onSave({
+      id: newId,
+      name: name.trim(),
+      loc: loc.trim() || city,
+      city,
+      page: "",
+      img: img.trim(),
+      note: note.trim(),
+      cardImg: cardImg.trim() || undefined,
+      status,
+    })).finally(() => setSaving(false));
+  }
+  return (
+    <form onSubmit={submit} className="border border-navy rounded-lg p-4 mt-4 bg-white grid gap-3 w-full max-w-xl min-w-0">
+      <h3 className="font-bold">Add project</h3>
+      <label className="text-sm font-semibold">Project name
+        <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Project name, for example New City Lahore" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">City
+        <select value={city} onChange={(e) => setCity(e.target.value)} className={inputCls + " mt-1 font-normal"}>
+          {["Lahore", "Islamabad", "Karachi", "Rawalpindi", "Multan", "Mangla", "Kashmir", "Peshawar"].map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </label>
+      <label className="text-sm font-semibold">Area
+        <input value={loc} onChange={(e) => setLoc(e.target.value)} placeholder="Area, for example Bhaini Road" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Short note
+        <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="One line, for example 25% down, 3-year installments" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Status
+        <select value={status} onChange={(e) => setStatus(e.target.value as ProjectStatus)} className={inputCls + " mt-1 font-normal"}>
+          {PROJECT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+      </label>
+      <label className="text-sm font-semibold">Main photo, real photo only, optional
+        <input value={img} onChange={(e) => setImg(e.target.value)} placeholder="File on the site, for example mgh-lake-aerial.jpg, or a photo link" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Card photo, optional
+        <input value={cardImg} onChange={(e) => setCardImg(e.target.value)} placeholder="File on the site or a photo link, leave empty to use the main photo" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <p className="text-sm text-gray-600">No photo, no problem: leave the photo empty and the card shows Photo coming soon. Never use an AI image.</p>
+      <div className="flex gap-2 flex-wrap">
+        <button type="submit" disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Adding..." : "Add project"}</button>
+        <button type="button" onClick={onCancel} className={btnLine}>Cancel</button>
+      </div>
+    </form>
+  );
 }
 
 // FIX-08: agency add/edit form. Logo is a file name from the site
@@ -1005,18 +1127,31 @@ function HeroForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; 
 function AboutForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; canEdit: boolean; isDemo: boolean; onSave: (c: SiteContent) => Promise<void> | void }) {
   const [story, setStory] = useState(initial.aboutStory);
   const [team, setTeam] = useState<TeamMember[]>(initial.team);
+  const [techTeam, setTechTeam] = useState<TeamMember[]>(initial.techTeam);
+  const [ceoPhoto, setCeoPhoto] = useState(initial.ceoPhoto);
   const [saving, setSaving] = useState(false);
   const [loadedFor, setLoadedFor] = useState(initial);
   if (loadedFor !== initial) {
     setLoadedFor(initial);
     setStory(initial.aboutStory);
     setTeam(initial.team);
+    setTechTeam(initial.techTeam);
+    setCeoPhoto(initial.ceoPhoto);
+  }
+  function cleanMembers(list: TeamMember[]): TeamMember[] {
+    return list.filter((m) => m.name.trim()).map((m) => ({
+      ...m,
+      name: m.name.trim(),
+      role: m.role.trim(),
+      photoUrl: (m.photoUrl || "").trim() || undefined,
+      linkedinUrl: (m.linkedinUrl || "").trim() || undefined,
+    }));
   }
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (saving || isDemo) return;
     setSaving(true);
-    Promise.resolve(onSave({ ...initial, aboutStory: story.trim(), team: team.filter((m) => m.name.trim()).map((m) => ({ ...m, name: m.name.trim(), role: m.role.trim(), photoUrl: (m.photoUrl || "").trim() || undefined })) })).finally(() => setSaving(false));
+    Promise.resolve(onSave({ ...initial, aboutStory: story.trim(), team: cleanMembers(team), techTeam: cleanMembers(techTeam), ceoPhoto: ceoPhoto.trim() })).finally(() => setSaving(false));
   }
   const fieldCls = canEdit ? inputCls : inputCls + " bg-gray-100 text-gray-500 cursor-not-allowed";
   return (
@@ -1025,6 +1160,10 @@ function AboutForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent;
         <textarea value={story} disabled={!canEdit} onChange={(e) => setStory(e.target.value)} rows={6} className={fieldCls + " mt-1 font-normal"} />
       </label>
       <p className="text-sm text-gray-600">Blank line between paragraphs starts a new paragraph on the About page.</p>
+      <label className="text-sm font-semibold">CEO photo, optional
+        <input value={ceoPhoto} disabled={!canEdit} onChange={(e) => setCeoPhoto(e.target.value)} placeholder="/img/photo.jpg or https://example.com/photo.jpg" className={fieldCls + " mt-1 font-normal"} />
+      </label>
+      <p className="text-sm text-gray-600">Leave empty and the site keeps its built-in CEO photos (home and About). Set a photo link and home and About both use it. Real photo only, no AI face.</p>
       <div>
         <p className="font-semibold text-sm">Our Team ({team.length})</p>
         {team.length === 0 ? (
@@ -1048,6 +1187,32 @@ function AboutForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent;
         </div>
         {canEdit ? (
           <button type="button" className={btnLine + " mt-2"} onClick={() => setTeam([...team, { id: "team-" + Date.now().toString(36), name: "", role: "", photoUrl: "" }])}>Add a team member</button>
+        ) : null}
+      </div>
+      <div>
+        <p className="font-semibold text-sm">Tech Team ({techTeam.length})</p>
+        <p className="text-sm text-gray-600 mt-1">The team who built this website, shown on the About page under Meet our Tech Team. Photos are clear photo links only, no blurry photo, no stock or AI face; a member with no photo shows a clean initials monogram until the office adds one.</p>
+        <div className="grid gap-2 mt-2">
+          {techTeam.map((m, i) => (
+            <div key={m.id} className="grid gap-2 border rounded p-3 sm:grid-cols-2 items-end">
+              <label className="text-sm font-semibold">Name
+                <input value={m.name} disabled={!canEdit} onChange={(e) => setTechTeam(techTeam.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} aria-label={"Tech team member " + (i + 1) + " name"} className={fieldCls + " mt-1 font-normal"} />
+              </label>
+              <label className="text-sm font-semibold">Role
+                <input value={m.role} disabled={!canEdit} onChange={(e) => setTechTeam(techTeam.map((x, j) => (j === i ? { ...x, role: e.target.value } : x)))} aria-label={"Tech team member " + (i + 1) + " role"} placeholder="For example Founder, Zepra Tech" className={fieldCls + " mt-1 font-normal"} />
+              </label>
+              <label className="text-sm font-semibold">Photo link, optional
+                <input value={m.photoUrl || ""} disabled={!canEdit} onChange={(e) => setTechTeam(techTeam.map((x, j) => (j === i ? { ...x, photoUrl: e.target.value } : x)))} aria-label={"Tech team member " + (i + 1) + " photo link"} placeholder="/img/photo.jpg or https://example.com/photo.jpg" className={fieldCls + " mt-1 font-normal"} />
+              </label>
+              <label className="text-sm font-semibold">LinkedIn link, optional
+                <input value={m.linkedinUrl || ""} disabled={!canEdit} onChange={(e) => setTechTeam(techTeam.map((x, j) => (j === i ? { ...x, linkedinUrl: e.target.value } : x)))} aria-label={"Tech team member " + (i + 1) + " LinkedIn link"} placeholder="https://www.linkedin.com/in/..." className={fieldCls + " mt-1 font-normal"} />
+              </label>
+              <button type="button" disabled={!canEdit} onClick={() => setTechTeam(techTeam.filter((_, j) => j !== i))} aria-label="Remove tech team member" className={btnLine + " disabled:opacity-40 w-fit"}>Remove</button>
+            </div>
+          ))}
+        </div>
+        {canEdit ? (
+          <button type="button" className={btnLine + " mt-2"} onClick={() => setTechTeam([...techTeam, { id: "tech-" + Date.now().toString(36), name: "", role: "", photoUrl: "", linkedinUrl: "" }])}>Add a tech team member</button>
         ) : null}
       </div>
       {canEdit ? <button disabled={saving} className={btnRed + " w-fit disabled:opacity-50"}>{saving ? "Saving..." : "Save About page"}</button> : <p className="text-sm text-gray-600">Your role is View only. You can see the About page content but not change it.</p>}

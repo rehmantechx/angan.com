@@ -105,6 +105,7 @@ export default function Home() {
   const [heroTitle, setHeroTitle] = useState(DEFAULT_SITE_CONTENT.heroTitle);
   const [heroTagline, setHeroTagline] = useState(DEFAULT_SITE_CONTENT.heroTagline);
   const [bannerImages, setBannerImages] = useState(DEFAULT_SITE_CONTENT.bannerImages);
+  const [ceoPhoto, setCeoPhoto] = useState(DEFAULT_SITE_CONTENT.ceoPhoto);
   const [bannerIdx, setBannerIdx] = useState(0);
   const [agencies, setAgencies] = useState<Agency[]>(AGENCIES);
   const [hero, setHero] = useState(0);
@@ -189,6 +190,7 @@ export default function Home() {
         setHeroTitle(c.heroTitle);
         setHeroTagline(c.heroTagline);
         if (c.bannerImages.length > 0) setBannerImages(c.bannerImages);
+        setCeoPhoto(c.ceoPhoto);
       });
     };
     if (typeof window !== "undefined" && "requestIdleCallback" in window) {
@@ -238,7 +240,7 @@ export default function Home() {
             alt=""
             aria-hidden="true"
             fill
-            quality={75}
+            quality={90}
             sizes="100vw"
             className="absolute inset-0 w-full h-full object-cover opacity-100"
           />
@@ -250,7 +252,7 @@ export default function Home() {
             alt={heroSlides[hero].alt}
             fill
             priority={hero === 0}
-            quality={75}
+            quality={90}
             sizes="100vw"
             // Ken Burns: the active photo zooms and pans slowly the
             // whole time it is on screen, alternating direction per
@@ -268,14 +270,14 @@ export default function Home() {
             alt=""
             aria-hidden="true"
             fill
-            quality={70}
+            quality={90}
             sizes="100vw"
             loading="eager"
             className="absolute inset-0 w-full h-full object-cover opacity-0 pointer-events-none"
           />
         ) : null}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/65 via-slate-950/45 to-slate-950/75 pointer-events-none" aria-hidden="true" />
-        <div className="relative w-full max-w-6xl mx-auto px-4 py-5 md:py-6 text-center">
+        <div className="relative w-full max-w-[82.5rem] mx-auto px-4 md:px-6 py-5 md:py-6 text-center">
           <h1 className="text-white text-2xl sm:text-5xl md:text-6xl font-extrabold mx-auto leading-tight md:whitespace-nowrap [text-shadow:0_2px_12px_rgba(0,0,0,0.55)]">
             {heroTitle}
           </h1>
@@ -313,7 +315,7 @@ export default function Home() {
             alt=""
             aria-hidden="true"
             fill
-            quality={70}
+            quality={90}
             sizes="100vw"
             loading="lazy"
             className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 pointer-events-none"
@@ -398,7 +400,7 @@ export default function Home() {
 
       {/* MARGINS 2026-11-25: everything below the hero and the search
           band sits inside this one root div, so it gets the shared
-          container (max-w-6xl, 1rem side padding) from globals.css,
+          container (max-width 1320px, px-4 mobile / px-6 desktop) from globals.css,
           exactly like every other page. Before this, these sections
           were bare children of <main> with no side padding at all. */}
       <div>
@@ -461,7 +463,7 @@ export default function Home() {
                     2026, Section 2: object-top, not object-center,
                     and taller 4/3 cards, so the tops of the landmarks
                     are not chopped off. */}
-                <Image src={`/img/${c.img}`} alt={c.alt} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className={`object-cover ${c.pos}`} />
+                <Image src={`/img/${c.img}`} alt={c.alt} fill quality={90} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className={`object-cover ${c.pos}`} />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                 <span className="absolute bottom-0 left-0 right-0 p-3 text-white">
                   <span className="block text-lg md:text-xl font-extrabold leading-tight drop-shadow">{c.name}</span>
@@ -550,7 +552,7 @@ export default function Home() {
             <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm aspect-[4/3] bg-navy">
               {/* PARITY 24 Nov 2026, Section 2: object-top so the tip
                   of the Bahria Town Eiffel Tower is not chopped. */}
-              <Image src={`/img/${c.img}`} alt={c.name} fill quality={75} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover object-top" />
+              <Image src={`/img/${c.img}`} alt={c.name} fill quality={90} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover object-top" />
               <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
               <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg leading-tight">{c.name} &rarr;</span>
             </Link>
@@ -607,7 +609,7 @@ export default function Home() {
           keeps the honest "Photo coming soon" fallback, no invented
           photo. Photos are the seed cardImg where one exists
           (Al Ghani aerial, Global Homes house), else the seed img. */}
-      <section className="mt-10 bg-slate-50 -mx-4 px-4 py-8" aria-label="Our projects">
+      <section className="mt-10 bg-slate-50 -mx-4 md:-mx-6 px-4 md:px-6 py-8" aria-label="Our projects">
         <div className="flex items-baseline justify-between flex-wrap gap-2">
           <h2 className="text-2xl font-bold text-navy">Our projects</h2>
           <Link href="/projects" className="text-anngan-dark font-semibold text-sm">All 7 projects &rarr;</Link>
@@ -676,7 +678,7 @@ export default function Home() {
                       served, on Vercel or locally. Rule learned:
                       NEVER change an image file's pixels without
                       renaming it. */}
-                  <Image src={projectCardSrc(p)} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-wide-v3.jpg" ? "object-cover object-top" : "object-cover"} />
+                  <Image src={projectCardSrc(p)} alt={p.name} fill quality={90} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-wide-v3.jpg" ? "object-cover object-top" : "object-cover"} />
                   <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                   <span className="absolute top-2 left-2 z-10"><StatusBadge status={p.status} /></span>
                   <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg md:text-xl leading-tight drop-shadow">{p.name}</span>
@@ -751,7 +753,7 @@ export default function Home() {
                 the new file's own aspect (w-full md:w-[360px],
                 h-auto), so the image fills it with no crop. /about
                 keeps ceo-flat.jpg and its own box, unchanged. */}
-            <Image src="/img/ceo-portrait-v2.jpg" alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={215} height={356} className="w-full md:w-[360px] h-auto object-cover object-top rounded-lg bg-white" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+            <Image src={ceoPhoto || "/img/ceo-portrait-v2.jpg"} alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={215} height={356} className="w-full md:w-[360px] h-auto object-cover object-top rounded-lg bg-white" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>

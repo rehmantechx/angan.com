@@ -132,8 +132,8 @@ export function Header() {
   const isActive = (href: string) =>
     href === "/"
       ? pathname === "/"
-      : href === "/admin/login"
-        ? pathname === "/admin/login" || pathname === "/admin"
+      : href === "/office-login"
+        ? pathname === "/office-login" || pathname === "/admin"
         : pathname === href || pathname.startsWith(href + "/");
   // Active page: the white pill sits INSIDE the red bar. The bar has
   // py-1 (see the nav row below), and the pill is 40px tall, so 4px of
@@ -152,7 +152,7 @@ export function Header() {
   return (
     <header>
       <div className="bg-navy text-white text-xs sm:text-sm">
-        <div className="max-w-6xl mx-auto px-4 py-1.5 flex flex-wrap gap-x-4 gap-y-1">
+        <div className="max-w-[82.5rem] mx-auto px-4 md:px-6 py-1.5 flex flex-wrap gap-x-4 gap-y-1">
           <span>
             Call{" "}
             <a href="tel:+923041111698" className="font-semibold hover:underline">
@@ -179,7 +179,7 @@ export function Header() {
         </div>
       </div>
       <div className="bg-white">
-        <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center gap-1.5 sm:gap-3">
+        <div className="max-w-[82.5rem] mx-auto px-4 md:px-6 py-2.5 flex items-center gap-1.5 sm:gap-3">
           <Link href="/" className="flex items-center shrink-0 min-w-0" aria-label="Anngan home">
             <Image
               src="/img/logo.png"
@@ -224,7 +224,7 @@ export function Header() {
               tracking-tight px-2 links, slim py-1.5 CREATE A LISTING)
               so all 11 items plus OFFICE LOGIN fit inside the red bar
               with breathing room, no horizontal scrollbar. */}
-          <div className="hidden xl:flex items-center gap-1 text-xs tracking-tight font-bold whitespace-nowrap max-w-6xl mx-auto px-4 py-1">
+          <div className="hidden xl:flex items-center gap-1 text-xs tracking-tight font-bold whitespace-nowrap max-w-[82.5rem] mx-auto px-4 md:px-6 py-1">
             {NAV_LINKS.map((l) =>
               l.dropdown ? (
                 // NAV-01/02 desktop dropdown: hover opens it, the label
@@ -319,19 +319,17 @@ export function Header() {
                     dashboard it reads as active with bold + underline. */}
                 <Link
                   href="/admin"
-                  aria-current={isActive("/admin/login") ? "page" : undefined}
+                  aria-current={isActive("/office-login") ? "page" : undefined}
                   className={
                     "shrink-0 inline-flex items-center min-h-[40px] px-2 rounded text-white hover:bg-white/15 " +
-                    (isActive("/admin/login") ? "font-extrabold underline underline-offset-4" : "nav-underline")
+                    (isActive("/office-login") ? "font-extrabold underline underline-offset-4" : "nav-underline")
                   }
                 >
                   DASHBOARD
                 </Link>
                 <button onClick={() => signOut()} className="hover:bg-white/15 shrink-0 inline-flex items-center min-h-[40px] px-2 rounded">SIGN OUT</button>
               </>
-            ) : (
-              <Link href="/admin/login" aria-current={isActive("/admin/login") ? "page" : undefined} className={navCls("/admin/login")}>OFFICE LOGIN</Link>
-            )}
+            ) : null}
           </div>
         </div>
       </nav>
@@ -437,7 +435,7 @@ export function Header() {
               </Link>
               {user ? (
                 <>
-                  <Link href="/admin" onClick={() => setMenuOpen(false)} aria-current={isActive("/admin/login") ? "page" : undefined} className={drawerCls("/admin/login")}>
+                  <Link href="/admin" onClick={() => setMenuOpen(false)} aria-current={isActive("/office-login") ? "page" : undefined} className={drawerCls("/office-login")}>
                     Dashboard
                   </Link>
                   <button
@@ -447,11 +445,7 @@ export function Header() {
                     Sign out
                   </button>
                 </>
-              ) : (
-                <Link href="/admin/login" onClick={() => setMenuOpen(false)} aria-current={isActive("/admin/login") ? "page" : undefined} className={drawerCls("/admin/login")}>
-                  Office login
-                </Link>
-              )}
+              ) : null}
             </nav>
             <div className="px-4 pb-4 flex flex-col gap-2">
               <a href="tel:+923041111698" className="btn btn-navy w-full text-center">
@@ -526,7 +520,7 @@ export function Footer() {
           Connect, Get Connected, all ~240-320px) and Angan Tech services
           sit in a full-width strip below, so no column is twice as tall
           as the others and the footer is clearly under 500px at 1280. */}
-      <div className="max-w-6xl mx-auto px-4 py-5 text-sm">
+      <div className="max-w-[82.5rem] mx-auto px-4 md:px-6 py-5 text-sm">
         <div className="grid items-start gap-8 sm:grid-cols-2 lg:grid-cols-12 lg:gap-6">
           <div className="lg:col-span-4">
             <span className="inline-block bg-white rounded-lg px-3 py-1.5 shadow">

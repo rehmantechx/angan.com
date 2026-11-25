@@ -9,40 +9,54 @@ body {
   overflow-x: clip;
 }
 
-/* MARGINS, one shared container, 2026-11-25 client demand.
-   Every page uses the same content width: 72rem (1152px, the same as
-   max-w-6xl) with 1rem (16px) of side padding, at 1280 and at 390.
-   The rule below is the single source: every page returns one root
-   div, and that div gets this width. The header rows, the footer and
-   the hero text use the same max-w-6xl + px-4, never max-w-7xl and
-   never px-3 or px-6, so no row is wider or narrower than the others.
-   Home is the one exception with a cause: its hero and search band
-   are full-width sections (direct children of <main>), and the rest
-   of home sits inside one root div, so it gets this container too.
-   The Our projects band inside that div uses -mx-4 + px-4, which
-   cancels exactly this padding, so its background spans the full
-   container width and no further. No section touches the viewport
-   edge, and no vw width is used anywhere. */
+/* MARGINS, one shared container, premium standard, 2026-11-25.
+   Decision (user 17:14 PKT asked for premium-standard margins, no
+   number of his own): max-width 1320px (82.5rem), the middle of the
+   premium 1280-1400px band. At 1919px the side margin is about
+   300px, at 1440px about 60px, at 1280px the container is full
+   width with 24px side padding, so content never touches the edge
+   and text lines stay readable. 1152px (max-w-6xl) left about 383px
+   empty on each side at 1919px and looked narrow; 1600px would make
+   text lines too long. Side padding is 1rem (16px) on mobile and
+   1.5rem (24px) from 768px up. The rule below is the single source:
+   every page returns one root div, and that div gets this width.
+   The header rows, the footer and the hero text use the same
+   82.5rem + px-4 / md:px-6, never max-w-6xl and never px-3, so no
+   row is wider or narrower than the others. Home is the one
+   exception with a cause: its hero and search band are full-width
+   sections (direct children of <main>), and the rest of home sits
+   inside one root div, so it gets this container too. The Our
+   projects band inside that div uses -mx-4 md:-mx-6 + px-4 md:px-6,
+   which cancels exactly this padding, so its background spans the
+   full container width and no further. No section touches the
+   viewport edge, and no vw width is used anywhere. */
 main > div {
   width: 100%;
-  max-width: 72rem;
+  max-width: 82.5rem;
   margin-inline: auto;
   padding-inline: 1rem;
   padding-block: 1.5rem;
   flex: 1 1 auto;
+}
+@media (min-width: 768px) {
+  main > div {
+    padding-inline: 1.5rem;
+  }
 }
 
 /* Hero Ken Burns: the active slide moves continuously, a slow zoom
    and pan, instead of sitting still for 10 seconds and then jumping.
    Two directions alternate per slide, so the movement never reads as
    a loop of the same pan. 12 seconds per direction, eased, and it
-   respects reduced-motion users (no movement at all for them). */
+   respects reduced-motion users (no movement at all for them).
+   QUALITY 25 Nov 2026: peak zoom lowered from 1.12 to 1.08, so the
+   zoom upscales the photo less and the hero stays sharper. */
 @keyframes hero-kenburns-a {
   from { transform: scale(1) translate(0, 0); }
-  to { transform: scale(1.12) translate(-1.5%, 1%); }
+  to { transform: scale(1.08) translate(-1.5%, 1%); }
 }
 @keyframes hero-kenburns-b {
-  from { transform: scale(1.12) translate(1.5%, -1%); }
+  from { transform: scale(1.08) translate(1.5%, -1%); }
   to { transform: scale(1) translate(0, 0); }
 }
 .hero-kenburns-a { animation: hero-kenburns-a 12s ease-in-out infinite alternate; will-change: transform; }

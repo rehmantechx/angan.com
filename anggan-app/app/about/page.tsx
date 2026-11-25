@@ -1,9 +1,12 @@
-// About page. Client component: Our Story and Our Team come from the
-// admin settings in /admin (About and team), falling back to the
-// built-in text until the office saves its own. Our Team starts
-// empty on purpose: the user will tell the team later, so no names,
-// roles or photos are invented here. CEO portrait (ceo-flat.jpg),
-// stats 7/12/13, the 6 real YouTube videos and the FAQ are unchanged.
+// About page. Client component: Our Story, Our Team, Tech Team and
+// the CEO photo come from the admin settings in /admin (About and
+// team), falling back to the built-in text until the office saves its
+// own. Our Team starts empty on purpose: the user will tell the team
+// later, so no names, roles or photos are invented here. Tech Team
+// is the 3 people who built this website (user order 2026-11-25),
+// with monogram photos until the user sends a clear photo. CEO
+// portrait (ceo-flat.jpg), stats 7/12/13, the 6 real YouTube videos
+// and the FAQ are unchanged.
 // The Mangla lake / MGH main project image section and the What We Do
 // section were removed on the client demand of 2026-11-25. The Files
 // card was restored as its own section on 25 Nov 2026: it was removed
@@ -43,10 +46,14 @@ const YOUTUBE_URL = "https://www.youtube.com/channel/UC7lbVe_2Lfw8dzThSaAq6Aw";
 export default function AboutPage() {
   const [story, setStory] = useState(DEFAULT_SITE_CONTENT.aboutStory);
   const [team, setTeam] = useState<TeamMember[]>(DEFAULT_SITE_CONTENT.team);
+  const [techTeam, setTechTeam] = useState<TeamMember[]>(DEFAULT_SITE_CONTENT.techTeam);
+  const [ceoPhoto, setCeoPhoto] = useState(DEFAULT_SITE_CONTENT.ceoPhoto);
   useEffect(() => {
     getSiteContent().then((c) => {
       setStory(c.aboutStory);
       setTeam(c.team);
+      setTechTeam(c.techTeam);
+      setCeoPhoto(c.ceoPhoto);
     });
   }, []);
 
@@ -60,7 +67,7 @@ export default function AboutPage() {
       <div className="grid gap-6 mt-6 lg:grid-cols-2 items-start">
         <figure className="border border-gray-200 rounded-lg p-4 bg-white max-w-md w-full">
           <Image
-            src="/img/ceo-flat.jpg"
+            src={ceoPhoto || "/img/ceo-flat.jpg"}
             alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan"
             width={1024}
             height={683}
@@ -137,6 +144,44 @@ export default function AboutPage() {
           ))}
         </div>
       )}
+
+      {/* TECH TEAM 25 Nov 2026 (user order): the team who built this
+          website, in the old anngan.com/about-us "Meet our Team"
+          style, photo card with name and role, plus a link to their
+          LinkedIn profile. LinkedIn would not open for a read
+          (429/999 and the authwall), so no photo could be taken from
+          there: cards show a clean initials monogram until the user
+          sends a clear photo. No stock or AI face is used, and no
+          role is invented: roles use only verified facts from the
+          user's own records, and the office can change name, role,
+          photo link and LinkedIn link in /admin, About and team. */}
+      <h2 className="text-xl font-bold text-navy mt-10">Meet our Tech Team</h2>
+      <p className="text-gray-600 text-sm mt-1 max-w-3xl">The team who built this website. Photos coming soon, the office adds a clear photo link for each member in the dashboard.</p>
+      <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
+        {techTeam.map((m) => (
+          <article key={m.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+            {m.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={m.photoUrl} alt={m.name} loading="lazy" className="w-full h-56 object-cover object-top bg-gray-100" />
+            ) : (
+              <div className="w-full h-56 bg-navy flex items-center justify-center">
+                <span className="text-white text-4xl font-bold" aria-hidden="true">
+                  {m.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
+                </span>
+              </div>
+            )}
+            <div className="p-4">
+              <h3 className="font-bold text-navy">{m.name}</h3>
+              {m.role ? <p className="text-sm text-gray-600 mt-1">{m.role}</p> : null}
+              {m.linkedinUrl ? (
+                <p className="text-sm mt-2">
+                  <a href={m.linkedinUrl} target="_blank" rel="noopener" className="text-anngan-dark font-semibold underline">LinkedIn profile</a>
+                </p>
+              ) : null}
+            </div>
+          </article>
+        ))}
+      </div>
 
       {/* FILES 25 Nov 2026 (live fail, HEAD 57ecf38): the Files card
           was removed as a side effect of removing What We Do, which

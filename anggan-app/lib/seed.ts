@@ -13,24 +13,37 @@ export type Agency = { id: string; name: string; logo: string; logoUrl?: string;
 export type Service = { id: string; name: string; note: string; page: string };
 export type Enquiry = { id: string; name: string; phone: string; asked: string; how: string; stage: "New" | "Called" | "Visit" | "Deal Done"; next: string; date: string };
 export type HeroSlide = { src: string; alt: string };
-export type TeamMember = { id: string; name: string; role: string; photoUrl?: string };
+export type TeamMember = { id: string; name: string; role: string; photoUrl?: string; linkedinUrl?: string };
 // Site content the office edits in /admin, stored in Firestore
 // (settings/office, public read, office write only) and read live by
 // the public site. Everything is a URL, never an upload: Firebase
 // Storage is not enabled, so admin image fields are image-URL fields
 // only. Seed defaults below apply until the office saves its own
 // values, so the site works before any edit.
-export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string; heroTitle?: string; heroTagline?: string; heroSlides?: HeroSlide[]; bannerImages?: HeroSlide[]; aboutStory?: string; team?: TeamMember[] };
+export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string; ceoPhoto?: string; heroTitle?: string; heroTagline?: string; heroSlides?: HeroSlide[]; bannerImages?: HeroSlide[]; aboutStory?: string; team?: TeamMember[]; techTeam?: TeamMember[] };
 // Home hero, 8 real photos already in the repo, no AI, no invented
 // photo. Order: Mangla lake, Urban City drone, MGH Precinct 01,
-// Bahria Sky, Neelum Valley Kashmir, Serene Farm Houses, Urban City
-// golf course, Al Ghani aerial.
+// Talwar Chowk Bahria Town, Sharda Neelum Valley, Serene Farm Houses,
+// Urban City golf course, Al Ghani aerial.
+// QUALITY (user order 2026-11-25): all hero photos were blurry on a
+// full-width hero because the sources are 560-1200px wide and the hero
+// shows up to 1920px wide plus a 1.08 Ken Burns zoom. Slides 4 and 5
+// are high-resolution replacements from Wikimedia Commons, same
+// places, real photos, checked by eye: Talwar Chowk, Bahria Town,
+// Lahore, 3456px, CC BY 4.0, AlidPedian (cropped to the monument band,
+// hero-bahria-talwar.jpg, 2400px); Sharda, Neelum Valley, 6000px,
+// CC BY-SA 3.0, Umar Jamshaid (hero-sharda-valley.jpg, 2400px). No
+// high-resolution real photo exists on Commons for Mangla Lake aerial,
+// Urban City drone, MGH Precinct 01, Serene Farm Houses, Urban City
+// golf or Al Ghani aerial, so those keep their 1100-1200px originals
+// (Al Ghani 560px) at quality 90; the client must send a real
+// high-resolution photo to make them sharp at 1920px wide.
 export const DEFAULT_HERO_SLIDES: HeroSlide[] = [
   { src: "/img/mgh-lake-aerial.jpg", alt: "Mangla Lake aerial view, MGH Pakistan" },
   { src: "/img/urban-drone.jpg", alt: "Urban City, Lahore, drone view" },
   { src: "/img/mgh-precinct-01.jpg", alt: "MGH Pakistan, Precinct 01, Mangla" },
-  { src: "/img/chinatown-bahria-sky.jpg", alt: "Bahria Sky, where China Town is located" },
-  { src: "/img/city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir" },
+  { src: "/img/hero-bahria-talwar.jpg", alt: "Talwar Chowk, Bahria Town, Lahore" },
+  { src: "/img/hero-sharda-valley.jpg", alt: "Sharda, Neelum Valley, Kashmir" },
   { src: "/img/mgh-serene-farmhouses.jpg", alt: "Serene Farm Houses, MGH Pakistan, Mangla" },
   { src: "/img/urban-golf.jpg", alt: "Urban City golf course, Lahore" },
   { src: "/img/alghani-aerial.jpg", alt: "Al Ghani Garden Phase 7, Lahore, aerial view" },
@@ -52,6 +65,25 @@ export const DEFAULT_ABOUT_STORY =
 // Our Team default: empty on purpose. The user will tell the team
 // later. No names, roles or photos are invented here.
 export const DEFAULT_TEAM: TeamMember[] = [];
+// Tech Team default (user order 2026-11-25): the 3 people who built
+// this website. LinkedIn would not open for a read (profile pages
+// return 429/999 and the authwall, tried 25 Nov 2026), so NO photo
+// could be taken from LinkedIn and no role is claimed from LinkedIn.
+// Photos are clean initials monograms until the user sends a clear
+// photo; no stock or AI face is used. Roles use only facts from the
+// user's own records: Abdur Rehman is a B.S. Computer Science
+// undergrad at Lahore Garrison University and a Python Programming
+// Intern at Decode Labs; M. Bilal Shah Gillani is an AI Championship
+// teammate (SABZ, explains the brain); Muhammad Daud Ali Lashari is
+// founder of Zepra Tech and an entrepreneur and hands-on digital
+// marketer, verified from his public LinkedIn by the main agent on
+// 25 Nov 2026. The office can change name, role, photo link and
+// LinkedIn link for any member in /admin, About and team.
+export const DEFAULT_TECH_TEAM: TeamMember[] = [
+  { id: "tech-abdur-rehman", name: "Malik Abdur Rehman", role: "Python Programming Intern, Decode Labs", linkedinUrl: "https://www.linkedin.com/in/malik-abdur-rehman-9b4228358/" },
+  { id: "tech-bilal-shah", name: "M. Bilal Shah", role: "AI Championship Team Member, SABZ", linkedinUrl: "https://www.linkedin.com/in/m-bilal-shah-3a7980220/" },
+  { id: "tech-daud-lashari", name: "Muhammad Daud Ali Lashari", role: "Founder, Zepra Tech", linkedinUrl: "https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/" },
+];
 export const LISTINGS: Listing[] = [
   {
     "id": "karachi-shamsi",
@@ -353,10 +385,12 @@ export const PROJECTS: Project[] = [
     "city": "Lahore",
     "page": "project-urban.html",
     "img": "urban-drone.jpg",
-    // PARITY 24 Nov 2026, Section 5: the drone photo was used 3 times
-    // on home (Hero 2, All cities, Projects). The project card uses
-    // the real Urban City Grand Mosque photo instead.
-    "cardImg": "urban-mosque.jpg",
+    // NO-AI-AUDIT 25 Nov 2026: urban-mosque.jpg was the Blue Mosque
+    // in Istanbul, Turkey, a real photo of the WRONG place, not Urban
+    // City, so it is removed from every card. The card now uses the
+    // real Urban City golf course photo. urban-mosque.jpg stays in
+    // public/img unused; delete it only on the user's say-so.
+    "cardImg": "urban-golf.jpg",
     "status": "Available",
     "note": "80,000+ kanals, Lahore."
   },

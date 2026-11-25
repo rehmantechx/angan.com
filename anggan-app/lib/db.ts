@@ -367,7 +367,12 @@ function mergeSeedProjects(rows: Project[]): Project[] {
     // A Firestore value wins over the seed when it is set, including
     // status and cardImg, so an office edit in /admin is what the
     // public site shows. A missing field falls back to the seed.
-    return { ...seed, ...r, cardImg: r.cardImg || seed.cardImg, img: r.img || seed.img, status: r.status || seed.status };
+    // NO-AI-AUDIT MIGRATION 25 Nov 2026: a stored cardImg of
+    // urban-mosque.jpg is the Blue Mosque in Istanbul, the wrong
+    // place for Urban City, so it falls back to the seed card photo
+    // (the real Urban City golf course) instead of the stored one.
+    const cardImg = r.cardImg === "urban-mosque.jpg" ? seed.cardImg : (r.cardImg || seed.cardImg);
+    return { ...seed, ...r, cardImg, img: r.img || seed.img, status: r.status || seed.status };
   });
 }
 
@@ -385,6 +390,26 @@ export async function saveProject(p: Project): Promise<void> {
   const i = store.projects.findIndex((x) => x.id === p.id);
   if (i >= 0) store.projects[i] = p;
   else store.projects.unshift(p);
+  saveLocal(store);
+}
+
+// PROJECT ADD/DELETE 25 Nov 2026 (user order: the office adds and
+// deletes projects in /admin, no code). A deleted project stays
+// deleted: getProjects only maps over the Firestore rows it finds,
+// it never resurrects a seed project that has no Firestore row.
+// Edge case: deleting EVERY project falls back to the local seed
+// list, so the last project cannot be deleted this way.
+export async function deleteProject(id: string): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
+  const db = await getDb();
+  if (db) {
+    const { deleteDoc, doc } = await fs();
+    await withTimeout(deleteDoc(doc(db, "projects", id)), WRITE_TIMEOUT_MS, "Deleting the project");
+    return;
+  }
+  const store = loadLocal();
+  store.projects = store.projects.filter((x) => x.id !== id);
   saveLocal(store);
 }
 

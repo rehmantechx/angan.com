@@ -2,7 +2,12 @@
 const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
-    deviceSizes: [640, 750, 828, 1080, 1200],
+    // QUALITY 25 Nov 2026: 1920 added, so the optimizer serves a
+    // 1920px variant for the full-width hero instead of upscaling
+    // the 1200px one. The hero shows up to 1920px wide plus a 1.08
+    // Ken Burns zoom, so a 1200px source was always upscaled and
+    // blurry.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 31536000,
     // Admin-set image URLs (hero slides, banner images, project card

@@ -16,6 +16,17 @@ export type Role = "Full access" | "Staff" | "View only";
 // and the checks that use it.
 export const DEMO_EMAIL = "demo@anngan.com";
 
+// OFFICE LOGIN (user order 2026-11-25): the office signs in with
+// email and password only, no Continue with Google. Only these two
+// fixed office accounts can sign in to /admin; nobody else. These are
+// email addresses only, no passwords here, the repo is public. The
+// accounts themselves must be created in the Firebase console
+// (Authentication, Email/Password provider on, Add user) and each
+// needs a users document with role "Full access". If an account does
+// not exist yet, the office login shows a plain error, never a fake
+// credential. Do NOT add a password here.
+export const OFFICE_EMAILS = ["ceo@anngan.com", "seo@anngan.com"];
+
 export type SessionUser = {
   uid: string;
   email: string;
@@ -37,6 +48,9 @@ type AuthCtx = {
   loading: boolean;
   firebaseOn: boolean;
   signInGoogle: () => Promise<string | null>;
+  // Office login only: email and password, checked against
+  // OFFICE_EMAILS. Returns an error message, or null on success.
+  signInEmail: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
 };
 
@@ -45,6 +59,7 @@ const Ctx = createContext<AuthCtx>({
   loading: true,
   firebaseOn: false,
   signInGoogle: async () => "Firebase is not connected.",
+  signInEmail: async () => "Firebase is not connected.",
   signOut: async () => {},
 });
 

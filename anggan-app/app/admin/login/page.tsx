@@ -1,44 +1,16 @@
+// OLD OFFICE LOGIN URL, kept only as a redirect. The office login
+// moved to the hidden /office-login page on 2026-11-25 (user order:
+// no Google on the office login, two fixed email/password accounts
+// only, hidden URL). /admin/login is no longer linked anywhere
+// public; anyone who opens it lands on the new page instead.
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../../../lib/auth";
-import { GoogleButton } from "../../../components/GoogleButton";
 
-export default function LoginPage() {
-  const { user, loading, signInGoogle } = useAuth();
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+export default function AdminLoginRedirectPage() {
   const router = useRouter();
-
   useEffect(() => {
-    if (!loading && user) router.push("/admin");
-  }, [loading, user, router]);
-
-  if (loading) return <p>Loading...</p>;
-  if (user) {
-    return <p>Signed in. Opening the dashboard...</p>;
-  }
-
-  return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-bold text-navy">Office login</h1>
-      <p className="text-gray-600 mt-1">Office team only. Sign in with Google.</p>
-
-      {error ? <p className="bg-red-50 text-red-800 text-sm rounded p-3 mt-4">{error}</p> : null}
-
-      <div className="grid gap-3 mt-4">
-        <GoogleButton
-          label={busy ? "Signing in..." : "Continue with Google"}
-          disabled={busy}
-          onClick={async () => {
-            setBusy(true);
-            setError("");
-            const err = await signInGoogle();
-            setBusy(false);
-            if (err) setError(err);
-          }}
-        />
-      </div>
-    </div>
-  );
+    router.replace("/office-login");
+  }, [router]);
+  return <p>Office login moved. Opening the office login...</p>;
 }

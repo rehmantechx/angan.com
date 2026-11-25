@@ -55,7 +55,13 @@ service cloud.firestore {
       allow get: if isSignedIn() && (request.auth.uid == id || isOfficeAnyRole());
       allow list: if isOfficeAnyRole();
       allow create: if isSignedIn() && request.auth.uid == id && request.resource.data.role == 'View only';
-      allow update, delete: if isOfficeAnyRole();
+      // SECURITY 25 Nov 2026: this was isOfficeAnyRole(), which let ANY
+      // signed-in user with a users document (even a View-only public
+      // seller) update ANY users document, including raising their own
+      // role to Full access. Only the office can change or delete user
+      // documents, as the comment above always said. Publish this file
+      // in the Firebase console for the fix to take effect live.
+      allow update, delete: if isOffice();
     }
     // Settings: public read, office write only
     match /settings/{id} {
