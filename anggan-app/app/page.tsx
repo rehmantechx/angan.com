@@ -693,26 +693,17 @@ export default function Home() {
       <section className="mt-10">
         <div className="grid gap-6 md:grid-cols-2 items-center">
           <div className="flex justify-center md:justify-start">
-            {/* LIVE-FAIL 2, 25 Nov 2026, ROOT CAUSE (measured in PIL,
-                not guessed): ceo-portrait.jpg head is only 64.3% of
-                the frame at its widest true head row (y=132, x=54..233
-                of 280) and 55.7% at eye level (yFrac 0.18), AND the
-                old crop x=380..660 was off-centre: widest head row
-                has a 29px left band but a 69px right band (10.4% /
-                24.6%), which is the ~90-100px grey side bands the
-                live check measured in a 399px frame. The box was
-                fine. Fix: ceo-portrait-v2.jpg, a true head-and-
-                shoulders crop of the same real photo (ceo-flat.jpg,
-                x=417..631, y=5..360, 215x356, quality 90): head
-                83.7% of frame at widest row (y=119, x=18..197),
-                70.7% at eye level (yFrac 0.18), side bands 18px /
-                17px (8.4% / 7.9%), hair intact with 7px headroom,
-                blue shirt 100% edge-to-edge at the bottom. New
-                filename busts any stale optimizer cache. Box follows
-                the new file's own aspect (w-full md:w-[360px],
-                h-auto), so the image fills it with no crop. /about
-                keeps ceo-flat.jpg and its own box, unchanged. */}
-            <Image src={ceoPhoto || "/img/ceo-portrait-v2.jpg"} alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={215} height={356} className="w-full md:w-[360px] h-auto object-cover object-top rounded-lg bg-white" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
+            {/* HOME CEO PHOTO, 26 Nov 2026 (user order): the photo was
+                too big and looked wrong. It is now shown at its real
+                size, 220px wide on mobile and 240px on desktop, the
+                file itself is 215x356, so it is never enlarged or
+                stretched. Same real portrait as before
+                (ceo-portrait-v2.jpg, head-and-shoulders crop of
+                ceo-flat.jpg, head 83.7% of frame at widest row, side
+                bands 8.4% / 7.9%), head and shoulders whole, no grey
+                bands, no bad crop. /about keeps ceo-flat.jpg and its
+                own box, unchanged. */}
+            <Image src={ceoPhoto || "/img/ceo-portrait-v2.jpg"} alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={215} height={356} className="w-[220px] sm:w-[240px] h-auto object-cover object-top rounded-lg bg-white" loading="lazy" sizes="240px" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">{content.homeHeadings.whoIsAnngan}</h2>

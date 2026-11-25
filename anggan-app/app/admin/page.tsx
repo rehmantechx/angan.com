@@ -397,8 +397,15 @@ export default function AdminPage() {
       {/* PRO-01: dedicated admin shell. Slim dark-navy left sidebar,
           grouped into Operations, Catalog, Website CMS and Office,
           with icons and pending/new badges. The public header, footer
-          and navbar never render here (see components/SiteChrome). */}
-      <aside className="w-full lg:w-60 shrink-0 lg:sticky lg:top-4 bg-[#0f2440] text-white rounded-xl p-3" aria-label="Dashboard sections">
+          and navbar never render here (see components/SiteChrome).
+          SIDEBAR COLOUR, 26 Nov 2026 (user order): the sidebar is
+          ONE constant colour, #0a2540, everywhere. No other blue is
+          used inside it: group labels and the signed-in line are
+          white at 60% opacity, inactive tabs are white with a white
+          10% hover, the active tab is white with #0a2540 text. The
+          top bar "View live site" button uses the same #0a2540, so
+          the whole dashboard chrome is one navy. */}
+      <aside className="w-full lg:w-60 shrink-0 lg:sticky lg:top-4 bg-[#0a2540] text-white rounded-xl p-3" aria-label="Dashboard sections">
         <p className="px-2 pt-1 pb-2 font-bold text-base">Anngan office</p>
         <nav className="grid gap-4" role="tablist" aria-label="Dashboard sections">
           {TAB_GROUPS.map((g) => {
@@ -406,7 +413,7 @@ export default function AdminPage() {
             if (groupTabs.length === 0) return null;
             return (
               <div key={g.label}>
-                <p className="px-2 text-[11px] font-bold uppercase tracking-wider text-blue-200">{g.label}</p>
+                <p className="px-2 text-[11px] font-bold uppercase tracking-wider text-white/60">{g.label}</p>
                 <div className="grid gap-1 mt-1">
                   {groupTabs.map((t) => (
                     <button
@@ -416,7 +423,7 @@ export default function AdminPage() {
                       onClick={() => setTab(t)}
                       className={
                         (tab === t
-                          ? "bg-white text-navy font-semibold "
+                          ? "bg-white text-[#0a2540] font-semibold "
                           : "text-white hover:bg-white/10 ") +
                         "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg min-h-[44px] text-sm text-left"
                       }
@@ -432,7 +439,7 @@ export default function AdminPage() {
             );
           })}
         </nav>
-        <p className="px-2 pt-3 text-xs text-blue-200">Signed in as {user.email}</p>
+        <p className="px-2 pt-3 text-xs text-white/60">Signed in as {user.email}</p>
       </aside>
       <div className="flex-1 min-w-0 w-full">
       {/* PRO-01: clean top bar with breadcrumb, View live site link,
@@ -444,10 +451,10 @@ export default function AdminPage() {
           <span className="font-bold text-navy">{tab}</span>
         </nav>
         <div className="flex gap-2 items-center flex-wrap">
-          <span className="text-sm text-navy bg-blue-50 border border-blue-100 rounded-full px-3 py-2 min-w-0 break-words">
+          <span className="text-sm text-navy bg-slate-100 border border-slate-200 rounded-full px-3 py-2 min-w-0 break-words">
             {user.email} · {user.role}
           </span>
-          <Link href="/" className="bg-navy text-white px-3 py-2 rounded-full min-h-[40px] inline-flex items-center text-sm font-semibold">View live site</Link>
+          <Link href="/" className="bg-[#0a2540] text-white px-3 py-2 rounded-full min-h-[40px] inline-flex items-center text-sm font-semibold">View live site</Link>
           <button type="button" className="border border-navy text-navy px-3 py-2 rounded-full min-h-[40px] inline-flex items-center text-sm font-semibold" onClick={async () => { await signOut(); router.push("/office-login"); }}>Sign out</button>
         </div>
       </div>
@@ -1093,7 +1100,7 @@ export default function AdminPage() {
       {tab === "About and team" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">About and team</h2>
-          <p className="text-sm text-gray-600">Changes here show on the About page straight away, no code change, no redeploy. Our Team is the main team: M. Mahmood Cheema (CEO), M. Talha Mahmood (Director Call Center), M. Taha Mahmood (Head Of Administration), with real photos from the old website. Change a name, role or photo link only when the office gives the real one. Nothing is invented here. Development Team is the sub team who built this website, with a LinkedIn link per member. CEO photo: leave empty to keep the built-in photos, or set a photo link to change the CEO photo on home and About.</p>
+          <p className="text-sm text-gray-600">Changes here show on the About page straight away, no code change, no redeploy. Our Team is the main team: M. Mahmood Cheema (Chairman and Chief Executive Officer), M. Talha Mahmood (Director Call Center), M. Taha Mahmood (Head Of Administration), with real photos from the old website. Change a name, role or photo link only when the office gives the real one. Nothing is invented here. Development Team is the sub team who built this website, with a LinkedIn link per member. CEO photo: leave empty to keep the built-in photos, or set a photo link to change the CEO photo on home and About.</p>
           <AboutForm
             initial={siteContent}
             canEdit={canEdit}
@@ -1654,7 +1661,7 @@ function AboutForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent;
       </div>
       <div>
         <p className="font-semibold text-sm">Development Team ({techTeam.length})</p>
-        <p className="text-sm text-gray-600 mt-1">The sub team who built this website, shown on the About page under Development Team. Photos are clear photo links only, no blurry photo, no stock or AI face; a member with no photo shows a clean initials monogram until the office adds one.</p>
+        <p className="text-sm text-gray-600 mt-1">The sub team who built this website, shown on the About page under Development Team. Photos are the real photos the user sent on 26 Nov 2026; a member with no photo shows a clean initials monogram until the office adds one. Photos are clear photo links only, no blurry photo, no stock or AI face.</p>
         <div className="grid gap-2 mt-2">
           {techTeam.map((m, i) => (
             <div key={m.id} className="grid gap-2 border rounded p-3 sm:grid-cols-2 items-end">
@@ -2111,7 +2118,8 @@ function StaffAccessTab({ users, currentEmail, isDemo, onRoleChange }: { users: 
   return (
     <div className="mt-4">
       <h2 className="font-bold text-lg">Staff access</h2>
-      <p className="text-sm text-gray-600">Only the office owner sees this tab. Authorized office emails and their access. Full access can change listings and content, View only can only look. Change a role here instead of the Firebase console.</p>
+      <p className="text-sm text-gray-600">Staff means the office people who can sign in to this dashboard at /admin. Right now the staff are: the CEO, ceo@anngan.com; the SEO, seo@anngan.com; and the owner, pakmultilinks@gmail.com. Each person is listed below with their email and their role.</p>
+      <p className="text-sm text-gray-600 mt-2"><span className="font-semibold text-navy">Full access</span> means the person can add, edit and delete listings, projects, blogs and website content. <span className="font-semibold text-navy">View only</span> means the person can look at the dashboard but cannot save any change. Only the owner sees this tab, and only the owner can change a role here.</p>
       {isDemo ? <p className="text-sm text-gray-600 mt-2">Demo mode, view only. Changes are not saved.</p> : null}
       {users.length === 0 ? <p className="text-sm mt-2">No office users found yet.</p> : null}
       <div className="grid gap-3 mt-3">

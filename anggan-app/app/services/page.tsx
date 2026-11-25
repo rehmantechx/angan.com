@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SERVICES, Service, SETTINGS, OfficeSettings } from "../../lib/seed";
 import { getServices, getSettings } from "../../lib/db";
-import { ServiceIcon, SERVICE_SHORT } from "../../lib/serviceIcons";
+import { ServiceIcon } from "../../lib/serviceIcons";
 
 // No photo is used anywhere here, because no real photo matches any
 // service, and a stock or AI photo would pretend to be real work.
@@ -47,7 +47,12 @@ export default function ServicesPage() {
                   {s.name}
                 </Link>
               </h2>
-              <p className="text-base text-gray-600 mt-2 leading-relaxed">{SERVICE_SHORT[s.id] || s.note}</p>
+              {/* NOTE 26 Nov 2026: the short note comes from the live
+                  service (editable in /admin, Services). A hardcoded
+                  SERVICE_SHORT map used to override it here, so an
+                  office edit saved fine but never showed on this
+                  list. The map is deleted; s.note is the one text. */}
+              <p className="text-base text-gray-600 mt-2 leading-relaxed">{s.note}</p>
               <div className="flex gap-2 mt-auto pt-5">
                 <Link href={`/services/${s.id}`} className="bg-slate-100 text-navy text-sm px-3 rounded font-semibold min-h-[48px] inline-flex items-center justify-center flex-1 text-center whitespace-nowrap">
                   What&apos;s included

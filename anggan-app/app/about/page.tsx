@@ -2,13 +2,17 @@
 // Team and the CEO photo come from the admin settings in /admin
 // (About and team), falling back to the built-in text until the office
 // saves its own. Our Team is the MAIN team, 3 people from the old
-// anngan.com/about-us (user order 2026-11-25): M. Mahmood Cheema
-// CEO, M. Talha Mahmood Director Call Center, M. Taha Mahmood Head
-// Of Administration, with real photos from the old site. Development
-// Team is the SUB team, the 3 people who built this website (user
-// order 2026-11-25), with monogram photos until the user sends a
-// clear photo. CEO portrait (ceo-flat.jpg), stats 7/12/13, the 6 real
-// YouTube videos and the FAQ are unchanged.
+// anngan.com/about-us (user order 2026-11-25): M. Mahmood Cheema,
+// Chairman and Chief Executive Officer (user order 2026-11-26, not
+// "CEO" only), M. Talha Mahmood Director Call Center, M. Taha Mahmood
+// Head Of Administration, with real photos from the old site.
+// Development Team is the SUB team, the 3 people who built this
+// website (user order 2026-11-25), with REAL photos the user sent
+// himself on 26 Nov 2026 (rotated upright, cropped head-and-shoulders,
+// public/img/team/). SUB TEAM SIZE (user order 2026-11-26): the
+// Development Team cards are MUCH SMALLER than the main team cards,
+// smaller photos, smaller cards, clearly a sub team, not the same
+// size as the main team.
 // The Mangla lake / MGH main project image section and the What We Do
 // section were removed on the client demand of 2026-11-25. The Files
 // card was restored as its own section on 25 Nov 2026: it was removed
@@ -152,33 +156,35 @@ export default function AboutPage() {
           this website, a SUB team below the main team, in the old
           anngan.com/about-us "Meet our Team" style, photo card with
           name and role, plus a link to their LinkedIn profile.
-          LinkedIn would not open for a read (429/999 and the
-          authwall), so no photo could be taken from there: cards show
-          a clean initials monogram until the user sends a clear photo.
+          REAL PHOTOS 26 Nov 2026: the user sent the 3 photos himself,
+          rotated upright and cropped to head-and-shoulders portraits.
           No stock or AI face is used, and no role is invented: roles
           use only verified facts from the user's own records, and the
           office can change name, role, photo link and LinkedIn link
-          in /admin, About and team. */}
+          in /admin, About and team. SUB TEAM SIZE 26 Nov 2026: these
+          cards are MUCH SMALLER than the main team cards above
+          (photo 96-112px tall vs 224px, card about half the width),
+          clearly a sub team, not the main team. */}
       <h2 className="text-xl font-bold text-navy mt-10">Development Team</h2>
-      <p className="text-gray-600 text-sm mt-1 max-w-3xl">Our sub team, the team who built this website. Photos coming soon, the office adds a clear photo link for each member in the dashboard.</p>
-      <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
+      <p className="text-gray-600 text-sm mt-1 max-w-3xl">Our sub team, the team who built this website.</p>
+      <div className="grid gap-3 mt-4 grid-cols-3 max-w-xl">
         {techTeam.map((m) => (
           <article key={m.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
             {m.photoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={m.photoUrl} alt={m.name} loading="lazy" className="w-full h-56 object-cover object-top bg-gray-100" />
+              <img src={m.photoUrl} alt={m.name} loading="lazy" className="w-full h-24 sm:h-28 object-cover object-center bg-gray-100" />
             ) : (
-              <div className="w-full h-56 bg-navy flex items-center justify-center">
-                <span className="text-white text-4xl font-bold" aria-hidden="true">
+              <div className="w-full h-24 sm:h-28 bg-navy flex items-center justify-center">
+                <span className="text-white text-2xl font-bold" aria-hidden="true">
                   {m.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
                 </span>
               </div>
             )}
-            <div className="p-4">
-              <h3 className="font-bold text-navy">{m.name}</h3>
-              {m.role ? <p className="text-sm text-gray-600 mt-1">{m.role}</p> : null}
+            <div className="p-2 sm:p-3">
+              <h3 className="font-bold text-navy text-sm">{m.name}</h3>
+              {m.role ? <p className="text-xs text-gray-600 mt-0.5">{m.role}</p> : null}
               {m.linkedinUrl ? (
-                <p className="text-sm mt-2">
+                <p className="text-xs mt-1.5">
                   <a href={m.linkedinUrl} target="_blank" rel="noopener" className="text-anngan-dark font-semibold underline">LinkedIn profile</a>
                 </p>
               ) : null}

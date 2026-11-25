@@ -87,7 +87,9 @@ export const DEFAULT_ABOUT_STORY =
   "ANNGAN.COM gives customers top-tier real estate solutions under one roof. We work every day to be Pakistan's trusted source for real estate.\n\nOur landmark projects are MGH Pakistan at Mangla, Kashmir Modern City and Global Homes Lahore.";
 // Our Team default (user order 2026-11-25, from the old anngan.com
 // /about-us "Meet our Team", Leadership): the MAIN team, in this order.
-// Names and roles exactly as on the old site, nothing invented.
+// Names exactly as on the old site, nothing invented. Role for
+// Cheema is "Chairman and Chief Executive Officer" (user order
+// 2026-11-26), not "CEO" only.
 // Photos are real: Cheema reuses the repo CEO portrait, cropped to
 // a 16:9 team-card frame as ceo-team.jpg (560x315, from ceo-flat.jpg
 // x=246..806, y=0..315, full face and shoulders). ceo-portrait-v2.jpg
@@ -100,7 +102,7 @@ export const DEFAULT_ABOUT_STORY =
 // Hammad Kiyani, Head Of Construction, who is NOT included: the user
 // named only these 3 for the main team.
 export const DEFAULT_TEAM: TeamMember[] = [
-  { id: "team-cheema", name: "M. Mahmood Cheema", role: "CEO", photoUrl: "/img/ceo-team.jpg" },
+  { id: "team-cheema", name: "M. Mahmood Cheema", role: "Chairman and Chief Executive Officer", photoUrl: "/img/ceo-team.jpg" },
   { id: "team-talha", name: "M. Talha Mahmood", role: "Director Call Center", photoUrl: "/img/team-talha.jpg" },
   { id: "team-taha", name: "M. Taha Mahmood", role: "Head Of Administration", photoUrl: "/img/team-taha.jpg" },
 ];
@@ -108,20 +110,30 @@ export const DEFAULT_TEAM: TeamMember[] = [
 // this website. LinkedIn would not open for a read (profile pages
 // return 429/999 and the authwall, tried 25 Nov 2026), so NO photo
 // could be taken from LinkedIn and no role is claimed from LinkedIn.
-// Photos are clean initials monograms until the user sends a clear
-// photo; no stock or AI face is used. Roles use only facts from the
-// user's own records: Abdur Rehman is a B.S. Computer Science
-// undergrad at Lahore Garrison University and a Python Programming
-// Intern at Decode Labs; M. Bilal Shah Gillani is an AI Championship
-// teammate (SABZ, explains the brain); Muhammad Daud Ali Lashari is
-// founder of Zepra Tech and an entrepreneur and hands-on digital
-// marketer, verified from his public LinkedIn by the main agent on
-// 25 Nov 2026. The office can change name, role, photo link and
-// LinkedIn link for any member in /admin, About and team.
+// REAL PHOTOS 26 Nov 2026: the user sent the 3 photos himself, all
+// rotated 90 degrees sideways, rotated upright and cropped to clean
+// head-and-shoulders portraits 1000x1250 in public/img/team/:
+// team-malik-abdur-rehman.jpg (striped shirt), team-m-bilal-shah.jpg
+// (grey Audi quattro sweatshirt), team-muhammad-daud-ali-lashari.jpg
+// (checkered shirt at the SABZ standee). No stock or AI face is used.
+// CARD CROPS 26 Nov 2026: the Development Team cards show a short
+// wide photo box (h-28), and the 1000x1250 portraits with object-top
+// showed only the wall above Daud's head, his face cut off. So each
+// portrait also has a face-centred 1000x620 band, *-card.jpg, which
+// is what the cards actually use. The 1000x1250 originals stay in
+// public/img/team/ unreferenced, never deleted without his say-so.
+// Roles use only facts from the user's own records: Abdur Rehman is
+// a B.S. Computer Science undergrad at Lahore Garrison University and
+// a Python Programming Intern at Decode Labs; M. Bilal Shah Gillani
+// is an AI Championship teammate (SABZ, explains the brain); Muhammad
+// Daud Ali Lashari is founder of Zepra Tech and an entrepreneur and
+// hands-on digital marketer, verified from his public LinkedIn by the
+// main agent on 25 Nov 2026. The office can change name, role, photo
+// link and LinkedIn link for any member in /admin, About and team.
 export const DEFAULT_TECH_TEAM: TeamMember[] = [
-  { id: "tech-abdur-rehman", name: "Malik Abdur Rehman", role: "Python Programming Intern, Decode Labs", linkedinUrl: "https://www.linkedin.com/in/malik-abdur-rehman-9b4228358/" },
-  { id: "tech-bilal-shah", name: "M. Bilal Shah", role: "AI Championship Team Member, SABZ", linkedinUrl: "https://www.linkedin.com/in/m-bilal-shah-3a7980220/" },
-  { id: "tech-daud-lashari", name: "Muhammad Daud Ali Lashari", role: "Founder, Zepra Tech", linkedinUrl: "https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/" },
+  { id: "tech-abdur-rehman", name: "Malik Abdur Rehman", role: "Python Programming Intern, Decode Labs", photoUrl: "/img/team/team-malik-abdur-rehman-card.jpg", linkedinUrl: "https://www.linkedin.com/in/malik-abdur-rehman-9b4228358/" },
+  { id: "tech-bilal-shah", name: "M. Bilal Shah", role: "AI Championship Team Member, SABZ", photoUrl: "/img/team/team-m-bilal-shah-card.jpg", linkedinUrl: "https://www.linkedin.com/in/m-bilal-shah-3a7980220/" },
+  { id: "tech-daud-lashari", name: "Muhammad Daud Ali Lashari", role: "Founder, Zepra Tech", photoUrl: "/img/team/team-muhammad-daud-ali-lashari-card.jpg", linkedinUrl: "https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/" },
 ];
 // FULLY EDITABLE DASHBOARD 25 Nov 2026 (user order: the whole website
 // editable from /admin, no developer needed afterwards). Every text,

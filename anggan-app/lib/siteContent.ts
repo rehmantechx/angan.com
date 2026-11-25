@@ -295,6 +295,37 @@ function cleanHeadings(v: unknown): HomeHeadings {  const d = DEFAULT_HOME_HEADI
   return { browseCities: t("browseCities"), featured: t("featured"), societies: t("societies"), partnerAgencies: t("partnerAgencies"), ourProjects: t("ourProjects"), whoIsAnngan: t("whoIsAnngan") };
 }
 
+// TEAM MIGRATION 26 Nov 2026: the office saved the team once, so
+// the stored settings/office document still lists Cheema as "CEO"
+// and the Development Team with no photos. The seed defaults alone
+// cannot change them, because a stored list wins over the defaults.
+// A stored member keeps its own name and any photo the office set,
+// but a missing photo is filled from the matching seed member, and
+// a stored "CEO" role for team-cheema becomes "Chairman and Chief
+// Executive Officer" (user order 26 Nov 2026). Any other stored
+// member (an office customisation) is kept exactly as stored.
+// CARD CROPS 26 Nov 2026: a stored Development Team photo pointing
+// at the 1000x1250 portrait is moved to the matching face-centred
+// *-card.jpg, because the short wide card box cropped the portrait
+// so badly Daud's face did not show at all.
+const TECH_CARD_PHOTO: Record<string, string> = {
+  "/img/team/team-malik-abdur-rehman.jpg": "/img/team/team-malik-abdur-rehman-card.jpg",
+  "/img/team/team-m-bilal-shah.jpg": "/img/team/team-m-bilal-shah-card.jpg",
+  "/img/team/team-muhammad-daud-ali-lashari.jpg": "/img/team/team-muhammad-daud-ali-lashari-card.jpg",
+};
+function mergeTeamWithSeed(stored: TeamMember[], seed: TeamMember[]): TeamMember[] {
+  return stored.map((m) => {
+    const s = seed.find((x) => x.id === m.id);
+    if (!s) return m;
+    const photoUrl = TECH_CARD_PHOTO[(m.photoUrl || "").trim()] || m.photoUrl || s.photoUrl;
+    return {
+      ...m,
+      role: m.id === "team-cheema" && m.role.trim() === "CEO" ? "Chairman and Chief Executive Officer" : m.role,
+      photoUrl,
+    };
+  });
+}
+
 export function siteContentFromSettings(s: OfficeSettings): SiteContent {
   const heroSlides = cleanSlides(s.heroSlides);
   const bannerImages = cleanSlides(s.bannerImages);
@@ -324,9 +355,11 @@ export function siteContentFromSettings(s: OfficeSettings): SiteContent {
     aboutStory: (s.aboutStory || "").trim() || DEFAULT_ABOUT_STORY,
     // MAIN TEAM 25 Nov 2026: same fallback as the Tech Team, a stored
     // empty team list (saved when Our Team was empty) must not hide
-    // the main team defaults. Any stored non-empty list wins.
-    team: team.length > 0 ? team : DEFAULT_TEAM,
-    techTeam: techTeam.length > 0 ? techTeam : DEFAULT_TECH_TEAM,
+    // the main team defaults. Any stored non-empty list wins, with
+    // the 26 Nov 2026 team migration applied (photos filled, "CEO"
+    // becomes "Chairman and Chief Executive Officer").
+    team: team.length > 0 ? mergeTeamWithSeed(team, DEFAULT_TEAM) : DEFAULT_TEAM,
+    techTeam: techTeam.length > 0 ? mergeTeamWithSeed(techTeam, DEFAULT_TECH_TEAM) : DEFAULT_TECH_TEAM,
     ceoPhoto: (s.ceoPhoto || "").trim(),
     socialLinks: socialLinks.length > 0 ? socialLinks : DEFAULT_SOCIAL_LINKS,
     footerAbout: (s.footerAbout || "").trim() || DEFAULT_FOOTER_ABOUT,

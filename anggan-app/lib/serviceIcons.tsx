@@ -29,14 +29,8 @@ export function ServiceIcon({ id, size = 44 }: { id: string; size?: number }) {
 }
 
 // Short lines only, shortened from the service's own note, no new facts.
-export const SERVICE_SHORT: Record<string, string> = {
-  "service-1": "Custom coded property websites, mobile first, built to load fast.",
-  "service-2": "Campaigns and content that bring enquiries to your phone.",
-  "service-3": "Search work so buyers on Google find your real listings.",
-  "service-4": "Clear pages and project write-ups in plain words.",
-  "service-5": "Software built around how your office actually works.",
-  "service-6": "Plot, file and booking management for housing projects.",
-  "service-7": "Every lead tracked, first call to closing, none lost.",
-  "service-8": "Staff records, attendance, leave and payroll in one place.",
-  "service-9": "One dashboard for tasks, approvals and reporting.",
-};
+// SERVICE_SHORT was deleted 26 Nov 2026: it held shortened copies of
+// the service notes and /services rendered it instead of the saved
+// note, so an office edit in /admin saved fine but never showed on
+// the public list. The live note (seed default, office-editable) is
+// the one text now.
