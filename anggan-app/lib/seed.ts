@@ -77,9 +77,25 @@ export const DEFAULT_BANNER_IMAGES: HeroSlide[] = [
 // No new claims added.
 export const DEFAULT_ABOUT_STORY =
   "ANNGAN.COM gives customers top-tier real estate solutions under one roof. We work every day to be Pakistan's trusted source for real estate.\n\nOur landmark projects are MGH Pakistan at Mangla, Kashmir Modern City and Global Homes Lahore.";
-// Our Team default: empty on purpose. The user will tell the team
-// later. No names, roles or photos are invented here.
-export const DEFAULT_TEAM: TeamMember[] = [];
+// Our Team default (user order 2026-11-25, from the old anngan.com
+// /about-us "Meet our Team", Leadership): the MAIN team, in this order.
+// Names and roles exactly as on the old site, nothing invented.
+// Photos are real: Cheema reuses the repo CEO portrait, cropped to
+// a 16:9 team-card frame as ceo-team.jpg (560x315, from ceo-flat.jpg
+// x=246..806, y=0..315, full face and shoulders). ceo-portrait-v2.jpg
+// is a tall headshot and does NOT fit the wide card frame, it cropped
+// to a forehead close-up, so it is not used here. Talha and Taha are
+// anngan.com/wp-content/uploads/2022/12/Sir-Talha.jpg (1928x1928)
+// and Sir-Taha-scaled.jpg (2560x2560), read by eye, sharp studio
+// portraits, white background, no baked-in text, saved in the repo as
+// team-talha.jpg and team-taha.jpg, 800x800. The old site also lists
+// Hammad Kiyani, Head Of Construction, who is NOT included: the user
+// named only these 3 for the main team.
+export const DEFAULT_TEAM: TeamMember[] = [
+  { id: "team-cheema", name: "M. Mahmood Cheema", role: "CEO", photoUrl: "/img/ceo-team.jpg" },
+  { id: "team-talha", name: "M. Talha Mahmood", role: "Director Call Center", photoUrl: "/img/team-talha.jpg" },
+  { id: "team-taha", name: "M. Taha Mahmood", role: "Head Of Administration", photoUrl: "/img/team-taha.jpg" },
+];
 // Tech Team default (user order 2026-11-25): the 3 people who built
 // this website. LinkedIn would not open for a read (profile pages
 // return 429/999 and the authwall, tried 25 Nov 2026), so NO photo

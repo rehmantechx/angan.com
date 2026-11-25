@@ -1,12 +1,14 @@
-// About page. Client component: Our Story, Our Team, Tech Team and
-// the CEO photo come from the admin settings in /admin (About and
-// team), falling back to the built-in text until the office saves its
-// own. Our Team starts empty on purpose: the user will tell the team
-// later, so no names, roles or photos are invented here. Tech Team
-// is the 3 people who built this website (user order 2026-11-25),
-// with monogram photos until the user sends a clear photo. CEO
-// portrait (ceo-flat.jpg), stats 7/12/13, the 6 real YouTube videos
-// and the FAQ are unchanged.
+// About page. Client component: Our Story, Our Team, Development
+// Team and the CEO photo come from the admin settings in /admin
+// (About and team), falling back to the built-in text until the office
+// saves its own. Our Team is the MAIN team, 3 people from the old
+// anngan.com/about-us (user order 2026-11-25): M. Mahmood Cheema
+// CEO, M. Talha Mahmood Director Call Center, M. Taha Mahmood Head
+// Of Administration, with real photos from the old site. Development
+// Team is the SUB team, the 3 people who built this website (user
+// order 2026-11-25), with monogram photos until the user sends a
+// clear photo. CEO portrait (ceo-flat.jpg), stats 7/12/13, the 6 real
+// YouTube videos and the FAQ are unchanged.
 // The Mangla lake / MGH main project image section and the What We Do
 // section were removed on the client demand of 2026-11-25. The Files
 // card was restored as its own section on 25 Nov 2026: it was removed
@@ -118,6 +120,7 @@ export default function AboutPage() {
       </div>
 
       <h2 className="text-xl font-bold text-navy mt-10">Our Team</h2>
+      <p className="text-gray-600 text-sm mt-1 max-w-3xl">Our main team, the leadership of Anngan.</p>
       {team.length === 0 ? (
         <p className="mt-3 text-sm text-gray-600 border border-gray-200 rounded-lg p-4 bg-white max-w-3xl">
           Our team members will be added here. The office adds them in the dashboard, under About and team.
@@ -145,18 +148,19 @@ export default function AboutPage() {
         </div>
       )}
 
-      {/* TECH TEAM 25 Nov 2026 (user order): the team who built this
-          website, in the old anngan.com/about-us "Meet our Team"
-          style, photo card with name and role, plus a link to their
-          LinkedIn profile. LinkedIn would not open for a read
-          (429/999 and the authwall), so no photo could be taken from
-          there: cards show a clean initials monogram until the user
-          sends a clear photo. No stock or AI face is used, and no
-          role is invented: roles use only verified facts from the
-          user's own records, and the office can change name, role,
-          photo link and LinkedIn link in /admin, About and team. */}
-      <h2 className="text-xl font-bold text-navy mt-10">Meet our Tech Team</h2>
-      <p className="text-gray-600 text-sm mt-1 max-w-3xl">The team who built this website. Photos coming soon, the office adds a clear photo link for each member in the dashboard.</p>
+      {/* DEVELOPMENT TEAM 25 Nov 2026 (user order): the team who built
+          this website, a SUB team below the main team, in the old
+          anngan.com/about-us "Meet our Team" style, photo card with
+          name and role, plus a link to their LinkedIn profile.
+          LinkedIn would not open for a read (429/999 and the
+          authwall), so no photo could be taken from there: cards show
+          a clean initials monogram until the user sends a clear photo.
+          No stock or AI face is used, and no role is invented: roles
+          use only verified facts from the user's own records, and the
+          office can change name, role, photo link and LinkedIn link
+          in /admin, About and team. */}
+      <h2 className="text-xl font-bold text-navy mt-10">Development Team</h2>
+      <p className="text-gray-600 text-sm mt-1 max-w-3xl">Our sub team, the team who built this website. Photos coming soon, the office adds a clear photo link for each member in the dashboard.</p>
       <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
         {techTeam.map((m) => (
           <article key={m.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">

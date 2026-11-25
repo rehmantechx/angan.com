@@ -83,6 +83,7 @@ export function siteContentFromSettings(s: OfficeSettings): SiteContent {
   const heroSlides = cleanSlides(s.heroSlides);
   const bannerImages = cleanSlides(s.bannerImages);
   const techTeam = cleanTeam(s.techTeam);
+  const team = cleanTeam(s.team);
   return {
     heroTitle: (s.heroTitle || "").trim() || DEFAULT_HERO_TITLE,
     heroTagline: (s.heroTagline || "").trim() || DEFAULT_HERO_TAGLINE,
@@ -98,7 +99,10 @@ export function siteContentFromSettings(s: OfficeSettings): SiteContent {
     heroSlides: heroSlides.length > 0 ? migrateHeroSlides(heroSlides) : DEFAULT_HERO_SLIDES,
     bannerImages: bannerImages.length > 0 ? bannerImages : DEFAULT_BANNER_IMAGES,
     aboutStory: (s.aboutStory || "").trim() || DEFAULT_ABOUT_STORY,
-    team: cleanTeam(s.team),
+    // MAIN TEAM 25 Nov 2026: same fallback as the Tech Team, a stored
+    // empty team list (saved when Our Team was empty) must not hide
+    // the main team defaults. Any stored non-empty list wins.
+    team: team.length > 0 ? team : DEFAULT_TEAM,
     techTeam: techTeam.length > 0 ? techTeam : DEFAULT_TECH_TEAM,
     ceoPhoto: (s.ceoPhoto || "").trim(),
   };

@@ -801,7 +801,7 @@ export default function AdminPage() {
       {tab === "About and team" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">About and team</h2>
-          <p className="text-sm text-gray-600">Changes here show on the About page straight away, no code change, no redeploy. Our Team starts empty: add a member only when the office gives the real name, role and photo link. Nothing is invented here. Tech Team is the team who built this website, with a LinkedIn link per member. CEO photo: leave empty to keep the built-in photos, or set a photo link to change the CEO photo on home and About.</p>
+          <p className="text-sm text-gray-600">Changes here show on the About page straight away, no code change, no redeploy. Our Team is the main team: M. Mahmood Cheema (CEO), M. Talha Mahmood (Director Call Center), M. Taha Mahmood (Head Of Administration), with real photos from the old website. Change a name, role or photo link only when the office gives the real one. Nothing is invented here. Development Team is the sub team who built this website, with a LinkedIn link per member. CEO photo: leave empty to keep the built-in photos, or set a photo link to change the CEO photo on home and About.</p>
           <AboutForm
             initial={siteContent}
             canEdit={canEdit}
@@ -1190,8 +1190,8 @@ function AboutForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent;
         ) : null}
       </div>
       <div>
-        <p className="font-semibold text-sm">Tech Team ({techTeam.length})</p>
-        <p className="text-sm text-gray-600 mt-1">The team who built this website, shown on the About page under Meet our Tech Team. Photos are clear photo links only, no blurry photo, no stock or AI face; a member with no photo shows a clean initials monogram until the office adds one.</p>
+        <p className="font-semibold text-sm">Development Team ({techTeam.length})</p>
+        <p className="text-sm text-gray-600 mt-1">The sub team who built this website, shown on the About page under Development Team. Photos are clear photo links only, no blurry photo, no stock or AI face; a member with no photo shows a clean initials monogram until the office adds one.</p>
         <div className="grid gap-2 mt-2">
           {techTeam.map((m, i) => (
             <div key={m.id} className="grid gap-2 border rounded p-3 sm:grid-cols-2 items-end">
