@@ -1,0 +1,23 @@
+// Firebase Storage rules for photo uploads from /admin.
+// NOT LIVE YET: Storage is not enabled on project anngan-7a3ff, and
+// since 3 Feb 2026 Cloud Storage needs the Blaze plan (a card on
+// file). Do NOT enable Blaze without the owner's explicit approval.
+// When Blaze is approved: Firebase console, Storage, Get started,
+// then publish this file in the Rules tab. Until then uploads in
+// /admin show the blocked message and the URL field stays the way
+// to set a photo.
+// Rules: anyone can read a photo (the public site shows them), only
+// the two office accounts (ceo@anngan.com, seo@anngan.com) can
+// upload or delete, and only image files under 5 MB.
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.auth.token.email in ['ceo@anngan.com', 'seo@anngan.com']
+        && request.resource.contentType.matches('image/.*')
+        && request.resource.size < 5 * 1024 * 1024;
+    }
+  }
+}

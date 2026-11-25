@@ -1,12 +1,17 @@
+"use client";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { SERVICES } from "../../../lib/seed";
+import { SERVICES, Service } from "../../../lib/seed";
+import { getServices, getSettings } from "../../../lib/db";
+import { SETTINGS, OfficeSettings } from "../../../lib/seed";
 import { SERVICE_DETAILS } from "../../../lib/serviceDetails";
 import { ServiceIcon } from "../../../lib/serviceIcons";
 
-export function generateStaticParams() {
-  return SERVICES.map((s) => ({ id: s.id }));
-}
+// Service detail, now from the live service (editable in /admin,
+// Services). The structured facts (included items, steps, FAQs)
+// stay from the verified serviceDetails, the office can add its own
+// long text in the details field, shown as an extra section.
 
 function SectionHead({ title }: { title: string }) {
   return (
@@ -18,13 +23,19 @@ function SectionHead({ title }: { title: string }) {
 }
 
 export default function ServicePage({ params }: { params: { id: string } }) {
-  const idx = SERVICES.findIndex((s) => s.id === params.id);
-  if (idx < 0) notFound();
-  const service = SERVICES[idx];
+  const [service, setService] = useState<Service | undefined>(SERVICES.find((s) => s.id === params.id) || SERVICES.find((s) => s.page === params.id));
+  const [settings, setSettings] = useState<OfficeSettings>(SETTINGS);
+  useEffect(() => { getServices().then((rows) => { const r = rows.find((x) => x.id === params.id) || rows.find((x) => x.page === params.id); if (r) setService(r); }).catch(() => {}); getSettings().then((x) => setSettings(x)).catch(() => {}); }, [params.id]);
+  const telHref = "tel:+" + settings.phone.replace(/[^0-9]/g, "").replace(/^0+/, "");
+  const waHref = "https://wa.me/" + settings.whatsapp.replace(/[^0-9]/g, "");
+  const idx = SERVICES.findIndex((s) => s.id === (service ? service.id : params.id));
+  if (!service) notFound();
   const d = SERVICE_DETAILS[service.id];
-  if (!d) notFound();
-  const num = String(idx + 1).padStart(2, "0");
-  const stepCols = d.steps.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-5";
+  // A service added in /admin has no structured details yet: it shows
+  // its name, short note, office text and the Call and WhatsApp band,
+  // instead of a 404. The 9 original services keep their full detail.
+  const num = idx >= 0 ? String(idx + 1).padStart(2, "0") : "–";
+  const stepCols = d && d.steps.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-5";
 
   return (
     <div>
@@ -46,15 +57,15 @@ export default function ServicePage({ params }: { params: { id: string } }) {
               Angan Tech &middot; {num} / 09
             </p>
             <h1 className="text-3xl sm:text-4xl font-bold text-white mt-1 leading-tight">{service.name}</h1>
-            <p className="text-blue-100 mt-2 leading-relaxed max-w-[62ch]">{d.scope}</p>
+            <p className="text-blue-100 mt-2 leading-relaxed max-w-[62ch]">{d ? d.scope : service.note}</p>
             <p className="text-blue-200 text-sm mt-2">
               Angan Tech, Anngan Technologies Pvt. Ltd, Paragon City, Lahore.
             </p>
             <div className="flex gap-2 mt-5 flex-wrap">
-              <a href="tel:+923041111698" className="btn btn-navy">
-                Call +92 304 1111 698
+              <a href={telHref} className="btn btn-navy">
+                Call {settings.phone}
               </a>
-              <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green">
+              <a href={waHref} target="_blank" rel="noopener" className="btn btn-green">
                 WhatsApp
               </a>
             </div>
@@ -62,6 +73,8 @@ export default function ServicePage({ params }: { params: { id: string } }) {
         </div>
       </section>
 
+      {d ? (
+      <>
       {/* What is included: numbered grid, 1 short line per item. */}
       <SectionHead title="What is included" />
       <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -117,6 +130,14 @@ export default function ServicePage({ params }: { params: { id: string } }) {
         </section>
       </div>
 
+      </>
+      ) : null}
+      {service.details && (
+        <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-5 mt-6">
+          <h2 className="font-bold text-navy text-lg">From the office</h2>
+          <p className="text-sm text-gray-700 mt-2 leading-relaxed whitespace-pre-line">{service.details}</p>
+        </section>
+      )}
       {/* Closing Call and WhatsApp bar. */}
       <section className="mt-10 rounded-xl bg-navy px-5 py-6 sm:px-8 flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -124,10 +145,10 @@ export default function ServicePage({ params }: { params: { id: string } }) {
           <p className="text-blue-100 text-sm mt-1">Call or WhatsApp, the office answers.</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <a href="tel:+923041111698" className="btn btn-navy">
-            Call +92 304 1111 698
+          <a href={telHref} className="btn btn-navy">
+            Call {settings.phone}
           </a>
-          <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green">
+          <a href={waHref} target="_blank" rel="noopener" className="btn btn-green">
             WhatsApp
           </a>
         </div>

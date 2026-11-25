@@ -1,7 +1,8 @@
 "use client";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { getPublicListings } from "../../lib/db";
+import { getPublicListings, getSettings } from "../../lib/db";
+import { SETTINGS, OfficeSettings } from "../../lib/seed";
 import { Listing, LISTINGS } from "../../lib/seed";
 import { ListingCard } from "../../components/ListingCard";
 import { matchesKey, budgetOK } from "../../lib/search";
@@ -35,6 +36,8 @@ function PropertiesPage() {
   // showed "0 real properties" while Firestore was still loading or
   // empty, even though home showed 12.
   const [listings, setListings] = useState<Listing[]>(LISTINGS.filter((l) => l.liveStatus === "live" && l.visible !== false));
+  const [settings, setSettings] = useState<OfficeSettings>(SETTINGS);
+  useEffect(() => { getSettings().then((x) => setSettings(x)).catch(() => {}); }, []);
   const params = useSearchParams();
   const [q, setQ] = useState("");
   const [city, setCity] = useState("");
@@ -209,7 +212,7 @@ function PropertiesPage() {
 
       <p className="mt-4 text-sm font-semibold">
         {results.length === 0
-          ? "No exact match on anngan.com for that search. The nearest real listings are in Lahore. Call +92 304 1111 698 to ask."
+          ? "No exact match on anngan.com for that search. The nearest real listings are in Lahore. Call " + settings.phone + " to ask."
           : `Found ${results.length} ${results.length === 1 ? "listing" : "listings"}.`}
         {city === "Karachi" && results.length === 1 ? " Karachi has only 1 real listing on anngan.com, the Shamsi Society flat." : ""}
       </p>

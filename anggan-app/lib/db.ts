@@ -442,6 +442,40 @@ export async function getServices(): Promise<Service[]> {
   return rows && rows.length > 0 ? rows : loadLocal().services;
 }
 
+export async function saveService(s: Service): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
+  const db = await getDb();
+  if (db) {
+    const { doc, setDoc } = await fs();
+    const { id, ...rest } = s;
+    await withTimeout(setDoc(doc(db, "services", id), rest, { merge: true }), WRITE_TIMEOUT_MS, "Saving the service");
+    return;
+  }
+  const store = loadLocal();
+  const i = store.services.findIndex((x) => x.id === s.id);
+  if (i >= 0) store.services[i] = s;
+  else store.services.unshift(s);
+  saveLocal(store);
+}
+
+export async function saveBlog(b: Blog): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
+  const db = await getDb();
+  if (db) {
+    const { doc, setDoc } = await fs();
+    const { id, ...rest } = b;
+    await withTimeout(setDoc(doc(db, "blogs", id), rest, { merge: true }), WRITE_TIMEOUT_MS, "Saving the blog");
+    return;
+  }
+  const store = loadLocal();
+  const i = store.blogs.findIndex((x) => x.id === b.id);
+  if (i >= 0) store.blogs[i] = b;
+  else store.blogs.unshift(b);
+  saveLocal(store);
+}
+
 // ---- Agencies ----
 export async function saveAgency(a: Agency): Promise<void> {
   if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");

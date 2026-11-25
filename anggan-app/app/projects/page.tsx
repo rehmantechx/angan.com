@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getProjects } from "../../lib/db";
+import { getProjects, getSettings } from "../../lib/db";
+import { SETTINGS, OfficeSettings } from "../../lib/seed";
 import { projectCardSrc } from "../../lib/siteContent";
 import { Project, PROJECTS } from "../../lib/seed";
 import { ProjectFallback } from "../../components/ProjectFallback";
@@ -10,14 +11,18 @@ import { StatusBadge } from "../../components/StatusBadge";
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>(PROJECTS);
+  const [settings, setSettings] = useState<OfficeSettings>(SETTINGS);
   useEffect(() => {
     getProjects().then((rows) => { if (rows.length > 0) setProjects(rows); });
+    getSettings().then((x) => setSettings(x)).catch(() => {});
   }, []);
+  const telHref = "tel:+" + settings.phone.replace(/[^0-9]/g, "").replace(/^0+/, "");
+  const waHref = "https://wa.me/" + settings.whatsapp.replace(/[^0-9]/g, "");
 
   return (
     <div>
       <h1 className="text-3xl font-bold text-navy">Projects</h1>
-      <p className="text-gray-600 mt-1">7 real projects. Call +92 304 1111 698 for files, prices and payment plans.</p>
+      <p className="text-gray-600 mt-1">{projects.length} real projects. Call {settings.phone} for files, prices and payment plans.</p>
       {/* PARITY 24 Nov 2026, Section 2: flex flex-wrap
           justify-center, so the 7th card (Kashmir Modern City) is
           centred on the last row instead of a lone orphan. */}
@@ -52,8 +57,8 @@ export default function ProjectsPage() {
                   View first, then Call (blue), then WhatsApp (green). */}
               <div className="flex gap-2 mt-auto pt-3 flex-wrap">
                 <Link href={`/projects/${p.id}`} className="btn btn-outline-navy text-sm">View project</Link>
-                <a href="tel:+923041111698" className="btn btn-navy text-sm">Call</a>
-                <a href="https://wa.me/923041111698" target="_blank" rel="noopener" className="btn btn-green text-sm">WhatsApp</a>
+                <a href={telHref} className="btn btn-navy text-sm">Call</a>
+                <a href={waHref} target="_blank" rel="noopener" className="btn btn-green text-sm">WhatsApp</a>
               </div>
             </div>
           </article>

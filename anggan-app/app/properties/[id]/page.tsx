@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LISTINGS } from "../../../lib/seed";
-import { getListingById } from "../../../lib/db";
+import { getListingById, getSettings } from "../../../lib/db";
+import { SETTINGS, OfficeSettings } from "../../../lib/seed";
 import { EnquiryForm } from "../../../components/EnquiryForm";
 import { Lightbox } from "../../../components/Lightbox";
 import { formatPrice, whatsappFor } from "../../../lib/formatPrice";
@@ -13,6 +14,8 @@ import type { Listing } from "../../../lib/seed";
 export default function PropertyPage({ params }: { params: { id: string } }) {
   const [l, setL] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<OfficeSettings>(SETTINGS);
+  useEffect(() => { getSettings().then((s) => setSettings(s)).catch(() => {}); }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,8 +93,8 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
           </dl>
           <div className="flex gap-2 mt-4 flex-wrap">
             {/* PHN-01: Call is blue everywhere, WhatsApp green. */}
-            <a href="tel:+923041111698" className="btn btn-navy">Call +92 304 1111 698</a>
-            <a href={whatsappFor(l.title, l.city, formatPrice(l.n, l.status))} target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
+            <a href={"tel:+" + settings.phone.replace(/[^0-9]/g, "").replace(/^0+/, "")} className="btn btn-navy">Call {settings.phone}</a>
+            <a href={whatsappFor(l.title, l.city, formatPrice(l.n, l.status), settings.whatsapp)} target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
           </div>
           {others.length > 0 ? (
             <div className="mt-8">

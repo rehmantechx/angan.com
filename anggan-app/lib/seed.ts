@@ -7,10 +7,10 @@
 // which is not among the 12 real listings and is not included here.
 export type Listing = { id: string; title: string; price: string; n: number; beds: number; baths: number; size: string; city: string; loc: string; type: string; status: "sale" | "rent"; img: string; badge: string; url: string; liveStatus: "live" | "pending" | "hidden"; visible: boolean; createdAt: string; submittedBy?: string };
 export type ProjectStatus = "Available" | "Coming Soon" | "Sold Out";
-export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string; cardImg?: string; status?: ProjectStatus };
+export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string; cardImg?: string; status?: ProjectStatus; details?: string };
 export type Blog = { id: string; date: string; title: string; url: string };
 export type Agency = { id: string; name: string; logo: string; logoUrl?: string; link?: string };
-export type Service = { id: string; name: string; note: string; page: string };
+export type Service = { id: string; name: string; note: string; page: string; details?: string };
 export type Enquiry = { id: string; name: string; phone: string; asked: string; how: string; stage: "New" | "Called" | "Visit" | "Deal Done"; next: string; date: string };
 export type HeroSlide = { src: string; alt: string };
 export type TeamMember = { id: string; name: string; role: string; photoUrl?: string; linkedinUrl?: string };
@@ -20,7 +20,14 @@ export type TeamMember = { id: string; name: string; role: string; photoUrl?: st
 // Storage is not enabled, so admin image fields are image-URL fields
 // only. Seed defaults below apply until the office saves its own
 // values, so the site works before any edit.
-export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string; ceoPhoto?: string; heroTitle?: string; heroTagline?: string; heroSlides?: HeroSlide[]; bannerImages?: HeroSlide[]; aboutStory?: string; team?: TeamMember[]; techTeam?: TeamMember[] };
+export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string; ceoPhoto?: string; heroTitle?: string; heroTagline?: string; heroSlides?: HeroSlide[]; bannerImages?: HeroSlide[]; aboutStory?: string; team?: TeamMember[]; techTeam?: TeamMember[]; socialLinks?: SocialLink[]; footerAbout?: string; footerCopyright?: string; cityCards?: CityCard[]; homeHeadings?: HomeHeadings; homeMghTitle?: string; homeMghText?: string; homeSocieties?: HomeSocietyChip[]; societies?: SocietyGuide[]; societiesTitle?: string; societiesIntro?: string; aboutIntro?: string; aboutVideos?: AboutVideo[]; aboutFaq?: AboutFaq[]; aboutFilesImg?: string; aboutFilesNote?: string; companies?: CompanyCard[]; contactIntro?: string; legalPrivacy?: string; legalTerms?: string; legalDisclaimer?: string };
+// "details" on Project and Service is the office's own extra text,
+// edited in /admin, shown on the project/service page under the
+// verified facts. The structured facts themselves (service included
+// items and steps, project facts, photos and galleries) stay in
+// lib/serviceDetails.ts and lib/projectDetails.ts as the verified
+// baseline copied from the real static site pages; the office adds
+// or changes the intro text here, no code change.
 // Home hero, 7 real photos already in the repo, no AI, no invented
 // photo. Order: Mangla lake, MGH Precinct 01,
 // Talwar Chowk Bahria Town, Sharda Neelum Valley, Serene Farm Houses,
@@ -115,6 +122,86 @@ export const DEFAULT_TECH_TEAM: TeamMember[] = [
   { id: "tech-bilal-shah", name: "M. Bilal Shah", role: "AI Championship Team Member, SABZ", linkedinUrl: "https://www.linkedin.com/in/m-bilal-shah-3a7980220/" },
   { id: "tech-daud-lashari", name: "Muhammad Daud Ali Lashari", role: "Founder, Zepra Tech", linkedinUrl: "https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/" },
 ];
+// FULLY EDITABLE DASHBOARD 25 Nov 2026 (user order: the whole website
+// editable from /admin, no developer needed afterwards). Every text,
+// link and picture below used to be hard-coded in a page file. It now
+// lives here as a seed default AND in the Firestore settings/office
+// document, where the office changes it in /admin. The public pages
+// read it through lib/siteContent.ts, falling back to these defaults
+// when a field is empty, so nothing breaks. No public design changed,
+// only where the words and pictures come from.
+export type SocialLink = { label: string; href: string };
+export type CityCard = { name: string; landmark: string; img: string; alt: string; href: string; kind: "listings" | "project" | "all"; sub?: string; pos?: string };
+export type SocietyGuide = { name: string; note: string; href: string; label: string; img: string; caption: string; contain: boolean };
+export type AboutVideo = { id: string; title: string; views: string; date: string };
+export type AboutFaq = { q: string; a: string };
+export type CompanyCard = { id: string; name: string; desc: string; href: string; linkLabel: string };
+export type HomeHeadings = { browseCities: string; featured: string; societies: string; partnerAgencies: string; ourProjects: string; whoIsAnngan: string };
+export type HomeSocietyChip = { name: string; img: string; href: string };
+export const DEFAULT_SOCIAL_LINKS: SocialLink[] = [
+  { label: "Facebook", href: "https://www.facebook.com/annganpk" },
+  { label: "X", href: "https://twitter.com/annganpk" },
+  { label: "LinkedIn", href: "https://pk.linkedin.com/company/annganpk" },
+  { label: "Instagram", href: "https://instagram.com/annganpk" },
+  { label: "YouTube", href: "https://www.youtube.com/channel/UC7lbVe_2Lfw8dzThSaAq6Aw" },
+];
+export const DEFAULT_FOOTER_ABOUT = "Pakistan's trusted real estate service provider. Projects and property in Karachi, Islamabad, Lahore and Peshawar.";
+export const DEFAULT_FOOTER_COPYRIGHT = "Copyright \u00A9 ANNGAN TECHNOLOGIES PVT. LTD. All rights reserved.";
+export const DEFAULT_HOME_HEADINGS: HomeHeadings = { browseCities: "Browse by city", featured: "Featured Properties", societies: "Societies", partnerAgencies: "Partner agencies", ourProjects: "Our projects", whoIsAnngan: "Who is Anngan?" };
+export const DEFAULT_HOME_MGH_TITLE = "MGH Zamindar File, Mangla";
+export const DEFAULT_HOME_SOCIETIES: HomeSocietyChip[] = [
+  { name: "DHA Lahore", img: "lst-dha-stunning.jpg", href: "/properties?q=DHA" },
+  { name: "Bahria Town", img: "bahria-eiffel.jpg", href: "/properties?q=Bahria" },
+  { name: "MGH Pakistan", img: "mgh-precinct-01.jpg", href: "/projects/proj-1" },
+  { name: "Kashmir Modern City", img: "kmc-02-4x3.jpg", href: "/projects/proj-7" },
+];
+export const DEFAULT_HOME_MGH_TEXT = "MGH Pakistan at Mangla is Pakistan's first and biggest natural lake view housing project, on 7KM Mangla Gaddari Road, Mangla Cantt, Jhelum. Anngan is a Platinum partner of the project.\n\nThe Zamindar File carries a 10% quota in balloting. Affidavit MGH and Serene Farm Houses in Precincts 05 and 06 are also available. File rates change with the market, call +92 304 1111 698 for today's rate.";
+export const DEFAULT_CITY_CARDS: CityCard[] = [
+  { name: "Lahore", landmark: "Badshahi Mosque", img: "city-lahore-badshahi-day.jpg", alt: "Badshahi Mosque, Lahore, in daylight", href: "/properties?city=Lahore", kind: "listings", pos: "object-top" },
+  { name: "Islamabad", landmark: "Faisal Mosque", img: "city-islamabad-faisal-day.jpg", alt: "Faisal Mosque, Islamabad, in daylight with Margalla Hills", href: "/properties?city=Islamabad", kind: "listings", pos: "object-top" },
+  { name: "Karachi", landmark: "Mazar-e-Quaid", img: "city-karachi-mazar-wide.jpg", alt: "Mazar-e-Quaid, Karachi, whole mausoleum with gardens", href: "/properties?city=Karachi", kind: "listings", pos: "object-top" },
+  { name: "Rawalpindi", landmark: "Raja Bazaar", img: "city-rawalpindi-raja-bazaar-aerial.jpg", alt: "Raja Bazaar, Rawalpindi, wide rooftop view over the bazaar, mosque minaret and dome", href: "/properties?city=Rawalpindi", kind: "listings", pos: "object-top" },
+  { name: "Multan", landmark: "Shah Rukn-e-Alam", img: "city-multan-shah-rukn-sky.jpg", alt: "Tomb of Shah Rukn-e-Alam, Multan", href: "/properties?city=Multan", kind: "listings", pos: "object-left-top" },
+  { name: "Mangla", landmark: "Mangla Dam", img: "city-mangla-dam.jpg", alt: "Mangla Dam, seen from Ramkot Fort", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan", pos: "object-top" },
+  { name: "Kashmir", landmark: "Sharda, Neelum Valley", img: "city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City", pos: "object-top" },
+  { name: "All cities", landmark: "", img: "city-all-cities-collage.jpg", alt: "All cities in daylight: Badshahi Mosque Lahore, Faisal Mosque Islamabad, Mazar-e-Quaid Karachi, Shah Rukn-e-Alam Multan", href: "/properties", kind: "all", sub: "12 homes", pos: "object-top" },
+];
+export const DEFAULT_SOCIETIES_TITLE = "Societies guide";
+export const DEFAULT_SOCIETIES_INTRO = "Guides for the societies Anngan covers.";
+export const DEFAULT_SOCIETIES: SocietyGuide[] = [
+  { name: "MGH Pakistan, Mangla", note: "Precincts 01 to 06 on Mangla Gaddari Road, Mangla Cantt, Jhelum.", href: "/projects/proj-1", label: "Open project", img: "mgh-lake-aerial.jpg", caption: "Mangla Lake, MGH Pakistan", contain: false },
+  { name: "Al-Kabir Town, Lahore", note: "China Town sits inside the Al-Kabir Town guide on anngan.com.", href: "/projects/proj-5", label: "Open China Town", img: "chinatown-bahria-sky.jpg", caption: "Bahria Sky, where China Town is located", contain: false },
+  { name: "Paragon City, Lahore", note: "Anngan head office: 57-S, 2nd Floor, Imperial Homes, Paragon City.", href: "/contact", label: "Visit us", img: "", caption: "Anngan head office, Paragon City", contain: false },
+  { name: "DHA Lahore", note: "10 Marla houses and 1 Kanal houses in the real listings on this site.", href: "/properties?q=DHA", label: "See DHA listings", img: "lst-dha-stunning.jpg", caption: "House in DHA Lahore", contain: false },
+  { name: "Bahria Town, Lahore and Rawalpindi", note: "Houses for sale and rent in Bahria Town on this site.", href: "/properties?q=Bahria", label: "See Bahria listings", img: "bahria-eiffel.jpg", caption: "Eiffel Tower, Bahria Town, Lahore", contain: false },
+  { name: "Kashmir Modern City, Mirpur", note: "Sold Out. Developer Al-Baari. Soft launch at Mirpur, 21 Dec 2022.", href: "/projects/proj-7", label: "View project", img: "kmc-01-16x10.jpg", caption: "Kashmir Modern City, Mirpur", contain: false },
+];
+export const DEFAULT_ABOUT_INTRO = "Pakistan's most trusted real estate service provider.";
+export const DEFAULT_ABOUT_VIDEOS: AboutVideo[] = [
+  { id: "McDA63SyDM0", title: "CEO Anngan briefing of MGH Pakistan", views: "81 views", date: "2 Mar 2024" },
+  { id: "LbE6iCeOn2A", title: "Affidavit File information of MGH Pakistan, CEO Mahmood Cheema", views: "288 views", date: "30 Nov 2023" },
+  { id: "UxOpwyG6YJA", title: "Zamindar File, MGH Pakistan, best property in Pakistan", views: "629 views", date: "4 Feb 2023" },
+  { id: "mYdjdXwYbjg", title: "MGH Pakistan Zamindar File, society information", views: "567 views", date: "10 Mar 2023" },
+  { id: "JJt819sUedg", title: "CEO Mahmood Cheema clarifies MGH Zamindar File notice", views: "150 views", date: "29 Jun 2024" },
+  { id: "EsdRAgr71bY", title: "CEO Mahmood Cheema visits Al-Ghani Garden Phase 7, full briefing", views: "248 views", date: "31 Jul 2026" },
+];
+export const DEFAULT_ABOUT_FAQ: AboutFaq[] = [
+  { q: "What is MGH Zamindar File?", a: "A file product of MGH Pakistan at Mangla. Call +92 304 1111 698 for today's rate." },
+  { q: "Where is the Anngan office?", a: "57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore. Phone +92 304 1111 698, email info@anngan.com." },
+  { q: "Which cities does Anngan cover?", a: "Karachi, Islamabad, Lahore and Peshawar, plus projects at Mangla, Multan and Kashmir." },
+  { q: "How do I create a listing?", a: "Use Create a Listing on this site, or call +92 304 1111 698 with the details and photos." },
+];
+export const DEFAULT_ABOUT_FILES_IMG = "/img/mgh-zamindar-file.jpg";
+export const DEFAULT_ABOUT_FILES_NOTE = "MGH Zamindar File, Affidavit MGH, Serene Farm Houses. E-STAMP allotment letter. Call for today's file rate.";
+export const DEFAULT_COMPANIES: CompanyCard[] = [
+  { id: "technologies", name: "Angan Tech", desc: "Anngan Technologies Pvt. Ltd, Lahore. Chairman and Chief Executive Officer, Muhammad Mahmood Cheema.", href: "/services", linkLabel: "Open Angan Tech" },
+  { id: "construction", name: "Anngan Construction", desc: "One of the three Anngan group companies. Ask the office about construction work.", href: "tel:+923041111698", linkLabel: "Ask the team" },
+  { id: "marketing", name: "Corporate Angle Marketing", desc: "One of the three Anngan group companies. Ask the office about marketing.", href: "tel:+923041111698", linkLabel: "Ask the team" },
+];
+export const DEFAULT_CONTACT_INTRO = "The fastest way to reach the office is WhatsApp or a call. The form below goes straight to the office dashboard.";
+export const DEFAULT_LEGAL_PRIVACY = "When you send an enquiry through this website, we collect only what you type in the form: your name, phone number, and what you asked about. We use it only to call you back about that property or project.\n\nWe do not sell your details to anyone, and we do not share them with other dealers or advertisers. Your details stay with the Anngan office.\n\nThis website does not ask for payment details, bank details, or identity documents. Never send those through the website.\n\nIf you want your enquiry deleted, call the office on +92 304 1111 698 or email info@anngan.com and we will remove it.";
+export const DEFAULT_LEGAL_TERMS = "Listings, prices, sizes and availability on this website are shown as given to us by the owner or dealer. They can change without notice. Always call the office on +92 304 1111 698 to confirm the price and availability before you visit or pay anything.\n\nFile rates for MGH Pakistan and other projects change with the market. The rate on the website is a guide only. The rate on the day you deal is the rate the office confirms on the phone.\n\nNothing on this website is a booking, a token, or a payment. No payment is taken through this website. Any payment is made only at the office, with a proper receipt.\n\nPhotos on this website are of the real property or project named, unless the card says the photo is coming soon.";
+export const DEFAULT_LEGAL_DISCLAIMER = "The information on this website is a guide to help you find a property or project. It is not a guarantee of price, size, availability, approval, or return on investment.\n\nProperty and project details can change. Before you make any decision or payment, check the documents yourself and confirm the details with the office on +92 304 1111 698.\n\nAnngan Technologies Pvt. Ltd is not responsible for decisions made only from this website without checking with the office first.";
 export const LISTINGS: Listing[] = [
   {
     "id": "karachi-shamsi",
@@ -726,5 +813,5 @@ export const SERVICES: Service[] = [
     "page": "angan-tech-corporate-management.html"
   }
 ];
-export const SETTINGS: OfficeSettings = { phone: "+92 304 1111 698", whatsapp: "923041111698", email: "info@anngan.com", address: "57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore", ceo: "Muhammad Mahmood Cheema" };
+export const SETTINGS: OfficeSettings = { phone: "+92 304 1111 698", whatsapp: "923041111698", email: "info@anngan.com", address: "57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore", ceo: "Muhammad Mahmood Cheema", socialLinks: DEFAULT_SOCIAL_LINKS, footerAbout: DEFAULT_FOOTER_ABOUT, footerCopyright: DEFAULT_FOOTER_COPYRIGHT, cityCards: DEFAULT_CITY_CARDS, homeHeadings: DEFAULT_HOME_HEADINGS, homeMghTitle: DEFAULT_HOME_MGH_TITLE, homeMghText: DEFAULT_HOME_MGH_TEXT, homeSocieties: DEFAULT_HOME_SOCIETIES, societies: DEFAULT_SOCIETIES, societiesTitle: DEFAULT_SOCIETIES_TITLE, societiesIntro: DEFAULT_SOCIETIES_INTRO, aboutIntro: DEFAULT_ABOUT_INTRO, aboutVideos: DEFAULT_ABOUT_VIDEOS, aboutFaq: DEFAULT_ABOUT_FAQ, aboutFilesImg: DEFAULT_ABOUT_FILES_IMG, aboutFilesNote: DEFAULT_ABOUT_FILES_NOTE, companies: DEFAULT_COMPANIES, contactIntro: DEFAULT_CONTACT_INTRO, legalPrivacy: DEFAULT_LEGAL_PRIVACY, legalTerms: DEFAULT_LEGAL_TERMS, legalDisclaimer: DEFAULT_LEGAL_DISCLAIMER };
 export const GRAIN_MARKET = { shops: 996, acres: 54, road: "Shujabad Road, Multan", prices: [{ size: "2 Marla", price: "Rs 56 Lac" }, { size: "3 Marla", price: "Rs 84 Lac" }, { size: "4 Marla", price: "Rs 112 Lac" }] };

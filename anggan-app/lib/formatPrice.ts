@@ -16,9 +16,9 @@ export function formatPrice(n: number, status: "sale" | "rent"): string {
   return "Rs " + n.toLocaleString("en-PK");
 }
 
-export function whatsappFor(title: string, city: string, price: string): string {
+export function whatsappFor(title: string, city: string, price: string, wa = "923041111698"): string {
   return (
-    "https://wa.me/923041111698?text=" +
+    "https://wa.me/" + wa.replace(/[^0-9]/g, "") + "?text=" +
     encodeURIComponent("Hi Anngan, I am asking about " + title + ", " + city + ", " + price + ".")
   );
 }

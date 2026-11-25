@@ -7,7 +7,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PROJECTS, GRAIN_MARKET, Project } from "../../../lib/seed";
-import { getProjects } from "../../../lib/db";
+import { getProjects, getSettings } from "../../../lib/db";
+import { SETTINGS, OfficeSettings } from "../../../lib/seed";
 import { PROJECT_DETAILS } from "../../../lib/projectDetails";
 import { EnquiryForm } from "../../../components/EnquiryForm";
 import { ProjectFallback } from "../../../components/ProjectFallback";
@@ -17,7 +18,9 @@ import { StatusBadge } from "../../../components/StatusBadge";
 export default function ProjectPage({ params }: { params: { id: string } }) {
   const seedProject = PROJECTS.find((p) => p.id === params.id);
   const [project, setProject] = useState<Project | undefined>(seedProject);
+  const [settings, setSettings] = useState<OfficeSettings>(SETTINGS);
   useEffect(() => {
+    getSettings().then((x) => setSettings(x)).catch(() => {});
     getProjects().then((rows) => {
       const live = rows.find((r) => r.id === params.id);
       if (live) setProject(live);
@@ -40,7 +43,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     return (
       <div>
         <h1 className="text-3xl font-bold text-navy">{p.name}</h1>
-        <p className="text-gray-600 mt-2">Details for this project are not published yet. Call +92 304 1111 698.</p>
+        <p className="text-gray-600 mt-2">Details for this project are not published yet. Call {settings.phone}.</p>
         <p className="mt-4">
           <Link href="/projects" className="text-anngan-dark font-semibold underline">Back to all projects</Link>
         </p>
@@ -80,6 +83,13 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         </p>
       ) : null}
       <p className="mt-3">{d.intro}</p>
+
+      {p.details && (
+        <section className="rounded-xl border border-gray-200 bg-white shadow-sm p-5 mt-6">
+          <h2 className="font-bold text-navy text-lg">From the office</h2>
+          <p className="text-sm text-gray-700 mt-2 leading-relaxed whitespace-pre-line">{p.details}</p>
+        </section>
+      )}
 
       <ProjectGallery galleryPhotos={galleryPhotos} documentPhotos={documentPhotos} />
 
@@ -186,11 +196,11 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
             <h2 className="font-bold text-navy text-lg">Talk to the office about {p.name}</h2>
             <div className="flex gap-2 mt-3 flex-wrap">
-              <a href="tel:+923041111698" className="bg-[#004274] text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">
-                Call +92 304 1111 698
+              <a href={"tel:+" + settings.phone.replace(/[^0-9]/g, "").replace(/^0+/, "")} className="bg-[#004274] text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">
+                Call {settings.phone}
               </a>
               <a
-                href="https://wa.me/923041111698"
+                href={"https://wa.me/" + settings.whatsapp.replace(/[^0-9]/g, "")}
                 target="_blank"
                 rel="noopener"
                 className="bg-green-700 text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold"

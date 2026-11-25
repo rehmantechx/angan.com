@@ -1,7 +1,9 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { Listing } from "../lib/seed";
+import { useEffect, useState } from "react";
+import { Listing, SETTINGS, OfficeSettings } from "../lib/seed";
+import { getSettings } from "../lib/db";
 import { formatPrice, whatsappFor } from "../lib/formatPrice";
 import { BedIcon, BathIcon, SizeIcon, HomeIcon } from "../lib/icons";
 
@@ -10,7 +12,10 @@ import { BedIcon, BathIcon, SizeIcon, HomeIcon } from "../lib/icons";
 // price, and bed / bath / size / type as icons, not pipe text.
 // WhatsApp is pre-filled with the exact title, city and price.
 export function ListingCard({ l }: { l: Listing }) {
+  const [settings, setSettings] = useState<OfficeSettings>(SETTINGS);
+  useEffect(() => { getSettings().then((s) => setSettings(s)).catch(() => {}); }, []);
   const price = formatPrice(l.n, l.status);
+  const telHref = "tel:+" + settings.phone.replace(/[^0-9]/g, "").replace(/^0+/, "");
   const pill = l.status === "rent" ? "FOR RENT" : "FOR SALE";
   const pillCls = l.status === "rent" ? "bg-[#005F90]" : "bg-anngan";
   return (
@@ -54,8 +59,8 @@ export function ListingCard({ l }: { l: Listing }) {
             means Details. */}
         <div className="flex gap-2 mt-auto pt-3 flex-wrap">
           <Link href={`/properties/${l.id}`} className="btn btn-outline-navy">Details</Link>
-          <a href="tel:+923041111698" className="btn btn-navy">Call</a>
-          <a href={whatsappFor(l.title, l.city, price)} target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
+          <a href={telHref} className="btn btn-navy">Call</a>
+          <a href={whatsappFor(l.title, l.city, price, settings.whatsapp)} target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
         </div>
       </div>
     </article>

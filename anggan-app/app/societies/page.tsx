@@ -1,29 +1,35 @@
+"use client";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { getSiteContent, cityCardSrc, DEFAULT_SITE_CONTENT, SiteContent } from "../../lib/siteContent";
+import { getSettings } from "../../lib/db";
+import { SETTINGS, OfficeSettings } from "../../lib/seed";
+import { DEFAULT_SOCIETIES, SocietyGuide } from "../../lib/seed";
 
-const GUIDES = [
-  { name: "MGH Pakistan, Mangla", note: "Precincts 01 to 06 on Mangla Gaddari Road, Mangla Cantt, Jhelum.", href: "/projects/proj-1", label: "Open project", img: "mgh-lake-aerial.jpg", caption: "Mangla Lake, MGH Pakistan", contain: false },
-  { name: "Al-Kabir Town, Lahore", note: "China Town sits inside the Al-Kabir Town guide on anngan.com.", href: "/projects/proj-5", label: "Open China Town", img: "chinatown-bahria-sky.jpg", caption: "Bahria Sky, where China Town is located", contain: false },
-  { name: "Paragon City, Lahore", note: "Anngan head office: 57-S, 2nd Floor, Imperial Homes, Paragon City.", href: "/contact", label: "Visit us", img: "", caption: "Anngan head office, Paragon City", contain: false },
-  { name: "DHA Lahore", note: "10 Marla houses and 1 Kanal houses in the real listings on this site.", href: "/properties?q=DHA", label: "See DHA listings", img: "lst-dha-stunning.jpg", caption: "House in DHA Lahore", contain: false },
-  { name: "Bahria Town, Lahore and Rawalpindi", note: "Houses for sale and rent in Bahria Town on this site.", href: "/properties?q=Bahria", label: "See Bahria listings", img: "bahria-eiffel.jpg", caption: "Eiffel Tower, Bahria Town, Lahore", contain: false },
-  // POLISH-03 25 Nov 2026: was kmc-01.jpg (1200x675, 16/9) in this
-  // 16/10 object-cover object-top card, which cropped the sides and
-  // clipped both corner logos (anngan.com top-left, Modern City
-  // top-right). Now kmc-01-16x10.jpg, the same real KMC photo padded
-  // in code to 1200x750 with sky/sand bands, both logos whole, the
-  // same file the homepage Our projects card already uses.
-  { name: "Kashmir Modern City, Mirpur", note: "Sold Out. Developer Al-Baari. Soft launch at Mirpur, 21 Dec 2022.", href: "/projects/proj-7", label: "View project", img: "kmc-01-16x10.jpg", caption: "Kashmir Modern City, Mirpur", contain: false },
-];
+// Societies guide, now from the site content (editable in /admin,
+// Societies), falling back to the seed list. The guide entries are
+// the real societies and projects Anngan covers, nothing invented.
+const GUIDES: SocietyGuide[] = DEFAULT_SOCIETIES;
+// The guide entries now live in lib/seed.ts (DEFAULT_SOCIETIES) and
+// in the Firestore settings/office document, edited in /admin,
+// Societies. The KMC photo note from the old list: kmc-01-16x10.jpg
+// is the real KMC photo padded to 1200x750 so both corner logos stay
+// whole. Paragon City has no real photo yet, it shows Photo coming
+// soon until the client sends one.
 
 export default function SocietiesPage() {
+  const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
+  const [settings, setSettings] = useState<OfficeSettings>(SETTINGS);
+  useEffect(() => { getSiteContent().then((c) => setContent(c)).catch(() => {}); getSettings().then((s) => setSettings(s)).catch(() => {}); }, []);
+  const guides = content.societies.length > 0 ? content.societies : GUIDES;
   return (
     <div>
       <p className="text-sm text-gray-600">Home &rsaquo; Societies Guide</p>
-      <h1 className="text-3xl font-bold text-navy mt-1">Societies guide</h1>
-      <p className="text-gray-600 mt-1">Guides for the societies Anngan covers.</p>
+      <h1 className="text-3xl font-bold text-navy mt-1">{content.societiesTitle}</h1>
+      <p className="text-gray-600 mt-1">{content.societiesIntro}</p>
       <div className="grid gap-4 mt-6 sm:grid-cols-2">
-        {GUIDES.map((g, i) => (
+        {guides.map((g, i) => (
           <article key={g.name} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
             <figure>
               {g.img ? (
@@ -34,7 +40,7 @@ export default function SocietiesPage() {
                 // real DHA exterior shot exists in the repo, so no
                 // wider shot was invented. Flagged in NOTES.md.
                 <Image
-                  src={`/img/${g.img}`}
+                  src={cityCardSrc(g.img)}
                   alt={g.caption}
                   width={1200}
                   height={675}
@@ -64,7 +70,7 @@ export default function SocietiesPage() {
           </article>
         ))}
       </div>
-      <p className="text-sm text-gray-600 mt-6">Call +92 304 1111 698 to ask about a society not listed here.</p>
+      <p className="text-sm text-gray-600 mt-6">Call {settings.phone} to ask about a society not listed here.</p>
     </div>
   );
 }

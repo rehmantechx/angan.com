@@ -1,22 +1,59 @@
 // Site content the office edits in /admin (hero, banners, About
-// story, Our Team). Stored on the settings/office document in
-// Firestore, which the published rules already allow the public to
-// read and only the office to write, so no rule change and no redeploy
-// is needed for an edit to show on the live site. When Firestore has
-// no value yet, the seed defaults apply, so the site works before the
-// office edits anything. All images are URLs, never uploads: Firebase
-// Storage is not enabled.
+// story, Our Team, header, footer, home sections, societies,
+// companies, contact, legal pages). Stored on the settings/office
+// document in Firestore, which the published rules already allow the
+// public to read and only the office to write, so no rule change and
+// no redeploy is needed for an edit to show on the live site. When
+// Firestore has no value yet, the seed defaults apply, so the site
+// works before the office edits anything.
+// IMAGES: every image field accepts a file already on the site
+// ("/img/...") or a full http(s) URL. Photo UPLOAD is wired in
+// lib/upload.ts (Firebase Storage), but Storage is NOT enabled on
+// project anngan-7a3ff and cannot be enabled on the free Spark plan:
+// since 3 Feb 2026 Cloud Storage needs the Blaze plan, a card on
+// file. Until the owner approves Blaze, uploads show a clear blocked
+// message and the URL field stays the way to set a photo. Never a
+// fake upload, never a local-only path the live site cannot serve.
 import { getSettings, saveSettings } from "./db";
 import {
+  DEFAULT_ABOUT_FAQ,
+  DEFAULT_ABOUT_FILES_IMG,
+  DEFAULT_ABOUT_FILES_NOTE,
+  DEFAULT_ABOUT_INTRO,
   DEFAULT_ABOUT_STORY,
+  DEFAULT_ABOUT_VIDEOS,
   DEFAULT_BANNER_IMAGES,
+  DEFAULT_CITY_CARDS,
+  DEFAULT_COMPANIES,
+  DEFAULT_CONTACT_INTRO,
+  DEFAULT_FOOTER_ABOUT,
+  DEFAULT_FOOTER_COPYRIGHT,
   DEFAULT_HERO_SLIDES,
   DEFAULT_HERO_TAGLINE,
   DEFAULT_HERO_TITLE,
+  DEFAULT_HOME_HEADINGS,
+  DEFAULT_HOME_MGH_TEXT,
+  DEFAULT_HOME_MGH_TITLE,
+  DEFAULT_HOME_SOCIETIES,
+  DEFAULT_LEGAL_DISCLAIMER,
+  DEFAULT_LEGAL_PRIVACY,
+  DEFAULT_LEGAL_TERMS,
+  DEFAULT_SOCIAL_LINKS,
+  DEFAULT_SOCIETIES,
+  DEFAULT_SOCIETIES_INTRO,
+  DEFAULT_SOCIETIES_TITLE,
   DEFAULT_TEAM,
   DEFAULT_TECH_TEAM,
+  AboutFaq,
+  AboutVideo,
+  CityCard,
+  CompanyCard,
   HeroSlide,
+  HomeHeadings,
+  HomeSocietyChip,
   OfficeSettings,
+  SocialLink,
+  SocietyGuide,
   TeamMember,
 } from "./seed";
 
@@ -29,6 +66,27 @@ export type SiteContent = {
   team: TeamMember[];
   techTeam: TeamMember[];
   ceoPhoto: string;
+  socialLinks: SocialLink[];
+  footerAbout: string;
+  footerCopyright: string;
+  cityCards: CityCard[];
+  homeHeadings: HomeHeadings;
+  homeMghTitle: string;
+  homeMghText: string;
+  homeSocieties: HomeSocietyChip[];
+  societies: SocietyGuide[];
+  societiesTitle: string;
+  societiesIntro: string;
+  aboutIntro: string;
+  aboutVideos: AboutVideo[];
+  aboutFaq: AboutFaq[];
+  aboutFilesImg: string;
+  aboutFilesNote: string;
+  companies: CompanyCard[];
+  contactIntro: string;
+  legalPrivacy: string;
+  legalTerms: string;
+  legalDisclaimer: string;
 };
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
@@ -43,6 +101,27 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   // home, ceo-flat.jpg on About. When the office sets a photo link in
   // /admin, home and About both use it.
   ceoPhoto: "",
+  socialLinks: DEFAULT_SOCIAL_LINKS,
+  footerAbout: DEFAULT_FOOTER_ABOUT,
+  footerCopyright: DEFAULT_FOOTER_COPYRIGHT,
+  cityCards: DEFAULT_CITY_CARDS,
+  homeHeadings: DEFAULT_HOME_HEADINGS,
+  homeMghTitle: DEFAULT_HOME_MGH_TITLE,
+  homeMghText: DEFAULT_HOME_MGH_TEXT,
+  homeSocieties: DEFAULT_HOME_SOCIETIES,
+  societies: DEFAULT_SOCIETIES,
+  societiesTitle: DEFAULT_SOCIETIES_TITLE,
+  societiesIntro: DEFAULT_SOCIETIES_INTRO,
+  aboutIntro: DEFAULT_ABOUT_INTRO,
+  aboutVideos: DEFAULT_ABOUT_VIDEOS,
+  aboutFaq: DEFAULT_ABOUT_FAQ,
+  aboutFilesImg: DEFAULT_ABOUT_FILES_IMG,
+  aboutFilesNote: DEFAULT_ABOUT_FILES_NOTE,
+  companies: DEFAULT_COMPANIES,
+  contactIntro: DEFAULT_CONTACT_INTRO,
+  legalPrivacy: DEFAULT_LEGAL_PRIVACY,
+  legalTerms: DEFAULT_LEGAL_TERMS,
+  legalDisclaimer: DEFAULT_LEGAL_DISCLAIMER,
 };
 
 // A stored slide is usable only when it has a real image URL.
@@ -79,11 +158,141 @@ function cleanTeam(rows: unknown): TeamMember[] {
   return out;
 }
 
+export function cleanSocialLinks(rows: unknown): SocialLink[] {
+  if (!Array.isArray(rows)) return [];
+  const out: SocialLink[] = [];
+  for (const r of rows) {
+    if (!r || typeof r !== "object") continue;
+    const label = String((r as { label?: unknown }).label || "").trim();
+    const href = String((r as { href?: unknown }).href || "").trim();
+    if (!label || !href) continue;
+    out.push({ label, href });
+  }
+  return out;
+}
+
+export function cleanCityCards(rows: unknown): CityCard[] {
+  if (!Array.isArray(rows)) return [];
+  const out: CityCard[] = [];
+  for (const r of rows) {
+    if (!r || typeof r !== "object") continue;
+    const name = String((r as { name?: unknown }).name || "").trim();
+    const img = String((r as { img?: unknown }).img || "").trim();
+    if (!name || !img) continue;
+    const kind = String((r as { kind?: unknown }).kind || "listings");
+    out.push({
+      name,
+      landmark: String((r as { landmark?: unknown }).landmark || "").trim(),
+      img,
+      alt: String((r as { alt?: unknown }).alt || "").trim() || name,
+      href: String((r as { href?: unknown }).href || "").trim() || "/properties",
+      kind: kind === "project" ? "project" : kind === "all" ? "all" : "listings",
+      sub: String((r as { sub?: unknown }).sub || "").trim() || undefined,
+      pos: String((r as { pos?: unknown }).pos || "").trim() || undefined,
+    });
+  }
+  return out;
+}
+
+export function cleanSocieties(rows: unknown): SocietyGuide[] {
+  if (!Array.isArray(rows)) return [];
+  const out: SocietyGuide[] = [];
+  for (const r of rows) {
+    if (!r || typeof r !== "object") continue;
+    const name = String((r as { name?: unknown }).name || "").trim();
+    if (!name) continue;
+    out.push({
+      name,
+      note: String((r as { note?: unknown }).note || "").trim(),
+      href: String((r as { href?: unknown }).href || "").trim() || "/contact",
+      label: String((r as { label?: unknown }).label || "").trim() || "Open",
+      img: String((r as { img?: unknown }).img || "").trim(),
+      caption: String((r as { caption?: unknown }).caption || "").trim() || name,
+      contain: Boolean((r as { contain?: unknown }).contain),
+    });
+  }
+  return out;
+}
+
+export function cleanVideos(rows: unknown): AboutVideo[] {
+  if (!Array.isArray(rows)) return [];
+  const out: AboutVideo[] = [];
+  for (const r of rows) {
+    if (!r || typeof r !== "object") continue;
+    const id = String((r as { id?: unknown }).id || "").trim();
+    if (!id) continue;
+    out.push({
+      id,
+      title: String((r as { title?: unknown }).title || "").trim() || "Anngan video",
+      views: String((r as { views?: unknown }).views || "").trim(),
+      date: String((r as { date?: unknown }).date || "").trim(),
+    });
+  }
+  return out;
+}
+
+export function cleanFaq(rows: unknown): AboutFaq[] {
+  if (!Array.isArray(rows)) return [];
+  const out: AboutFaq[] = [];
+  for (const r of rows) {
+    if (!r || typeof r !== "object") continue;
+    const q = String((r as { q?: unknown }).q || "").trim();
+    if (!q) continue;
+    out.push({ q, a: String((r as { a?: unknown }).a || "").trim() });
+  }
+  return out;
+}
+
+export function cleanHomeSocieties(rows: unknown): HomeSocietyChip[] {
+  if (!Array.isArray(rows)) return [];
+  const out: HomeSocietyChip[] = [];
+  for (const r of rows) {
+    if (!r || typeof r !== "object") continue;
+    const name = String((r as { name?: unknown }).name || "").trim();
+    const img = String((r as { img?: unknown }).img || "").trim();
+    if (!name || !img) continue;
+    out.push({ name, img, href: String((r as { href?: unknown }).href || "").trim() || "/properties" });
+  }
+  return out;
+}
+
+export function cleanCompanies(rows: unknown): CompanyCard[] {
+  if (!Array.isArray(rows)) return [];
+  const out: CompanyCard[] = [];
+  for (const r of rows) {
+    if (!r || typeof r !== "object") continue;
+    const name = String((r as { name?: unknown }).name || "").trim();
+    if (!name) continue;
+    out.push({
+      id: String((r as { id?: unknown }).id || "company-" + out.length),
+      name,
+      desc: String((r as { desc?: unknown }).desc || "").trim(),
+      href: String((r as { href?: unknown }).href || "").trim() || "/contact",
+      linkLabel: String((r as { linkLabel?: unknown }).linkLabel || "").trim() || "Contact the office",
+    });
+  }
+  return out;
+}
+
+function cleanHeadings(v: unknown): HomeHeadings {
+  const d = DEFAULT_HOME_HEADINGS;
+  if (!v || typeof v !== "object") return d;
+  const t = (k: keyof HomeHeadings) => String((v as Record<string, unknown>)[k] || "").trim() || d[k];
+  return { browseCities: t("browseCities"), featured: t("featured"), societies: t("societies"), partnerAgencies: t("partnerAgencies"), ourProjects: t("ourProjects"), whoIsAnngan: t("whoIsAnngan") };
+}
+
 export function siteContentFromSettings(s: OfficeSettings): SiteContent {
   const heroSlides = cleanSlides(s.heroSlides);
   const bannerImages = cleanSlides(s.bannerImages);
   const techTeam = cleanTeam(s.techTeam);
   const team = cleanTeam(s.team);
+  const socialLinks = cleanSocialLinks(s.socialLinks);
+  const cityCards = cleanCityCards(s.cityCards);
+  const societies = cleanSocieties(s.societies);
+  const aboutVideos = cleanVideos(s.aboutVideos);
+  const aboutFaq = cleanFaq(s.aboutFaq);
+  const companies = cleanCompanies(s.companies);
+  const homeSocieties = cleanHomeSocieties(s.homeSocieties);
   return {
     heroTitle: (s.heroTitle || "").trim() || DEFAULT_HERO_TITLE,
     heroTagline: (s.heroTagline || "").trim() || DEFAULT_HERO_TAGLINE,
@@ -105,6 +314,27 @@ export function siteContentFromSettings(s: OfficeSettings): SiteContent {
     team: team.length > 0 ? team : DEFAULT_TEAM,
     techTeam: techTeam.length > 0 ? techTeam : DEFAULT_TECH_TEAM,
     ceoPhoto: (s.ceoPhoto || "").trim(),
+    socialLinks: socialLinks.length > 0 ? socialLinks : DEFAULT_SOCIAL_LINKS,
+    footerAbout: (s.footerAbout || "").trim() || DEFAULT_FOOTER_ABOUT,
+    footerCopyright: (s.footerCopyright || "").trim() || DEFAULT_FOOTER_COPYRIGHT,
+    cityCards: cityCards.length > 0 ? cityCards : DEFAULT_CITY_CARDS,
+    homeHeadings: cleanHeadings(s.homeHeadings),
+    homeMghTitle: (s.homeMghTitle || "").trim() || DEFAULT_HOME_MGH_TITLE,
+    homeMghText: (s.homeMghText || "").trim() || DEFAULT_HOME_MGH_TEXT,
+    homeSocieties: homeSocieties.length > 0 ? homeSocieties : DEFAULT_HOME_SOCIETIES,
+    societies: societies.length > 0 ? societies : DEFAULT_SOCIETIES,
+    societiesTitle: (s.societiesTitle || "").trim() || DEFAULT_SOCIETIES_TITLE,
+    societiesIntro: (s.societiesIntro || "").trim() || DEFAULT_SOCIETIES_INTRO,
+    aboutIntro: (s.aboutIntro || "").trim() || DEFAULT_ABOUT_INTRO,
+    aboutVideos: aboutVideos.length > 0 ? aboutVideos : DEFAULT_ABOUT_VIDEOS,
+    aboutFaq: aboutFaq.length > 0 ? aboutFaq : DEFAULT_ABOUT_FAQ,
+    aboutFilesImg: (s.aboutFilesImg || "").trim() || DEFAULT_ABOUT_FILES_IMG,
+    aboutFilesNote: (s.aboutFilesNote || "").trim() || DEFAULT_ABOUT_FILES_NOTE,
+    companies: companies.length > 0 ? companies : DEFAULT_COMPANIES,
+    contactIntro: (s.contactIntro || "").trim() || DEFAULT_CONTACT_INTRO,
+    legalPrivacy: (s.legalPrivacy || "").trim() || DEFAULT_LEGAL_PRIVACY,
+    legalTerms: (s.legalTerms || "").trim() || DEFAULT_LEGAL_TERMS,
+    legalDisclaimer: (s.legalDisclaimer || "").trim() || DEFAULT_LEGAL_DISCLAIMER,
   };
 }
 
@@ -146,6 +376,27 @@ export async function saveSiteContent(c: SiteContent): Promise<void> {
     team: cleanTeam(c.team),
     techTeam: cleanTeam(c.techTeam),
     ceoPhoto: (c.ceoPhoto || "").trim(),
+    socialLinks: cleanSocialLinks(c.socialLinks),
+    footerAbout: c.footerAbout.trim() || DEFAULT_FOOTER_ABOUT,
+    footerCopyright: c.footerCopyright.trim() || DEFAULT_FOOTER_COPYRIGHT,
+    cityCards: cleanCityCards(c.cityCards),
+    homeHeadings: c.homeHeadings,
+    homeMghTitle: c.homeMghTitle.trim() || DEFAULT_HOME_MGH_TITLE,
+    homeMghText: c.homeMghText.trim() || DEFAULT_HOME_MGH_TEXT,
+    homeSocieties: cleanHomeSocieties(c.homeSocieties),
+    societies: cleanSocieties(c.societies),
+    societiesTitle: c.societiesTitle.trim() || DEFAULT_SOCIETIES_TITLE,
+    societiesIntro: c.societiesIntro.trim() || DEFAULT_SOCIETIES_INTRO,
+    aboutIntro: c.aboutIntro.trim() || DEFAULT_ABOUT_INTRO,
+    aboutVideos: cleanVideos(c.aboutVideos),
+    aboutFaq: cleanFaq(c.aboutFaq),
+    aboutFilesImg: c.aboutFilesImg.trim() || DEFAULT_ABOUT_FILES_IMG,
+    aboutFilesNote: c.aboutFilesNote.trim() || DEFAULT_ABOUT_FILES_NOTE,
+    companies: cleanCompanies(c.companies),
+    contactIntro: c.contactIntro.trim() || DEFAULT_CONTACT_INTRO,
+    legalPrivacy: c.legalPrivacy.trim() || DEFAULT_LEGAL_PRIVACY,
+    legalTerms: c.legalTerms.trim() || DEFAULT_LEGAL_TERMS,
+    legalDisclaimer: c.legalDisclaimer.trim() || DEFAULT_LEGAL_DISCLAIMER,
   });
 }
 
@@ -166,4 +417,13 @@ export function projectStatusLabel(status: string | undefined): string | null {
   if (status === "Sold Out") return "SOLD OUT";
   if (status === "Coming Soon") return "COMING SOON";
   return null;
+}
+
+// City card photo URL, same rule as projectCardSrc: a full URL is
+// used as-is, a bare file name is served from /img.
+export function cityCardSrc(img: string): string {
+  const raw = (img || "").trim();
+  if (!raw) return "";
+  if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  return "/img/" + raw.replace(/^\/img\//, "");
 }

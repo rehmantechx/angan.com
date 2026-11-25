@@ -1,18 +1,34 @@
+"use client";
+import { useEffect, useState } from "react";
 import { EnquiryForm } from "../../components/EnquiryForm";
 import { WhatsAppIcon, PhoneIcon, MapIcon } from "../../lib/icons";
+import { getSiteContent, DEFAULT_SITE_CONTENT, SiteContent } from "../../lib/siteContent";
+import { getSettings } from "../../lib/db";
+import { SETTINGS, OfficeSettings } from "../../lib/seed";
 
+// Contact page, now from the contact settings and site content
+// (editable in /admin, Settings and Contact and legal). Phone,
+// WhatsApp, email and address change in one place and show
+// everywhere: header, footer, contact, companies.
 export default function ContactPage() {
+  const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
+  const [settings, setSettings] = useState<OfficeSettings>(SETTINGS);
+  useEffect(() => {
+    getSiteContent().then((c) => setContent(c)).catch(() => {});
+    getSettings().then((s) => setSettings(s)).catch(() => {});
+  }, []);
+  const telHref = "tel:+" + settings.phone.replace(/[^0-9]/g, "").replace(/^0+/, "");
+  const waHref = "https://wa.me/" + settings.whatsapp.replace(/[^0-9]/g, "");
   return (
     <div>
       <h1 className="text-3xl font-bold text-navy">Talk to Anngan</h1>
       <p className="text-gray-600 mt-1">
-        The fastest way to reach the office is WhatsApp or a call. The form below
-        goes straight to the office dashboard.
+        {content.contactIntro}
       </p>
 
       <div className="grid gap-4 mt-5 sm:grid-cols-2">
         <a
-          href="https://wa.me/923041111698"
+          href={waHref}
           target="_blank"
           rel="noopener"
           className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm block flex flex-col"
@@ -20,16 +36,16 @@ export default function ContactPage() {
           <p className="text-green-700"><WhatsAppIcon size={40} /></p>
           <p className="font-bold text-navy text-lg mt-2">WhatsApp us first</p>
           <p className="text-sm text-gray-600 mt-1">
-            Message the office on WhatsApp at +92 304 1111 698. Tell us the project
+            Message the office on WhatsApp at {settings.phone}. Tell us the project
             or property you are asking about.
           </p>
           <span className="mt-auto pt-3 flex"><span className="btn btn-green">Open WhatsApp</span></span>
         </a>
-        <a href="tel:+923041111698" className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm block flex flex-col">
+        <a href={telHref} className="border border-gray-200 rounded-lg p-5 bg-white shadow-sm block flex flex-col">
           <p className="text-navy"><PhoneIcon size={40} /></p>
           <p className="font-bold text-navy text-lg mt-2">Call the office</p>
           <p className="text-sm text-gray-600 mt-1">
-            Call +92 304 1111 698 for files, prices and payment plans. File rates
+            Call {settings.phone} for files, prices and payment plans. File rates
             change with the market, so call for today's rate.
           </p>
           <span className="mt-auto pt-3 flex"><span className="btn btn-navy">Call now</span></span>
@@ -42,21 +58,21 @@ export default function ContactPage() {
           <dl className="mt-3 border border-gray-200 rounded-lg divide-y divide-gray-200 bg-white text-sm">
             <div className="px-4 py-3">
               <dt className="font-semibold text-navy">Address</dt>
-              <dd className="mt-1">57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore</dd>
+              <dd className="mt-1">{settings.address}</dd>
             </div>
             <div className="px-4 py-3">
               <dt className="font-semibold text-navy">Phone</dt>
               <dd className="mt-1">
-                <a href="tel:+923041111698" className="text-anngan-dark font-semibold underline">
-                  +92 304 1111 698
+                <a href={telHref} className="text-anngan-dark font-semibold underline">
+                  {settings.phone}
                 </a>
               </dd>
             </div>
             <div className="px-4 py-3">
               <dt className="font-semibold text-navy">Email</dt>
               <dd className="mt-1">
-                <a href="mailto:info@anngan.com" className="text-anngan-dark font-semibold underline">
-                  info@anngan.com
+                <a href={"mailto:" + settings.email} className="text-anngan-dark font-semibold underline">
+                  {settings.email}
                 </a>
               </dd>
             </div>
@@ -72,17 +88,17 @@ export default function ContactPage() {
             </div>
           </dl>
           <div className="mt-4 rounded-lg overflow-hidden border border-gray-200">
-            <p className="text-navy font-bold px-3 pt-3 flex items-center gap-2"><MapIcon size={20} /> Paragon City, Lahore</p>
-            <iframe title="Anngan office map, Paragon City, Lahore" src="https://www.google.com/maps?q=Paragon+City+Lahore&output=embed" className="w-full h-64 mt-2" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+            <p className="text-navy font-bold px-3 pt-3 flex items-center gap-2"><MapIcon size={20} /> {settings.address.split(",").slice(-2).join(",").trim()}</p>
+            <iframe title={"Anngan office map, " + settings.address} src={"https://www.google.com/maps?q=" + encodeURIComponent(settings.address) + "&output=embed"} className="w-full h-64 mt-2" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
           </div>
           <p className="mt-3 text-sm">
             <a
-              href="https://www.google.com/maps/search/?api=1&query=Paragon+City+Lahore"
+              href={"https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(settings.address)}
               target="_blank"
               rel="noopener"
               className="text-anngan-dark font-semibold underline"
             >
-              Open Paragon City, Lahore on Google Maps
+              Open {settings.address} on Google Maps
             </a>
           </p>
         </div>

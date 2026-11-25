@@ -18,6 +18,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const firebaseOn = isFirebaseConfigured();
 
   useEffect(() => {
+    // LOCAL TEST ONLY, development builds only: /admin?localtest=1
+    // signs in a stub Full-access ceo@anngan.com user with no Firebase
+    // and no password, so the dashboard can be tested locally in
+    // Playwright against `next dev` with Firebase env vars cleared.
+    // Never active in production (NODE_ENV is production there), and
+    // it never touches a real account. The stub user is Full access,
+    // so the whole dashboard is editable in the test, and saves go
+    // to localStorage, the same local test mode as when Firebase is
+    // not configured.
+    if (
+      process.env.NODE_ENV === "development" &&
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("localtest") === "1"
+    ) {
+      setUser({ uid: "localtest-ceo", email: "ceo@anngan.com", name: "Office (local test)", role: "Full access", demo: false });
+      setLoading(false);
+      return;
+    }
     // PUBLIC_TEST_MODE is false (reverted 2026-11-24): Google sign-in
     // only, as before the short public test. The flag is kept so the
     // revert is visible in one place; the branches that skipped

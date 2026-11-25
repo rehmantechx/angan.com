@@ -1,10 +1,94 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../lib/auth-context";
-import { PROJECTS, SERVICES } from "../lib/seed";
+import { PROJECTS, SERVICES, DEFAULT_SOCIAL_LINKS, Project, Service, OfficeSettings, SETTINGS } from "../lib/seed";
+import { getProjects, getServices, getSettings } from "../lib/db";
+import { getSiteContent, DEFAULT_SITE_CONTENT, SiteContent } from "../lib/siteContent";
+
+// FULLY EDITABLE DASHBOARD 25 Nov 2026: the header and footer used to
+// hard-code the phone, email, address, social links and the project
+// dropdown. They now read the live settings (contact info) and site
+// content (social links, footer text) from Firestore, falling back to
+// the seed defaults, so the office changes them in /admin, no code.
+// The PROJECTS dropdown labels come from the live projects list, so
+// a rename or a status change in /admin shows in the menu too. The
+// logo stays fixed: the full original logo, never edited in /admin.
+function telHref(phone: string): string {
+  return "tel:+" + phone.replace(/[^0-9]/g, "").replace(/^0+/, "");
+}
+function waHref(whatsapp: string): string {
+  return "https://wa.me/" + whatsapp.replace(/[^0-9]/g, "");
+}
+
+// Shared live data for the header and footer: contact settings,
+// site content (social links, footer text) and the live project and
+// service lists. Each starts from the seed, then refreshes from
+// Firestore in the background, so the bar never renders empty.
+function useLiveSite() {
+  const [settings, setSettings] = useState<OfficeSettings>(SETTINGS);
+  const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
+  const [projects, setProjects] = useState<Project[]>(PROJECTS);
+  const [services, setServices] = useState<Service[]>(SERVICES);
+  useEffect(() => {
+    getSettings().then((s) => setSettings(s)).catch(() => {});
+    getSiteContent().then((c) => setContent(c)).catch(() => {});
+    getProjects().then((rows) => { if (rows.length > 0) setProjects(rows); }).catch(() => {});
+    getServices().then((rows) => { if (rows.length > 0) setServices(rows); }).catch(() => {});
+  }, []);
+  return { settings, content, projects, services };
+}
+
+// Project dropdown label from the live project row: "Global Homes,
+// Lahore", "Pak China Grain Market, Multan (Coming Soon)",
+// "Kashmir Modern City (Sold Out)". The city is added for real
+// cities (Lahore, Multan, Mangla and the rest); Kashmir is a region,
+// so it stays off, as before.
+function navProjectLabel(p: Project): string {
+  const cities = ["Lahore", "Multan", "Mangla", "Rawalpindi", "Islamabad", "Karachi", "Peshawar"];
+  let label = p.name;
+  if (p.city && cities.includes(p.city)) {
+    if (label.endsWith(p.city)) label = label.slice(0, -p.city.length).trim() + ", " + p.city;
+    else label = label + ", " + p.city;
+  }
+  if (p.status === "Coming Soon") label += " (Coming Soon)";
+  if (p.status === "Sold Out") label += " (Sold Out)";
+  return label;
+}
+
+function buildProjectDropdown(projects: Project[]): NavGroup[] {
+  const mgh = projects.find((p) => p.id === "proj-1") || projects[0];
+  const out: NavGroup[] = [];
+  if (mgh) {
+    out.push({
+      href: "/projects/" + mgh.id,
+      label: navProjectLabel(mgh),
+      children: [
+        { href: "/projects/" + mgh.id + "#zamindar-file", label: "Zamindar File" },
+        { href: "/projects/" + mgh.id + "#affidavit-mgh", label: "Affidavit MGH" },
+        { href: "/projects/" + mgh.id + "#serene-farm-houses", label: "Serene Farm Houses" },
+      ],
+    });
+  }
+  const alGhani = projects.find((p) => p.id === "proj-3");
+  if (alGhani) out.push({ href: "/projects/" + alGhani.id, label: navProjectLabel(alGhani) });
+  const lahore = projects.filter((p) => p.city === "Lahore" && p.id !== "proj-1" && p.id !== "proj-3");
+  if (lahore.length > 0) {
+    out.push({
+      href: "/projects",
+      label: "Lahore Projects",
+      children: lahore.map((p) => ({ href: "/projects/" + p.id, label: navProjectLabel(p) })),
+    });
+  }
+  for (const p of projects) {
+    if (p.id === "proj-1" || p.id === "proj-3" || p.city === "Lahore") continue;
+    out.push({ href: "/projects/" + p.id, label: navProjectLabel(p) });
+  }
+  out.push({ href: "/properties?type=Commercial", label: "Commercial" });
+  return out;
+}
 
 // NAV-01 / NAV-02 / NAV-03 (24 Nov 2026): PROJECTS and ANNGAN
 // COMPANIES are dropdowns matching the original anngan.com structure,
@@ -18,30 +102,11 @@ const NAV_LINKS: NavItem[] = [
   {
     href: "/projects",
     label: "PROJECTS",
-    dropdown: [
-      {
-        href: "/projects/proj-1",
-        label: "MGH Pakistan, Mangla",
-        children: [
-          { href: "/projects/proj-1#zamindar-file", label: "Zamindar File" },
-          { href: "/projects/proj-1#affidavit-mgh", label: "Affidavit MGH" },
-          { href: "/projects/proj-1#serene-farm-houses", label: "Serene Farm Houses" },
-        ],
-      },
-      { href: "/projects/proj-3", label: "Al Ghani, Phase 7 Lahore" },
-      {
-        href: "/projects",
-        label: "Lahore Projects",
-        children: [
-          { href: "/projects/proj-2", label: "Global Homes, Lahore" },
-          { href: "/projects/proj-4", label: "Urban City, Lahore" },
-          { href: "/projects/proj-5", label: "China Town, Lahore" },
-        ],
-      },
-      { href: "/projects/proj-6", label: "Pak China Grain Market, Multan (Coming Soon)" },
-      { href: "/projects/proj-7", label: "Kashmir Modern City (Sold Out)" },
-      { href: "/properties?type=Commercial", label: "Commercial" },
-    ],
+    // Dropdown entries are built live from the projects list in
+    // Header (buildProjectDropdown), so a rename or a status change
+    // in /admin shows in the menu. The static list below is only the
+    // shape; the labels come from the data.
+    dropdown: [],
   },
   { href: "/properties", label: "PROPERTIES" },
   { href: "/societies", label: "SOCIETIES GUIDE" },
@@ -70,16 +135,13 @@ const NAV_LINKS: NavItem[] = [
   // viewport edge. The footer still links Angan Tech.
 ];
 
-const SOCIAL_LINKS = [
-  { href: "https://www.facebook.com/annganpk", label: "Facebook" },
-  { href: "https://twitter.com/annganpk", label: "X" },
-  { href: "https://pk.linkedin.com/company/annganpk", label: "LinkedIn" },
-  { href: "https://instagram.com/annganpk", label: "Instagram" },
-  { href: "https://www.youtube.com/channel/UC7lbVe_2Lfw8dzThSaAq6Aw", label: "YouTube" },
-];
-
 export function Header() {
   const { user, signOut } = useAuth();
+  const { settings, content, projects } = useLiveSite();
+  const SOCIAL_LINKS = content.socialLinks.length > 0 ? content.socialLinks : DEFAULT_SOCIAL_LINKS;
+  const navLinks: NavItem[] = NAV_LINKS.map((l) =>
+    l.label === "PROJECTS" ? { ...l, dropdown: buildProjectDropdown(projects) } : l
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   // NAV-01/02: which desktop dropdown is open, and which nested
   // sub-menu inside it. Mobile drawer accordions use the same labels.
@@ -155,17 +217,17 @@ export function Header() {
         <div className="max-w-[82.5rem] mx-auto px-4 md:px-6 py-1.5 flex flex-wrap gap-x-4 gap-y-1">
           <span>
             Call{" "}
-            <a href="tel:+923041111698" className="font-semibold hover:underline">
-              +92 304 1111 698
+            <a href={telHref(settings.phone)} className="font-semibold hover:underline">
+              {settings.phone}
             </a>
           </span>
           <span>
             Email{" "}
-            <a href="mailto:info@anngan.com" className="hover:underline">
-              info@anngan.com
+            <a href={"mailto:" + settings.email} className="hover:underline">
+              {settings.email}
             </a>
           </span>
-          <span className="hidden md:inline">57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore, Pakistan</span>
+          <span className="hidden md:inline">{settings.address}, Pakistan</span>
           {/* HDR-01: the 5 compact social icons from the footer, in the
               top bar like anngan.com. 18px, md and up only, so the
               mobile top bar stays Call + Email. */}
@@ -192,15 +254,15 @@ export function Header() {
           </Link>
           <div className="flex gap-1.5 sm:gap-2 ml-auto shrink-0">
             <a
-              href="tel:+923041111698"
+              href={telHref(settings.phone)}
               className="btn btn-navy text-xs sm:text-sm px-2 sm:px-3 whitespace-nowrap"
-              aria-label="Call Anngan on +92 304 1111 698"
+              aria-label={"Call Anngan on " + settings.phone}
             >
               <span className="sm:hidden">Call</span>
-              <span className="hidden sm:inline">Call +92 304 1111 698</span>
+              <span className="hidden sm:inline">Call {settings.phone}</span>
             </a>
             <a
-              href="https://wa.me/923041111698"
+              href={waHref(settings.whatsapp)}
               target="_blank"
               rel="noopener"
               className="btn btn-green text-xs sm:text-sm px-2 sm:px-3 whitespace-nowrap"
@@ -225,7 +287,7 @@ export function Header() {
               so all 11 items plus OFFICE LOGIN fit inside the red bar
               with breathing room, no horizontal scrollbar. */}
           <div className="hidden xl:flex items-center gap-1 text-xs tracking-tight font-bold whitespace-nowrap max-w-[82.5rem] mx-auto px-4 md:px-6 py-1">
-            {NAV_LINKS.map((l) =>
+            {navLinks.map((l) =>
               l.dropdown ? (
                 // NAV-01/02 desktop dropdown: hover opens it, the label
                 // is still a plain link to /projects or /companies, the
@@ -349,7 +411,7 @@ export function Header() {
             </div>
             <nav className="px-4 py-3 flex flex-col gap-1 text-sm font-bold" aria-label="Menu links">
               <p className="text-xs text-gray-600 font-bold tracking-wide pt-1">Anngan</p>
-              {NAV_LINKS.map((l) =>
+              {navLinks.map((l) =>
                 l.dropdown ? (
                   // NAV-01/02 mobile accordion: tap the label to go to the
                   // section, tap the chevron to open its sub-items.
@@ -448,11 +510,11 @@ export function Header() {
               ) : null}
             </nav>
             <div className="px-4 pb-4 flex flex-col gap-2">
-              <a href="tel:+923041111698" className="btn btn-navy w-full text-center">
-                Call +92 304 1111 698
+              <a href={telHref(settings.phone)} className="btn btn-navy w-full text-center">
+                Call {settings.phone}
               </a>
               <a
-                href="https://wa.me/923041111698"
+                href={waHref(settings.whatsapp)}
                 target="_blank"
                 rel="noopener"
                 className="btn btn-green w-full text-center"
@@ -497,6 +559,8 @@ function SocialIcon({ label, size = 24 }: { label: string; size?: number }) {
 }
 
 export function Footer() {
+  const { settings, content, projects, services } = useLiveSite();
+  const SOCIAL_LINKS = content.socialLinks.length > 0 ? content.socialLinks : DEFAULT_SOCIAL_LINKS;
   // FIX-03: inside /admin the full public footer is a tall blue block
   // under a plain dashboard, so the office area gets a compact footer:
   // copyright strip only, no link columns.
@@ -505,7 +569,7 @@ export function Footer() {
     return (
       <footer className="bg-navy text-white mt-0 border-t-4 border-anngan">
         <div className="bg-[#00263E] text-white text-sm text-center py-3 px-4">
-          Copyright &copy; ANNGAN TECHNOLOGIES PVT. LTD. All rights reserved.
+          {content.footerCopyright}
         </div>
       </footer>
     );
@@ -528,12 +592,12 @@ export function Footer() {
             </span>
             <p className="urdu-tagline urdu-tagline-light mt-2" lang="ur">بنائے خواب حقیقت</p>
             <p className="mt-2 leading-relaxed">
-              Pakistan's trusted real estate service provider. Projects and property in Karachi, Islamabad, Lahore and Peshawar.
+              {content.footerAbout}
             </p>
             <p className="mt-2 leading-relaxed">
-              57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore<br />
-              <a href="tel:+923041111698" className="inline-flex items-center min-h-[32px] font-semibold hover:underline">+92 304 1111 698</a><br />
-              <a href="mailto:info@anngan.com" className="inline-flex items-center min-h-[32px] hover:underline">info@anngan.com</a>
+              {settings.address}<br />
+              <a href={telHref(settings.phone)} className="inline-flex items-center min-h-[32px] font-semibold hover:underline">{settings.phone}</a><br />
+              <a href={"mailto:" + settings.email} className="inline-flex items-center min-h-[32px] hover:underline">{settings.email}</a>
             </p>
           </div>
           <div className="lg:col-span-2">
@@ -557,7 +621,7 @@ export function Footer() {
             <p className="font-bold text-white text-base">Projects</p>
             <span className="block w-8 h-0.5 bg-[#DDB78B] mt-1.5" />
             <ul className="mt-2 space-y-1.5">
-              {PROJECTS.map((p) => (
+              {projects.map((p) => (
                 <li key={p.id}>
                   <Link href={`/projects/${p.id}`} className="inline-flex items-center min-h-[32px] hover:underline">{p.name}</Link>
                 </li>
@@ -596,7 +660,7 @@ export function Footer() {
         <div className="mt-4 pt-3 border-t border-white/15">
           <ul className="flex flex-wrap items-center gap-x-5 gap-y-1">
             <li><span className="font-bold text-white text-base inline-flex items-center min-h-[28px]">Angan Tech services:</span></li>
-            {SERVICES.map((s) => (
+            {services.map((s) => (
               <li key={s.id}>
                 <Link href={`/services/${s.id}`} className="inline-flex items-center min-h-[28px] hover:underline">{s.name}</Link>
               </li>
@@ -606,7 +670,7 @@ export function Footer() {
         </div>
       </div>
       <div className="bg-[#00263E] text-white text-sm text-center py-3 px-4">
-        Copyright &copy; ANNGAN TECHNOLOGIES PVT. LTD. All rights reserved.
+        {content.footerCopyright}
       </div>
     </footer>
   );

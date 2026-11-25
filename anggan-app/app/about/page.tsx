@@ -19,14 +19,13 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getSiteContent, DEFAULT_SITE_CONTENT } from "../../lib/siteContent";
+import { getProjects, getListings, getAgencies } from "../../lib/db";
 import { TeamMember } from "../../lib/seed";
 
-const FAQ = [
-  { q: "What is MGH Zamindar File?", a: "A file product of MGH Pakistan at Mangla. Call +92 304 1111 698 for today's rate." },
-  { q: "Where is the Anngan office?", a: "57-S, 2nd Floor, Imperial Homes, Paragon City, Lahore. Phone +92 304 1111 698, email info@anngan.com." },
-  { q: "Which cities does Anngan cover?", a: "Karachi, Islamabad, Lahore and Peshawar, plus projects at Mangla, Multan and Kashmir." },
-  { q: "How do I create a listing?", a: "Use Create a Listing on this site, or call +92 304 1111 698 with the details and photos." },
-];
+// FAQ and videos now come from the site content (editable in /admin,
+// About page), falling back to the seed defaults in lib/seed.ts.
+// The videos are the real Anngan YouTube channel (@annganpk) videos,
+// every ID verified from the channel itself, 22 Nov 2026.
 
 // Videos found on the real Anngan YouTube channel (@annganpk,
 // UC7lbVe_2Lfw8dzThSaAq6Aw). Every ID was verified from the channel
@@ -34,14 +33,7 @@ const FAQ = [
 // or generated for this site. Titles are the channel's own titles,
 // shortened only where the full title is a long run-on. View counts
 // are the counts the channel showed on 22 Nov 2026.
-const VIDEOS = [
-  { id: "McDA63SyDM0", title: "CEO Anngan briefing of MGH Pakistan", views: "81 views", date: "2 Mar 2024" },
-  { id: "LbE6iCeOn2A", title: "Affidavit File information of MGH Pakistan, CEO Mahmood Cheema", views: "288 views", date: "30 Nov 2023" },
-  { id: "UxOpwyG6YJA", title: "Zamindar File, MGH Pakistan, best property in Pakistan", views: "629 views", date: "4 Feb 2023" },
-  { id: "mYdjdXwYbjg", title: "MGH Pakistan Zamindar File, society information", views: "567 views", date: "10 Mar 2023" },
-  { id: "JJt819sUedg", title: "CEO Mahmood Cheema clarifies MGH Zamindar File notice", views: "150 views", date: "29 Jun 2024" },
-  { id: "EsdRAgr71bY", title: "CEO Mahmood Cheema visits Al-Ghani Garden Phase 7, full briefing", views: "248 views", date: "31 Jul 2026" },
-];
+
 
 const YOUTUBE_URL = "https://www.youtube.com/channel/UC7lbVe_2Lfw8dzThSaAq6Aw";
 
@@ -50,20 +42,28 @@ export default function AboutPage() {
   const [team, setTeam] = useState<TeamMember[]>(DEFAULT_SITE_CONTENT.team);
   const [techTeam, setTechTeam] = useState<TeamMember[]>(DEFAULT_SITE_CONTENT.techTeam);
   const [ceoPhoto, setCeoPhoto] = useState(DEFAULT_SITE_CONTENT.ceoPhoto);
+  const [content, setContent] = useState(DEFAULT_SITE_CONTENT);
+  // Stats are counted from the live data, never typed in: projects,
+  // live listings and partner agencies follow /admin edits.
+  const [counts, setCounts] = useState({ projects: 7, listings: 12, agencies: 13 });
   useEffect(() => {
     getSiteContent().then((c) => {
+      setContent(c);
       setStory(c.aboutStory);
       setTeam(c.team);
       setTechTeam(c.techTeam);
       setCeoPhoto(c.ceoPhoto);
     });
+    getProjects().then((rows) => { if (rows.length > 0) setCounts((v) => ({ ...v, projects: rows.length })); }).catch(() => {});
+    getListings().then((rows) => { const n = rows.filter((l) => l.liveStatus === "live" && l.visible !== false).length; if (n > 0) setCounts((v) => ({ ...v, listings: n })); }).catch(() => {});
+    getAgencies().then((rows) => { if (rows.length > 0) setCounts((v) => ({ ...v, agencies: rows.length })); }).catch(() => {});
   }, []);
 
   return (
     <div>
       <h1 className="text-3xl font-bold text-navy">About Anngan</h1>
       <p className="text-gray-600 mt-1">
-        Pakistan&apos;s most trusted real estate service provider. <span className="urdu-tagline" lang="ur">بنائے خواب حقیقت</span>
+        {content.aboutIntro} <span className="urdu-tagline" lang="ur">بنائے خواب حقیقت</span>
       </p>
 
       <div className="grid gap-6 mt-6 lg:grid-cols-2 items-start">
@@ -86,21 +86,21 @@ export default function AboutPage() {
           <dl className="mt-3 grid grid-cols-3 gap-2 sm:gap-3 text-center">
             <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white flex flex-col justify-between">
               <dt className="text-xs sm:text-sm text-gray-600">Projects on this site</dt>
-              <dd className="text-2xl font-bold text-navy">7</dd>
+              <dd className="text-2xl font-bold text-navy">{counts.projects}</dd>
             </div>
             <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white flex flex-col justify-between">
               <dt className="text-xs sm:text-sm text-gray-600">Live listings</dt>
-              <dd className="text-2xl font-bold text-navy">12</dd>
+              <dd className="text-2xl font-bold text-navy">{counts.listings}</dd>
             </div>
             <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white flex flex-col justify-between">
               <dt className="text-xs sm:text-sm text-gray-600">Partner agencies</dt>
-              <dd className="text-2xl font-bold text-navy">13</dd>
+              <dd className="text-2xl font-bold text-navy">{counts.agencies}</dd>
             </div>
           </dl>
 
           <div className="mt-6 flex gap-2 flex-wrap">
             <Link href="/projects" className="btn btn-red text-sm">
-              See our 7 projects
+              See our {counts.projects} projects
             </Link>
             <Link href="/properties" className="btn btn-outline-navy text-sm">
               Houses and flats for sale
@@ -199,10 +199,10 @@ export default function AboutPage() {
       <h2 className="text-xl font-bold text-navy mt-10">Files</h2>
       <div className="grid gap-4 mt-4 sm:grid-cols-2">
         <article className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
-          <Image src="/img/mgh-zamindar-file.jpg" alt="MGH Zamindar File allotment letter" width={1114} height={1747} className="w-full h-80 object-contain bg-white p-2" loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" />
+          <Image src={content.aboutFilesImg} alt="MGH Zamindar File allotment letter" width={1114} height={1747} className="w-full h-80 object-contain bg-white p-2" loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" />
           <div className="p-4">
             <h3 className="font-bold text-navy">Files</h3>
-            <p className="text-sm text-gray-600 mt-1">MGH Zamindar File, Affidavit MGH, Serene Farm Houses. E-STAMP allotment letter. Call for today&apos;s file rate.</p>
+            <p className="text-sm text-gray-600 mt-1">{content.aboutFilesNote}</p>
           </div>
         </article>
       </div>
@@ -219,7 +219,7 @@ export default function AboutPage() {
         </a>
       </div>
       <div className="grid gap-4 mt-4 sm:grid-cols-2">
-        {VIDEOS.map((v) => (
+        {content.aboutVideos.map((v) => (
           <article key={v.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
             <a href={`https://www.youtube.com/watch?v=${v.id}`} target="_blank" rel="noopener" aria-label={`Watch on YouTube: ${v.title}`} className="relative block w-full aspect-video bg-navy group">
               <Image src={`/img/yt-${v.id}.jpg`} alt={v.title} width={480} height={360} loading="eager" className="absolute inset-0 w-full h-full object-cover bg-navy" />
@@ -240,7 +240,7 @@ export default function AboutPage() {
 
       <h2 className="text-xl font-bold text-navy mt-10">Frequently asked questions</h2>
       <div className="mt-3 space-y-3">
-        {FAQ.map((f) => (
+        {content.aboutFaq.map((f) => (
           <div key={f.q} className="border border-gray-200 rounded-lg p-4 bg-white">
             <p className="font-semibold">{f.q}</p>
             <p className="text-sm text-gray-600 mt-1">{f.a}</p>

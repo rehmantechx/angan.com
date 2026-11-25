@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getProjects, getAgencies } from "../lib/db";
-import { getSiteContent, projectCardSrc, DEFAULT_SITE_CONTENT } from "../lib/siteContent";
+import { getSiteContent, projectCardSrc, cityCardSrc, DEFAULT_SITE_CONTENT, SiteContent } from "../lib/siteContent";
 import { Project, PROJECTS, LISTINGS, Agency, AGENCIES } from "../lib/seed";
 import { ListingCard } from "../components/ListingCard";
 import { StatusBadge } from "../components/StatusBadge";
@@ -34,27 +34,13 @@ const HERO_PHOTOS = DEFAULT_SITE_CONTENT.heroSlides;
 // into public/img/city-*.jpg, see NOTES in
 // angan-e2e-evidence/famous-city-pics-2026-11-23/ for the source
 // URL of each photo. No AI images, no listing photos.
-const CITY_CARDS = [
-  { name: "Lahore", landmark: "Badshahi Mosque", img: "city-lahore-badshahi-day.jpg", alt: "Badshahi Mosque, Lahore, in daylight", href: "/properties?city=Lahore", kind: "listings", pos: "object-top" },
-  { name: "Islamabad", landmark: "Faisal Mosque", img: "city-islamabad-faisal-day.jpg", alt: "Faisal Mosque, Islamabad, in daylight with Margalla Hills", href: "/properties?city=Islamabad", kind: "listings", pos: "object-top" },
-  { name: "Karachi", landmark: "Mazar-e-Quaid", img: "city-karachi-mazar-wide.jpg", alt: "Mazar-e-Quaid, Karachi, whole mausoleum with gardens", href: "/properties?city=Karachi", kind: "listings", pos: "object-top" },
-  { name: "Rawalpindi", landmark: "Raja Bazaar", img: "city-rawalpindi-raja-bazaar-aerial.jpg", alt: "Raja Bazaar, Rawalpindi, wide rooftop view over the bazaar, mosque minaret and dome", href: "/properties?city=Rawalpindi", kind: "listings", pos: "object-top" },
-  // MULTAN LEFT-EDGE FIX 25 Nov 2026: the tomb sits at the far LEFT
-  // of city-multan-shah-rukn-sky.jpg (building base wall from x=33,
-  // dome x=150-270 of 1000), while the card is 4/3 and the photo is
-  // 1000x586 (aspect 1.706), so object-cover with centred
-  // object-top crops 10.9% off EACH side and slices the building's
-  // left flank, leaving the dome flush against the card's left edge.
-  // object-left-top keeps the crop on the right (expendable trees
-  // and road) and the whole tomb in frame with a margin on the left.
-  // Sky above the dome was already fixed by the +60px PIL extension.
-  // Real photo only, no AI, no image edit needed. All other cities
-  // keep object-top, their subjects are centred.
-  { name: "Multan", landmark: "Shah Rukn-e-Alam", img: "city-multan-shah-rukn-sky.jpg", alt: "Tomb of Shah Rukn-e-Alam, Multan", href: "/properties?city=Multan", kind: "listings", pos: "object-left-top" },
-  { name: "Mangla", landmark: "Mangla Dam", img: "city-mangla-dam.jpg", alt: "Mangla Dam, seen from Ramkot Fort", href: "/projects/proj-1", kind: "project", sub: "MGH Pakistan", pos: "object-top" },
-  { name: "Kashmir", landmark: "Sharda, Neelum Valley", img: "city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir", href: "/projects/proj-7", kind: "project", sub: "Kashmir Modern City", pos: "object-top" },
-  { name: "All cities", landmark: "", img: "city-all-cities-collage.jpg", alt: "All cities in daylight: Badshahi Mosque Lahore, Faisal Mosque Islamabad, Mazar-e-Quaid Karachi, Shah Rukn-e-Alam Multan", href: "/properties", kind: "all", sub: "12 homes", pos: "object-top" },
-] as const;
+// Pictorial city cards come from the site content (editable in
+// /admin, Home page), falling back to the seed list in lib/seed.ts.
+// MULTAN LEFT-EDGE FIX 25 Nov 2026: the tomb sits at the far LEFT of
+// city-multan-shah-rukn-sky.jpg, so the card uses object-left-top,
+// not object-top, to keep the whole tomb in frame. All other cities
+// keep object-top, their subjects are centred. Photos are FAMOUS
+// landmarks, real photos from Wikimedia Commons, no AI images.
 function cityCount(city: string) {
   return LISTINGS.filter((l) => l.liveStatus === "live" && l.city === city).length;
 }
@@ -101,6 +87,7 @@ export default function Home() {
   // invisible so it is downloaded before its turn comes. The slides,
   // title and tagline come from the admin settings when the office
   // has saved them, and start from the built-in defaults above.
+  const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
   const [heroSlides, setHeroSlides] = useState(HERO_PHOTOS);
   const [heroTitle, setHeroTitle] = useState(DEFAULT_SITE_CONTENT.heroTitle);
   const [heroTagline, setHeroTagline] = useState(DEFAULT_SITE_CONTENT.heroTagline);
@@ -181,6 +168,7 @@ export default function Home() {
       getProjects().then((rows) => { if (rows.length > 0) setProjects(rows); });
       getAgencies().then((rows) => { if (rows.length > 0) setAgencies(rows); });
       getSiteContent().then((c) => {
+        setContent(c);
         if (c.heroSlides.length > 0) {
           setHeroSlides(c.heroSlides);
           heroRef.current = 0;
@@ -409,9 +397,9 @@ export default function Home() {
           right after the search panel, before Our projects, so it is
           the first thing a visitor sees after the hero and search. */}
       <section className="mt-6" aria-label="Browse by city">
-        <h2 className="text-xl font-bold text-navy text-center">Browse by city</h2>
+        <h2 className="text-xl font-bold text-navy text-center">{content.homeHeadings.browseCities}</h2>
         <div className="grid gap-4 mt-3 grid-cols-2 lg:grid-cols-4">
-          {CITY_CARDS.map((c) => {
+          {content.cityCards.map((c) => {
             const n = c.kind === "listings" ? cityCount(c.name) : c.kind === "all" ? LISTINGS.filter((l) => l.liveStatus === "live").length : 0;
             return (
               <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.landmark}, ${c.sub}, ${c.sub === "Kashmir Modern City" ? "view project" : "open project"}` : c.landmark ? `${c.name}, ${c.landmark}, ${n} ${n === 1 ? "home" : "homes"}, see listings` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
@@ -467,7 +455,7 @@ export default function Home() {
                     2026, Section 2: object-top, not object-center,
                     and taller 4/3 cards, so the tops of the landmarks
                     are not chopped off. */}
-                <Image src={`/img/${c.img}`} alt={c.alt} fill quality={90} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className={`object-cover ${c.pos}`} />
+                <Image src={cityCardSrc(c.img)} alt={c.alt} fill quality={90} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className={`object-cover ${c.pos || "object-top"}`} />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                 <span className="absolute bottom-0 left-0 right-0 p-3 text-white">
                   <span className="block text-lg md:text-xl font-extrabold leading-tight drop-shadow">{c.name}</span>
@@ -500,8 +488,8 @@ export default function Home() {
           was deleted, only the home section was restored. */}
       <section className="mt-10" aria-label="Featured properties">
         <div className="flex items-baseline justify-between flex-wrap gap-2">
-          <h2 className="text-2xl font-bold text-navy">Featured Properties</h2>
-          <Link href="/properties" className="text-anngan-dark font-semibold text-sm">All 12 properties &rarr;</Link>
+          <h2 className="text-2xl font-bold text-navy">{content.homeHeadings.featured}</h2>
+          <Link href="/properties" className="text-anngan-dark font-semibold text-sm">All {LISTINGS.filter((l) => l.liveStatus === "live").length} properties &rarr;</Link>
         </div>
         <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
           {["karachi-shamsi", "dha-stunning", "dha-defence4", "dha-u7", "dha-1kanal", "bahria-luxury"].map((id) => {
@@ -515,54 +503,24 @@ export default function Home() {
           are real photo chips; agencies are their real logos from the
           repo, linking to /contact (no public agencies page exists). */}
       <section id="partner-agencies" className="mt-10 scroll-mt-24" aria-label="Societies and partner agencies">
-        <h2 className="text-2xl font-bold text-navy">Societies</h2>
+        <h2 className="text-2xl font-bold text-navy">{content.homeHeadings.societies}</h2>
         <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
-          {[
-            // POLISH-01 25 Nov 2026: DHA Lahore still uses
-            // lst-dha-stunning.jpg, the same house photo as the
-            // Featured Property card above it. No distinct real DHA
-            // Lahore society/street photo exists in the repo (the
-            // other DHA files are interiors or a watermarked porch;
-            // dha-defence4, dha-u7 and dha-1kanal are all Featured
-            // cards too, so swapping to any of them duplicates a
-            // different Featured card) and none was found on
-            // Wikimedia Commons, searched again 25 Nov via the
-            // Commons API: "Defence Housing Authority Lahore" 0
-            // hits, Category:DHA_Lahore 0 files, "Defence Housing
-            // Authority" file search top hits are all Karachi or
-            // Islamabad (DHA Mosque Karachi, DHA Marina Club,
-            // Seaview Road Karachi, Nisar Shaheed Park Karachi),
-            // "DHA Phase Lahore street" 4 hits, all irrelevant.
-            // The media library was searched too, no DHA Lahore
-            // photo. Swapping in an interior, a watermarked photo
-            // or a photo of another city would be worse. A real DHA
-            // Lahore society/street photo is still needed from the
-            // client; flagged, not invented.
-            { name: "DHA Lahore", img: "lst-dha-stunning.jpg", href: "/properties?q=DHA" },
-            { name: "Bahria Town", img: "bahria-eiffel.jpg", href: "/properties?q=Bahria" },
-            // PARITY 24 Nov 2026, Section 5: the Mangla lake photo was
-            // used 3 times on home (Hero 1, Societies, Projects). This
-            // chip uses the real MGH Precinct 01 photo instead.
-            { name: "MGH Pakistan", img: "mgh-precinct-01.jpg", href: "/projects/proj-1" },
-            // POLISH-01 25 Nov 2026: this chip used city-kashmir-neelum.jpg,
-            // the same Neelum bridge photo as the Kashmir city card above
-            // it, and that bridge is in Sharda, not at Kashmir Modern
-            // City. Now kmc-02-4x3.jpg: the real KMC site road photo
-            // (kmc-02.jpg, Jatlan, AJK), padded in PIL to 4/3 with
-            // sky/ground bands sampled from the photo itself, so both
-            // corner logos stay whole. Distinct from the city card.
-            { name: "Kashmir Modern City", img: "kmc-02-4x3.jpg", href: "/projects/proj-7" },
-          ].map((c) => (
+          {content.homeSocieties.map((c) => (
             <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm aspect-[4/3] bg-navy">
-              {/* PARITY 24 Nov 2026, Section 2: object-top so the tip
-                  of the Bahria Town Eiffel Tower is not chopped. */}
-              <Image src={`/img/${c.img}`} alt={c.name} fill quality={90} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover object-top" />
+              <Image src={cityCardSrc(c.img)} alt={c.name} fill quality={90} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover object-top" />
               <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
               <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg leading-tight">{c.name} &rarr;</span>
             </Link>
           ))}
+          {/* POLISH-01 25 Nov 2026: the DHA Lahore chip still uses
+              lst-dha-stunning.jpg, the same house photo as the Featured
+              Property card above it. No distinct real DHA Lahore
+              society/street photo exists in the repo or on Wikimedia
+              Commons; a real one is still needed from the client,
+              flagged, not invented. The chips above come from the
+              site content (editable in /admin, Home page). */}
         </div>
-        <h3 className="font-bold text-navy mt-6">Partner agencies</h3>
+        <h3 className="font-bold text-navy mt-6">{content.homeHeadings.partnerAgencies}</h3>
         {/* PARTNER MARQUEE 2026-11-25: a proper infinite circular
             strip, not a static grid. The track holds two copies of
             the agency list and slides left by exactly half its own
@@ -615,8 +573,8 @@ export default function Home() {
           (Al Ghani aerial, Global Homes house), else the seed img. */}
       <section className="mt-10 bg-slate-50 -mx-4 md:-mx-6 px-4 md:px-6 py-8" aria-label="Our projects">
         <div className="flex items-baseline justify-between flex-wrap gap-2">
-          <h2 className="text-2xl font-bold text-navy">Our projects</h2>
-          <Link href="/projects" className="text-anngan-dark font-semibold text-sm">All 7 projects &rarr;</Link>
+          <h2 className="text-2xl font-bold text-navy">{content.homeHeadings.ourProjects}</h2>
+          <Link href="/projects" className="text-anngan-dark font-semibold text-sm">All {projects.length} projects &rarr;</Link>
         </div>
         {/* PARITY 24 Nov 2026, Section 2: flex flex-wrap
             justify-center, so the 7th card (Kashmir Modern City)
@@ -721,13 +679,10 @@ export default function Home() {
             />
           </div>
           <div>
-            <h3 className="font-bold text-navy text-lg">MGH Zamindar File, Mangla</h3>
-            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
-              MGH Pakistan at Mangla is Pakistan&apos;s first and biggest natural lake view housing project, on 7KM Mangla Gaddari Road, Mangla Cantt, Jhelum. Anngan is a Platinum partner of the project.
-            </p>
-            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
-              The Zamindar File carries a 10% quota in balloting. Affidavit MGH and Serene Farm Houses in Precincts 05 and 06 are also available. File rates change with the market, call +92 304 1111 698 for today&apos;s rate.
-            </p>
+            <h3 className="font-bold text-navy text-lg">{content.homeMghTitle}</h3>
+            {content.homeMghText.split(/\n\s*\n/).map((para, i) => (
+              <p key={i} className="text-sm text-gray-600 mt-2 leading-relaxed">{para.trim()}</p>
+            ))}
             <p className="text-sm mt-3">
               <a href="https://www.youtube.com/watch?v=UxOpwyG6YJA" target="_blank" rel="noopener" className="text-anngan-dark font-semibold underline">Watch on YouTube: MGH Pakistan, Zamindar File</a>
             </p>
@@ -760,13 +715,13 @@ export default function Home() {
             <Image src={ceoPhoto || "/img/ceo-portrait-v2.jpg"} alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={215} height={356} className="w-full md:w-[360px] h-auto object-cover object-top rounded-lg bg-white" loading="lazy" sizes="(max-width: 768px) 100vw, 50vw" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-navy">Who is Anngan?</h2>
+            <h2 className="text-2xl font-bold text-navy">{content.homeHeadings.whoIsAnngan}</h2>
             <p className="font-bold text-navy mt-2">Muhammad Mahmood Cheema</p>
             <p className="text-sm text-gray-600">Chairman and Chief Executive Officer</p>
             <div className="flex gap-3 mt-4 flex-wrap">
-              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><BuildingIcon size={20} /> 7 Projects</span>
-              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><HomeIcon size={20} /> 12 Properties</span>
-              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><UsersIcon size={20} /> 13 Partner agencies</span>
+              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><BuildingIcon size={20} /> {projects.length} Projects</span>
+              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><HomeIcon size={20} /> {LISTINGS.filter((l) => l.liveStatus === "live").length} Properties</span>
+              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><UsersIcon size={20} /> {agencies.length} Partner agencies</span>
             </div>
             <div className="flex gap-2 mt-4 flex-wrap">
               <Link href="/about" className="btn btn-red">Read our story</Link>
