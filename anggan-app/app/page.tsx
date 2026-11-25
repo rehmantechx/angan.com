@@ -3,30 +3,23 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getProjects } from "../lib/db";
-import { Project, PROJECTS, LISTINGS } from "../lib/seed";
+import { getProjects, getAgencies } from "../lib/db";
+import { getSiteContent, projectCardSrc, DEFAULT_SITE_CONTENT } from "../lib/siteContent";
+import { Project, PROJECTS, LISTINGS, Agency, AGENCIES } from "../lib/seed";
 import { ListingCard } from "../components/ListingCard";
+import { StatusBadge } from "../components/StatusBadge";
 import { ProjectFallback } from "../components/ProjectFallback";
-import { AGENCIES } from "../lib/seed";
 import { BuildingIcon, HomeIcon, UsersIcon } from "../lib/icons";
 
 // Hero background slider, like the original anngan.com: the photo
-// changes every 10 seconds, crossfade, loop. Real photos only, all
-// already in the repo, no AI, no fake. No video, no new section, same
-// hero, same text, no search box. Order is fixed: Mangla lake,
-// Urban City, MGH Precinct 01, Bahria Sky, Neelum Valley Kashmir.
-// VIS-07: slide 5 was kmc-01.jpg, Kashmir Modern City, which carries
-// old anngan.com and MODERN CITY watermarks in the top corners. All
-// three kmc photos carry the same watermarks, so slide 5 is now the
-// clean, unwatermarked Neelum Valley photo already used on the
-// Kashmir city card.
-const HERO_PHOTOS = [
-  { src: "/img/mgh-lake-aerial.jpg", alt: "Mangla Lake aerial view, MGH Pakistan" },
-  { src: "/img/urban-drone.jpg", alt: "Urban City, Lahore, drone view" },
-  { src: "/img/mgh-precinct-01.jpg", alt: "MGH Pakistan, Precinct 01, Mangla" },
-  { src: "/img/chinatown-bahria-sky.jpg", alt: "Bahria Sky, where China Town is located" },
-  { src: "/img/city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir" },
-];
+// moves continuously (slow Ken Burns zoom and pan) and crossfades to
+// the next photo every 10 seconds, loop. Real photos only, all
+// already in the repo, no AI, no fake. The slides, title and tagline
+// come from the admin settings in /admin (Hero and banners) when the
+// office has saved them, and fall back to the built-in list below
+// until then, so the hero works before any edit and updates with no
+// code change and no redeploy after one.
+const HERO_PHOTOS = DEFAULT_SITE_CONTENT.heroSlides;
 
 // Pictorial city cards: for people who cannot read English, a big
 // photo with the city name on it. Click the picture, go to that
@@ -105,7 +98,15 @@ export default function Home() {
 
   // Hero slider state. heroPrev is the photo fading out underneath,
   // hero is the one fading in, and the next photo is already rendered
-  // invisible so it is downloaded before its turn comes.
+  // invisible so it is downloaded before its turn comes. The slides,
+  // title and tagline come from the admin settings when the office
+  // has saved them, and start from the built-in defaults above.
+  const [heroSlides, setHeroSlides] = useState(HERO_PHOTOS);
+  const [heroTitle, setHeroTitle] = useState(DEFAULT_SITE_CONTENT.heroTitle);
+  const [heroTagline, setHeroTagline] = useState(DEFAULT_SITE_CONTENT.heroTagline);
+  const [bannerImages, setBannerImages] = useState(DEFAULT_SITE_CONTENT.bannerImages);
+  const [bannerIdx, setBannerIdx] = useState(0);
+  const [agencies, setAgencies] = useState<Agency[]>(AGENCIES);
   const [hero, setHero] = useState(0);
   const [heroPrev, setHeroPrev] = useState<number | null>(null);
   const [heroIn, setHeroIn] = useState(true);
@@ -115,7 +116,9 @@ export default function Home() {
   // is ready for the crossfade but never competes with first paint.
   const [heroPreload, setHeroPreload] = useState(false);
   const heroRef = useRef(0);
-  const heroNext = (hero + 1) % HERO_PHOTOS.length;
+  const slidesRef = useRef(heroSlides);
+  slidesRef.current = heroSlides;
+  const heroNext = (hero + 1) % heroSlides.length;
 
   function goToHero(i: number) {
     if (i === heroRef.current) return;
@@ -127,13 +130,22 @@ export default function Home() {
 
   useEffect(() => {
     // Every 10 seconds, crossfade to the next real photo, loop.
-    // Paused while the mouse is over the hero, and off entirely for
-    // reduced-motion users. No video, no autoplay sound.
+    // The active photo itself moves continuously the whole time
+    // (Ken Burns zoom and pan, see globals.css), so the hero never
+    // sits still. Paused while the mouse is over the hero, and off
+    // entirely for reduced-motion users. No video, no autoplay sound.
     if (heroPaused) return;
     if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = setInterval(() => goToHero((heroRef.current + 1) % HERO_PHOTOS.length), 10000);
+    const id = setInterval(() => goToHero((heroRef.current + 1) % slidesRef.current.length), 10000);
     return () => clearInterval(id);
   }, [heroPaused]);
+
+  // Banner images behind the search panel rotate on their own timer.
+  useEffect(() => {
+    if (bannerImages.length < 2) return;
+    const id = setInterval(() => setBannerIdx((i) => (i + 1) % bannerImages.length), 10000);
+    return () => clearInterval(id);
+  }, [bannerImages.length]);
 
   useEffect(() => {
     // Start the 1 second crossfade just after the new photo mounts.
@@ -161,9 +173,23 @@ export default function Home() {
     // Background refresh only, after the first paint AND when the
     // browser is idle, so the Firestore round trip never competes
     // with the hero or the images. Projects already show from seed;
-    // live data replaces them only if it differs.
+    // live data replaces them only if it differs. The same refresh
+    // loads the admin-set hero slides, banner images and agencies,
+    // so an office edit shows with no code change and no redeploy.
     const refresh = () => {
       getProjects().then((rows) => { if (rows.length > 0) setProjects(rows); });
+      getAgencies().then((rows) => { if (rows.length > 0) setAgencies(rows); });
+      getSiteContent().then((c) => {
+        if (c.heroSlides.length > 0) {
+          setHeroSlides(c.heroSlides);
+          heroRef.current = 0;
+          setHero(0);
+          setHeroPrev(null);
+        }
+        setHeroTitle(c.heroTitle);
+        setHeroTagline(c.heroTagline);
+        if (c.bannerImages.length > 0) setBannerImages(c.bannerImages);
+      });
     };
     if (typeof window !== "undefined" && "requestIdleCallback" in window) {
       const id = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(refresh, { timeout: 3000 });
@@ -205,10 +231,10 @@ export default function Home() {
         onMouseEnter={() => setHeroPaused(true)}
         onMouseLeave={() => setHeroPaused(false)}
       >
-        {heroPrev !== null ? (
+        {heroPrev !== null && heroSlides[heroPrev] ? (
           <Image
             key={"prev-" + heroPrev}
-            src={HERO_PHOTOS[heroPrev].src}
+            src={heroSlides[heroPrev].src}
             alt=""
             aria-hidden="true"
             fill
@@ -217,22 +243,28 @@ export default function Home() {
             className="absolute inset-0 w-full h-full object-cover opacity-100"
           />
         ) : null}
-        <Image
-          key={"cur-" + hero}
-          src={HERO_PHOTOS[hero].src}
-          alt={HERO_PHOTOS[hero].alt}
-          fill
-          priority={hero === 0}
-          quality={75}
-          sizes="100vw"
-          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
-          style={{ opacity: heroIn ? 1 : 0 }}
-        />
+        {heroSlides[hero] ? (
+          <Image
+            key={"cur-" + hero}
+            src={heroSlides[hero].src}
+            alt={heroSlides[hero].alt}
+            fill
+            priority={hero === 0}
+            quality={75}
+            sizes="100vw"
+            // Ken Burns: the active photo zooms and pans slowly the
+            // whole time it is on screen, alternating direction per
+            // slide, so the hero moves continuously instead of
+            // jumping every 10 seconds.
+            className={"absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 " + (hero % 2 === 0 ? "hero-kenburns-a" : "hero-kenburns-b")}
+            style={{ opacity: heroIn ? 1 : 0 }}
+          />
+        ) : null}
         {/* Next photo, invisible, downloaded 5 seconds in so its turn is instant. */}
-        {heroPreload ? (
+        {heroPreload && heroSlides[heroNext] ? (
           <Image
             key={"next-" + heroNext}
-            src={HERO_PHOTOS[heroNext].src}
+            src={heroSlides[heroNext].src}
             alt=""
             aria-hidden="true"
             fill
@@ -245,16 +277,16 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/65 via-slate-950/45 to-slate-950/75 pointer-events-none" aria-hidden="true" />
         <div className="relative w-full max-w-6xl mx-auto px-4 py-5 md:py-6 text-center">
           <h1 className="text-white text-2xl sm:text-5xl md:text-6xl font-extrabold mx-auto leading-tight md:whitespace-nowrap [text-shadow:0_2px_12px_rgba(0,0,0,0.55)]">
-            WELCOME TO ANNGAN.COM
+            {heroTitle}
           </h1>
           <p className="text-white text-lg md:text-2xl font-light mt-3 md:whitespace-nowrap [text-shadow:0_2px_10px_rgba(0,0,0,0.55)]">
-            Pakistan&apos;s Most Trusted Real Estate Service Providers
+            {heroTagline}
           </p>
         </div>
         <div className="absolute bottom-2 right-4 flex gap-1" aria-label="Hero photos">
-          {HERO_PHOTOS.map((p, i) => (
+          {heroSlides.map((p, i) => (
             <button
-              key={p.src}
+              key={p.src + i}
               type="button"
               aria-label={"Show hero photo " + (i + 1) + ": " + p.alt}
               aria-current={hero === i}
@@ -269,8 +301,27 @@ export default function Home() {
 
       {/* Old-style search panel, dark blue band with blue tabs and a
           white panel, like the old anngan.com. Submit goes to
-          /properties: no listing cards ever render on home. */}
-      <section className="bg-navy px-4 pt-1 pb-3" aria-label="Search properties">
+          /properties: no listing cards ever render on home. The band
+          sits over the admin-set banner images (rotating, under a
+          dark navy overlay), so the office can change the banner
+          photos in /admin without a code change. */}
+      <section className="relative overflow-hidden bg-navy px-4 pt-1 pb-3" aria-label="Search properties">
+        {bannerImages.map((b, i) => (
+          <Image
+            key={b.src + i}
+            src={b.src}
+            alt=""
+            aria-hidden="true"
+            fill
+            quality={70}
+            sizes="100vw"
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 pointer-events-none"
+            style={{ opacity: bannerIdx === i ? 1 : 0 }}
+          />
+        ))}
+        <div className="absolute inset-0 bg-navy/85 pointer-events-none" aria-hidden="true" />
+        <div className="relative">
         <div className="flex justify-center gap-2 flex-wrap" role="tablist" aria-label="For sale or rent">
           {[
             { value: "", label: "All Status" },
@@ -342,8 +393,15 @@ export default function Home() {
           </div>
           <button type="submit" className="btn btn-red w-full col-span-2 lg:col-span-1">Search</button>
         </form>
+        </div>
       </section>
 
+      {/* MARGINS 2026-11-25: everything below the hero and the search
+          band sits inside this one root div, so it gets the shared
+          container (max-w-6xl, 1rem side padding) from globals.css,
+          exactly like every other page. Before this, these sections
+          were bare children of <main> with no side padding at all. */}
+      <div>
       {/* Pictorial: browse by city. Big photo, big city name on the
           photo, click it and you are on that city's listings. Put
           right after the search panel, before Our projects, so it is
@@ -499,29 +557,44 @@ export default function Home() {
           ))}
         </div>
         <h3 className="font-bold text-navy mt-6">Partner agencies</h3>
-        {/* PARITY 24 Nov 2026, Section 2: the 6-column grid left
-            Brick Line Estate as a lone orphan on Row 3 and clipped
-            logo edges at the container border. Now flex flex-wrap
-            justify-center, so the final row is centred, with p-3
-            inside every logo box so zero logo edges touch the border.
-            Same 13 logos, same order, same /contact links, same name
-            labels, 3 per row mobile, 4 tablet, 6 desktop. */}
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-3">
-          {AGENCIES.map((a) => (
-            // PHN-05: every logo tile carries its agency name under
-            // the logo, so the bare stylised P (Pioneer Estate) is
-            // named and no tile is an unlabeled picture.
-            <Link key={a.id} href="/contact" aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm flex flex-col items-center gap-1 w-[calc(33.333%-6px)] sm:w-[calc(25%-9px)] lg:w-[calc(16.666%-10px)]">
-              <span className="relative block w-full aspect-[5/4]">
-                <Image src={`/img/${a.logo}`} alt={a.name + " logo"} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-contain p-3" loading="lazy" />
-              </span>
-              <span className="text-[11px] sm:text-xs font-bold text-navy text-center leading-tight">{a.name}</span>
-            </Link>
-          ))}
+        {/* PARTNER MARQUEE 2026-11-25: a proper infinite circular
+            strip, not a static grid. The track holds two copies of
+            the agency list and slides left by exactly half its own
+            width (see globals.css), so logos leaving on the left
+            re-enter on the right with no jump, and it pauses on
+            hover. The list comes from the admin agency list, so an
+            agency added in /admin joins the marquee. Same 13 logos,
+            same order, same name label under each logo. */}
+        <div className="agency-marquee overflow-hidden mt-3" aria-label="Partner agencies, running strip">
+          <div className="agency-marquee-track flex w-max">
+            {[0, 1].map((copy) => (
+              <div key={copy} aria-hidden={copy === 1} className="flex gap-2 sm:gap-3 pr-2 sm:pr-3 shrink-0">
+                {agencies.map((a) => {
+                  const src = a.logoUrl || (a.logo ? `/img/${a.logo}` : "");
+                  return (
+                    <Link key={a.id + "-" + copy} href={a.link || "/contact"} aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm flex flex-col items-center gap-1 w-[150px] sm:w-[168px] shrink-0">
+                      <span className="relative block w-full aspect-[5/4]">
+                        {src ? (
+                          // Plain img, not next/image: an admin-set
+                          // logo URL can be any real http(s) link, and
+                          // next/image only serves configured remote
+                          // hosts. Local /img files work the same way.
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={src} alt={a.name + " logo"} loading="lazy" className="absolute inset-0 w-full h-full object-contain p-3" />
+                        ) : (
+                          <span className="absolute inset-0 flex items-center justify-center rounded bg-navy text-white text-2xl font-bold">{a.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}</span>
+                        )}
+                      </span>
+                      <span className="text-[11px] sm:text-xs font-bold text-navy text-center leading-tight">{a.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <div>
       {/* Pictorial only, 2026-11-24 user order: Our projects on home
           is photo cards only, like the old anngan.com, for dealers
           who cannot read English. All 7 projects the same size, one
@@ -603,12 +676,16 @@ export default function Home() {
                       served, on Vercel or locally. Rule learned:
                       NEVER change an image file's pixels without
                       renaming it. */}
-                  <Image src={`/img/${p.cardImg || p.img}`} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-wide-v3.jpg" ? "object-cover object-top" : "object-cover"} />
+                  <Image src={projectCardSrc(p)} alt={p.name} fill quality={75} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-wide-v3.jpg" ? "object-cover object-top" : "object-cover"} />
                   <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
+                  <span className="absolute top-2 left-2 z-10"><StatusBadge status={p.status} /></span>
                   <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg md:text-xl leading-tight drop-shadow">{p.name}</span>
                 </>
               ) : (
-                <ProjectFallback name={p.name} loc={p.loc} className="absolute inset-0 w-full h-full" />
+                <div className="absolute inset-0 w-full h-full">
+                  <ProjectFallback name={p.name} loc={p.loc} className="absolute inset-0 w-full h-full" />
+                  <span className="absolute top-2 left-2 z-10"><StatusBadge status={p.status} /></span>
+                </div>
               )}
             </Link>
           ))}

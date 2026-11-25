@@ -6,12 +6,52 @@
 // show no photo: Pak China Grain Market (project) and the Rs 35,000,000 house,
 // which is not among the 12 real listings and is not included here.
 export type Listing = { id: string; title: string; price: string; n: number; beds: number; baths: number; size: string; city: string; loc: string; type: string; status: "sale" | "rent"; img: string; badge: string; url: string; liveStatus: "live" | "pending" | "hidden"; visible: boolean; createdAt: string; submittedBy?: string };
-export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string; cardImg?: string };
+export type ProjectStatus = "Available" | "Coming Soon" | "Sold Out";
+export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string; cardImg?: string; status?: ProjectStatus };
 export type Blog = { id: string; date: string; title: string; url: string };
-export type Agency = { id: string; name: string; logo: string; logoUrl?: string };
+export type Agency = { id: string; name: string; logo: string; logoUrl?: string; link?: string };
 export type Service = { id: string; name: string; note: string; page: string };
 export type Enquiry = { id: string; name: string; phone: string; asked: string; how: string; stage: "New" | "Called" | "Visit" | "Deal Done"; next: string; date: string };
-export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string };
+export type HeroSlide = { src: string; alt: string };
+export type TeamMember = { id: string; name: string; role: string; photoUrl?: string };
+// Site content the office edits in /admin, stored in Firestore
+// (settings/office, public read, office write only) and read live by
+// the public site. Everything is a URL, never an upload: Firebase
+// Storage is not enabled, so admin image fields are image-URL fields
+// only. Seed defaults below apply until the office saves its own
+// values, so the site works before any edit.
+export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string; heroTitle?: string; heroTagline?: string; heroSlides?: HeroSlide[]; bannerImages?: HeroSlide[]; aboutStory?: string; team?: TeamMember[] };
+// Home hero, 8 real photos already in the repo, no AI, no invented
+// photo. Order: Mangla lake, Urban City drone, MGH Precinct 01,
+// Bahria Sky, Neelum Valley Kashmir, Serene Farm Houses, Urban City
+// golf course, Al Ghani aerial.
+export const DEFAULT_HERO_SLIDES: HeroSlide[] = [
+  { src: "/img/mgh-lake-aerial.jpg", alt: "Mangla Lake aerial view, MGH Pakistan" },
+  { src: "/img/urban-drone.jpg", alt: "Urban City, Lahore, drone view" },
+  { src: "/img/mgh-precinct-01.jpg", alt: "MGH Pakistan, Precinct 01, Mangla" },
+  { src: "/img/chinatown-bahria-sky.jpg", alt: "Bahria Sky, where China Town is located" },
+  { src: "/img/city-kashmir-neelum.jpg", alt: "Sharda, Neelum Valley, Kashmir" },
+  { src: "/img/mgh-serene-farmhouses.jpg", alt: "Serene Farm Houses, MGH Pakistan, Mangla" },
+  { src: "/img/urban-golf.jpg", alt: "Urban City golf course, Lahore" },
+  { src: "/img/alghani-aerial.jpg", alt: "Al Ghani Garden Phase 7, Lahore, aerial view" },
+];
+export const DEFAULT_HERO_TITLE = "WELCOME TO ANNGAN.COM";
+export const DEFAULT_HERO_TAGLINE = "Pakistan's Most Trusted Real Estate Service Providers";
+// Banner images: shown behind the home search panel, under a dark
+// navy overlay, so the panel reads as a photo banner. Real photos
+// already in the repo.
+export const DEFAULT_BANNER_IMAGES: HeroSlide[] = [
+  { src: "/img/city-all-cities-collage.jpg", alt: "Lahore, Islamabad, Karachi and Multan landmarks" },
+  { src: "/img/bahria-eiffel.jpg", alt: "Bahria Town Eiffel Tower, Lahore" },
+  { src: "/img/mgh-precinct-01.jpg", alt: "MGH Pakistan, Precinct 01, Mangla" },
+];
+// Our Story default: the two paragraphs already on /about, verbatim.
+// No new claims added.
+export const DEFAULT_ABOUT_STORY =
+  "ANNGAN.COM gives customers top-tier real estate solutions under one roof. We work every day to be Pakistan's trusted source for real estate.\n\nOur landmark projects are MGH Pakistan at Mangla, Kashmir Modern City and Global Homes Lahore.";
+// Our Team default: empty on purpose. The user will tell the team
+// later. No names, roles or photos are invented here.
+export const DEFAULT_TEAM: TeamMember[] = [];
 export const LISTINGS: Listing[] = [
   {
     "id": "karachi-shamsi",
@@ -255,6 +295,7 @@ export const PROJECTS: Project[] = [
     // uses the real MGH Precinct 02 night photo instead, so each slot
     // shows a different real MGH photo.
     "cardImg": "mgh-precinct-02-night.jpg",
+    "status": "Available",
     "note": "Zamindar File, Affidavit MGH and Serene Farm Houses, inside one project."
   },
   {
@@ -288,6 +329,7 @@ export const PROJECTS: Project[] = [
     // same v2 bytes, RENAMED to global-zamzam-house-wide-v3.jpg.
     // Never change an image's pixels without renaming it.
     "cardImg": "global-zamzam-house-wide-v3.jpg",
+    "status": "Available",
     "note": "Zam Zam City, Lahore. LDA approved."
   },
   {
@@ -301,6 +343,7 @@ export const PROJECTS: Project[] = [
     // marketing banner, not the tight sign crop. alghani-site.jpeg
     // is a fake mosque/dome render, never use it.
     "cardImg": "alghani-aerial.jpg",
+    "status": "Available",
     "note": "Bhaini Road, Lahore."
   },
   {
@@ -314,6 +357,7 @@ export const PROJECTS: Project[] = [
     // on home (Hero 2, All cities, Projects). The project card uses
     // the real Urban City Grand Mosque photo instead.
     "cardImg": "urban-mosque.jpg",
+    "status": "Available",
     "note": "80,000+ kanals, Lahore."
   },
   {
@@ -323,6 +367,7 @@ export const PROJECTS: Project[] = [
     "city": "Lahore",
     "page": "project-chinatown.html",
     "img": "chinatown-bahria-sky.jpg",
+    "status": "Available",
     "note": "Inside Bahria Sky, Bahria Orchard, Lahore."
   },
   {
@@ -332,6 +377,7 @@ export const PROJECTS: Project[] = [
     "city": "Multan",
     "page": "project-grain.html",
     "img": "",
+    "status": "Coming Soon",
     "note": "54 acres, Shujabad Road, Multan. 996 shops."
   },
   {
@@ -348,6 +394,7 @@ export const PROJECTS: Project[] = [
     // sky and sand bands, so both logos show whole. The gallery on
     // proj-7 still uses the original kmc-01.jpg, uncropped.
     "cardImg": "kmc-01-16x10.jpg",
+    "status": "Sold Out",
     "note": "Sold Out. Mirpur, Kashmir."
   }
 ];

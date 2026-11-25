@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../lib/auth-context";
 import { PROJECTS, SERVICES } from "../lib/seed";
@@ -87,6 +87,20 @@ export function Header() {
   const [openSub, setOpenSub] = useState<string | null>(null);
   const [mobileDrop, setMobileDrop] = useState<string | null>(null);
   const [mobileSub, setMobileSub] = useState<string | null>(null);
+  // NAV ANIMATION 2026-11-25: hover intent. Moving the mouse away
+  // does not close a dropdown at once; it waits 180ms, so crossing
+  // the small gap to the panel, or brushing past a neighbouring item,
+  // never flickers it shut. Entering again cancels the close.
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function openDropdown(label: string) {
+    if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
+    setOpenDrop(label);
+    setOpenSub(null);
+  }
+  function scheduleCloseDropdown() {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => { setOpenDrop(null); setOpenSub(null); }, 180);
+  }
   const pathname = usePathname();
   // Active page: exact match, or a detail page under its section
   // (/projects/proj-1 is still Projects, /services/service-3 is Angan Tech,
@@ -105,7 +119,7 @@ export function Header() {
     "shrink-0 inline-flex items-center min-h-[40px] px-2 rounded " +
     (isActive(href)
       ? "bg-white text-navy font-extrabold"
-      : "text-white hover:bg-white/15");
+      : "text-white hover:bg-white/15 nav-underline");
   const drawerCls = (href: string) =>
     "py-3 min-h-[48px] flex items-center border-b border-gray-100 " +
     (isActive(href)
@@ -141,7 +155,7 @@ export function Header() {
         </div>
       </div>
       <div className="bg-white">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-1.5 sm:gap-3">
+        <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center gap-1.5 sm:gap-3">
           <Link href="/" className="flex items-center shrink-0 min-w-0" aria-label="Anngan home">
             <Image
               src="/img/logo.png"
@@ -186,7 +200,7 @@ export function Header() {
               tracking-tight px-2 links, slim py-1.5 CREATE A LISTING)
               so all 11 items plus OFFICE LOGIN fit inside the red bar
               with breathing room, no horizontal scrollbar. */}
-          <div className="hidden xl:flex items-center gap-1 text-xs tracking-tight font-bold whitespace-nowrap max-w-7xl mx-auto px-4 sm:px-6 py-1">
+          <div className="hidden xl:flex items-center gap-1 text-xs tracking-tight font-bold whitespace-nowrap max-w-6xl mx-auto px-4 py-1">
             {NAV_LINKS.map((l) =>
               l.dropdown ? (
                 // NAV-01/02 desktop dropdown: hover opens it, the label
@@ -195,12 +209,12 @@ export function Header() {
                 <div
                   key={l.href + l.label}
                   className="relative shrink-0"
-                  onMouseEnter={() => { setOpenDrop(l.label); setOpenSub(null); }}
-                  onMouseLeave={() => setOpenDrop(null)}
+                  onMouseEnter={() => openDropdown(l.label)}
+                  onMouseLeave={() => scheduleCloseDropdown()}
                   onKeyDown={(e) => { if (e.key === "Escape") { setOpenDrop(null); setOpenSub(null); } }}
                 >
                   <span className={"inline-flex items-center " + (isActive(l.href) ? "bg-white text-navy font-extrabold rounded" : "")}>
-                    <Link href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)} onFocus={() => setOpenDrop(l.label)}>
+                    <Link href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)} onFocus={() => openDropdown(l.label)}>
                       {l.label}
                     </Link>
                     <button
@@ -208,26 +222,24 @@ export function Header() {
                       aria-haspopup="true"
                       aria-expanded={openDrop === l.label}
                       aria-label={`${l.label} menu`}
-                      // Click keeps it open: hover already opens the
-                      // menu, so toggling here would close it the moment
-                      // a user clicks the chevron. Escape or moving the
-                      // mouse away closes it.
-                      onClick={() => { setOpenDrop(l.label); setOpenSub(null); }}
-                      onFocus={() => setOpenDrop(l.label)}
-                      className={"inline-flex items-center min-h-[40px] px-1 rounded " + (isActive(l.href) ? "text-navy" : "text-white hover:bg-white/15")}
+                      onClick={() => { if (openDrop === l.label) { setOpenDrop(null); setOpenSub(null); } else openDropdown(l.label); }}
+                      onFocus={() => openDropdown(l.label)}
+                      className={"inline-flex items-center min-h-[40px] px-1 rounded transition-transform duration-200 " + (openDrop === l.label ? "rotate-180 " : "") + (isActive(l.href) ? "text-navy" : "text-white hover:bg-white/15")}
                     >
-                      {openDrop === l.label ? "\u25B2" : "\u25BC"}
+                      {"\u25BC"}
                     </button>
                   </span>
-                  {openDrop === l.label ? (
-                    <div className="absolute left-0 top-full z-50 w-80 bg-white text-navy shadow-lg rounded-b-lg border border-gray-200 py-1 normal-case" role="menu">
+                  {/* Dropdown panel stays mounted and fades + slides
+                      in and out (opacity, translate, visibility with a
+                      200ms transition), so opening and closing are
+                      both smooth instead of appearing and vanishing. */}
+                  <div
+                    className={"absolute left-0 top-full z-50 w-80 bg-white text-navy shadow-lg rounded-b-lg border border-gray-200 py-1 normal-case transition-all duration-200 ease-out " + (openDrop === l.label ? "opacity-100 translate-y-0 visible" : "opacity-0 -translate-y-2 invisible pointer-events-none")}
+                    role="menu"
+                    aria-hidden={openDrop === l.label ? undefined : true}
+                  >
                       {l.dropdown.map((g) =>
                         g.children ? (
-                          // PARITY 24 Nov 2026, Section 3: nested
-                          // sub-menus open on hover (onMouseEnter),
-                          // as a flyout to the right of the parent
-                          // item on desktop. The chevron still
-                          // toggles on click for touch/mobile.
                           <div key={g.href + g.label} className="relative border-b border-gray-100 last:border-b-0" onMouseEnter={() => setOpenSub(g.label)}>
                             <div className="flex items-stretch">
                               <Link href={g.href} onClick={() => setOpenDrop(null)} className="flex-1 px-4 py-2.5 min-h-[44px] inline-flex items-center font-bold hover:bg-blue-50">
@@ -243,15 +255,16 @@ export function Header() {
                                 {openSub === g.label ? "\u25BE" : "\u25B8"}
                               </button>
                             </div>
-                            {openSub === g.label ? (
-                              <div className="absolute left-full top-0 z-50 w-64 bg-white text-navy shadow-lg rounded-lg border border-gray-200 py-1 ml-0.5">
+                            <div
+                              className={"absolute left-full top-0 z-50 w-64 bg-white text-navy shadow-lg rounded-lg border border-gray-200 py-1 ml-0.5 transition-all duration-200 ease-out " + (openSub === g.label ? "opacity-100 translate-x-0 visible" : "opacity-0 -translate-x-2 invisible pointer-events-none")}
+                              aria-hidden={openSub === g.label ? undefined : true}
+                            >
                                 {g.children.map((c) => (
                                   <Link key={c.href} href={c.href} onClick={() => setOpenDrop(null)} className="block px-4 py-2.5 min-h-[44px] hover:bg-blue-50">
                                     {c.label}
                                   </Link>
                                 ))}
-                              </div>
-                            ) : null}
+                            </div>
                           </div>
                         ) : (
                           <Link key={g.href + g.label} href={g.href} onClick={() => setOpenDrop(null)} onMouseEnter={() => setOpenSub(null)} className="block px-4 py-2.5 min-h-[44px] hover:bg-blue-50 border-b border-gray-100 last:border-b-0">
@@ -259,8 +272,7 @@ export function Header() {
                           </Link>
                         ),
                       )}
-                    </div>
-                  ) : null}
+                  </div>
                 </div>
               ) : (
                 <Link key={l.href} href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)}>
@@ -286,7 +298,7 @@ export function Header() {
                   aria-current={isActive("/admin/login") ? "page" : undefined}
                   className={
                     "shrink-0 inline-flex items-center min-h-[40px] px-2 rounded text-white hover:bg-white/15 " +
-                    (isActive("/admin/login") ? "font-extrabold underline underline-offset-4" : "")
+                    (isActive("/admin/login") ? "font-extrabold underline underline-offset-4" : "nav-underline")
                   }
                 >
                   DASHBOARD
@@ -301,8 +313,8 @@ export function Header() {
       </nav>
       {menuOpen ? (
         <div className="fixed inset-0 z-50 xl:hidden" role="dialog" aria-label="Site menu">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMenuOpen(false)} />
-          <div className="absolute left-0 top-0 h-full w-72 max-w-[85vw] bg-white shadow-lg overflow-y-auto">
+          <div className="absolute inset-0 bg-black/50 overlay-fade" onClick={() => setMenuOpen(false)} />
+          <div className="absolute left-0 top-0 h-full w-72 max-w-[85vw] bg-white shadow-lg overflow-y-auto drawer-panel">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
               <Image src="/img/logo.png" alt="anngan.com logo, banay khawab haqiqat" width={1200} height={231} className="h-9 w-auto" />
               <button
@@ -334,12 +346,15 @@ export function Header() {
                         aria-expanded={mobileDrop === l.label}
                         aria-label={`${l.label} menu`}
                         onClick={() => { setMobileDrop(mobileDrop === l.label ? null : l.label); setMobileSub(null); }}
-                        className="px-3 min-w-[48px] min-h-[48px] inline-flex items-center justify-center text-navy"
+                        className="px-3 min-w-[48px] min-h-[48px] inline-flex items-center justify-center text-navy transition-transform duration-200"
                       >
-                        {mobileDrop === l.label ? "\u25BE" : "\u25B8"}
+                        <span className={"inline-block transition-transform duration-200 " + (mobileDrop === l.label ? "rotate-90" : "")}>{"\u25B8"}</span>
                       </button>
                     </div>
-                    {mobileDrop === l.label ? (
+                    {/* Mobile accordion animates open and closed
+                        (max-height transition), it is not removed and
+                        re-added, so it slides instead of popping. */}
+                    <div className={"overflow-hidden transition-[max-height] duration-300 ease-out " + (mobileDrop === l.label ? "max-h-[600px]" : "max-h-0")}>
                       <div className="pb-2 pl-4 border-l-4 border-l-anngan ml-1">
                         {l.dropdown.map((g) =>
                           g.children ? (
@@ -355,10 +370,10 @@ export function Header() {
                                   onClick={() => setMobileSub(mobileSub === g.label ? null : g.label)}
                                   className="px-3 min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-navy"
                                 >
-                                  {mobileSub === g.label ? "\u25BE" : "\u25B8"}
+                                  <span className={"inline-block transition-transform duration-200 " + (mobileSub === g.label ? "rotate-90" : "")}>{"\u25B8"}</span>
                                 </button>
                               </div>
-                              {mobileSub === g.label ? (
+                              <div className={"overflow-hidden transition-[max-height] duration-300 ease-out " + (mobileSub === g.label ? "max-h-[300px]" : "max-h-0")}>
                                 <div className="pl-4 pb-1">
                                   {g.children.map((c) => (
                                     <Link key={c.href} href={c.href} onClick={() => setMenuOpen(false)} className="block py-2.5 min-h-[44px] text-navy">
@@ -366,7 +381,7 @@ export function Header() {
                                     </Link>
                                   ))}
                                 </div>
-                              ) : null}
+                              </div>
                             </div>
                           ) : (
                             <Link key={g.href + g.label} href={g.href} onClick={() => setMenuOpen(false)} className="block py-2.5 min-h-[44px] text-navy">
@@ -375,7 +390,7 @@ export function Header() {
                           ),
                         )}
                       </div>
-                    ) : null}
+                    </div>
                   </div>
                 ) : (
                   <Link

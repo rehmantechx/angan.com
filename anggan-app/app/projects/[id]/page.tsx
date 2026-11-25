@@ -1,21 +1,52 @@
-import Image from "next/image";
+// Project detail page. Client component, like /projects: the project
+// row (status and card image) is refreshed from Firestore, so a status
+// the office sets in /admin (Sold Out, Coming Soon, Available) shows
+// here with no code change and no redeploy. The facts, photos and
+// products still come from lib/projectDetails.ts, unchanged.
+"use client";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { PROJECTS, GRAIN_MARKET } from "../../../lib/seed";
+import { PROJECTS, GRAIN_MARKET, Project } from "../../../lib/seed";
+import { getProjects } from "../../../lib/db";
 import { PROJECT_DETAILS } from "../../../lib/projectDetails";
 import { EnquiryForm } from "../../../components/EnquiryForm";
 import { ProjectFallback } from "../../../components/ProjectFallback";
 import { ProjectGallery } from "../../../components/ProjectGallery";
-
-export function generateStaticParams() {
-  return PROJECTS.map((p) => ({ id: p.id }));
-}
+import { StatusBadge } from "../../../components/StatusBadge";
 
 export default function ProjectPage({ params }: { params: { id: string } }) {
-  const project = PROJECTS.find((p) => p.id === params.id);
-  if (!project) notFound();
-  const d = PROJECT_DETAILS[project.id];
-  if (!d) notFound();
+  const seedProject = PROJECTS.find((p) => p.id === params.id);
+  const [project, setProject] = useState<Project | undefined>(seedProject);
+  useEffect(() => {
+    getProjects().then((rows) => {
+      const live = rows.find((r) => r.id === params.id);
+      if (live) setProject(live);
+    });
+  }, [params.id]);
+  if (!seedProject) {
+    return (
+      <div>
+        <h1 className="text-3xl font-bold text-navy">Project not found</h1>
+        <p className="text-gray-600 mt-2">This project does not exist on anngan.com.</p>
+        <p className="mt-4">
+          <Link href="/projects" className="text-anngan-dark font-semibold underline">Back to all projects</Link>
+        </p>
+      </div>
+    );
+  }
+  const p = project || seedProject;
+  const d = PROJECT_DETAILS[p.id];
+  if (!d) {
+    return (
+      <div>
+        <h1 className="text-3xl font-bold text-navy">{p.name}</h1>
+        <p className="text-gray-600 mt-2">Details for this project are not published yet. Call +92 304 1111 698.</p>
+        <p className="mt-4">
+          <Link href="/projects" className="text-anngan-dark font-semibold underline">Back to all projects</Link>
+        </p>
+      </div>
+    );
+  }
 
   // The Zamindar File allotment letter is a document scan, not a gallery
   // photo. It lives in its own full-width row below the gallery, centred
@@ -32,19 +63,29 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         <Link href="/projects" className="text-anngan-dark font-semibold">
           All projects
         </Link>
-        <span className="text-gray-600"> / {project.name}</span>
+        <span className="text-gray-600"> / {p.name}</span>
       </p>
-      <h1 className="text-3xl font-bold text-navy mt-2">{project.name}</h1>
+      <h1 className="text-3xl font-bold text-navy mt-2">{p.name} <StatusBadge status={p.status} big /></h1>
       <p className="text-gray-600 mt-1">
-        {project.loc && project.loc !== project.city ? `${project.loc}, ${project.city}` : project.city}
+        {p.loc && p.loc !== p.city ? `${p.loc}, ${p.city}` : p.city}
       </p>
+      {p.status === "Sold Out" ? (
+        <p className="mt-3 bg-red-50 border border-red-200 text-red-900 rounded-lg px-4 py-3 text-sm font-semibold">
+          This project is sold out. Call the office if you want to be told about resale files or the next launch.
+        </p>
+      ) : null}
+      {p.status === "Coming Soon" ? (
+        <p className="mt-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-lg px-4 py-3 text-sm font-semibold">
+          This project is coming soon. Call the office to be told when bookings open.
+        </p>
+      ) : null}
       <p className="mt-3">{d.intro}</p>
 
       <ProjectGallery galleryPhotos={galleryPhotos} documentPhotos={documentPhotos} />
 
       {galleryCount === 0 && documentPhotos.length === 0 ? (
         <div className="mt-5 rounded-lg overflow-hidden">
-          <ProjectFallback name={project.name} loc={project.loc} className="w-full h-56" />
+          <ProjectFallback name={p.name} loc={p.loc} className="w-full h-56" />
         </div>
       ) : null}
 
@@ -74,7 +115,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           ) : null}
           {d.note ? <p className="mt-3 text-sm text-gray-600">{d.note}</p> : null}
 
-          {project.id === "proj-6" ? (
+          {p.id === "proj-6" ? (
             <div className="mt-6">
               <h2 className="text-xl font-bold text-navy">Shop plan</h2>
               <table className="w-full text-sm mt-3 border border-gray-200 rounded-lg bg-white">
@@ -114,14 +155,10 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <div className="mt-6">
               <h2 className="text-xl font-bold text-navy">What you can buy here</h2>
               <ul className="mt-3 space-y-3">
-                {d.products.map((p) => (
-                  // NAV-01: MGH sub-menu anchors land on these products.
-                  // Zamindar File -> #zamindar-file, Affidavit MGH ->
-                  // #affidavit-mgh, Serene Farm Houses ->
-                  // #serene-farm-houses.
-                  <li key={p.title} id={p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")} className="border border-gray-200 rounded-lg p-3 bg-white scroll-mt-24">
-                    <p className="font-semibold">{p.title}</p>
-                    <p className="text-sm text-gray-600 mt-1">{p.text}</p>
+                {d.products.map((prod) => (
+                  <li key={prod.title} id={prod.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")} className="border border-gray-200 rounded-lg p-3 bg-white scroll-mt-24">
+                    <p className="font-semibold">{prod.title}</p>
+                    <p className="text-sm text-gray-600 mt-1">{prod.text}</p>
                   </li>
                 ))}
               </ul>
@@ -147,7 +184,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 
         <div>
           <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
-            <h2 className="font-bold text-navy text-lg">Talk to the office about {project.name}</h2>
+            <h2 className="font-bold text-navy text-lg">Talk to the office about {p.name}</h2>
             <div className="flex gap-2 mt-3 flex-wrap">
               <a href="tel:+923041111698" className="bg-[#004274] text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center font-semibold">
                 Call +92 304 1111 698
@@ -162,11 +199,11 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               </a>
             </div>
             <p className="text-sm text-gray-600 mt-2">
-              File rates change with the market. Call for today's rate.
+              File rates change with the market. Call for today&apos;s rate.
             </p>
           </div>
           <div className="mt-4">
-            <EnquiryForm asked={project.name} heading="Ask about this project" compact />
+            <EnquiryForm asked={p.name} heading="Ask about this project" compact />
           </div>
           <p className="mt-4 text-sm">
             <Link href="/projects" className="text-anngan-dark font-semibold underline">

@@ -13,6 +13,7 @@ import {
   getEnquiries,
   getSettings,
   saveListing,
+  saveProject,
   deleteListing,
   saveAgency,
   deleteAgency,
@@ -27,9 +28,12 @@ import {
   firebaseOn,
   setDemoMode,
 } from "../../lib/db";
-import { Listing, Project, Blog, Agency, Service, Enquiry, OfficeSettings } from "../../lib/seed";
+import { getSiteContent, saveSiteContent, SiteContent, DEFAULT_SITE_CONTENT } from "../../lib/siteContent";
+import { Listing, Project, ProjectStatus, Blog, Agency, Service, Enquiry, OfficeSettings, HeroSlide, TeamMember } from "../../lib/seed";
 
-type Tab = "Overview" | "Listings" | "Enquiries" | "Projects" | "Blogs" | "Agencies" | "Services" | "Settings";
+type Tab = "Overview" | "Listings" | "Enquiries" | "Projects" | "Blogs" | "Agencies" | "Services" | "Hero and banners" | "About and team" | "Settings";
+
+const PROJECT_STATUSES: ProjectStatus[] = ["Available", "Coming Soon", "Sold Out"];
 
 const inputCls = "border border-gray-300 rounded px-3 py-2 w-full min-w-0";
 const btnRed = "bg-anngan text-white px-3 py-2.5 rounded min-h-[48px] inline-flex items-center text-sm";
@@ -49,6 +53,11 @@ export default function AdminPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [settings, setSettings] = useState<OfficeSettings | null>(null);
+  const [siteContent, setSiteContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
+  // Per-project admin drafts (status + card image), keyed by project
+  // id, so each project row can be edited and saved on its own.
+  const [projectDrafts, setProjectDrafts] = useState<Record<string, { status: ProjectStatus; cardImg: string }>>({});
+  const [savingProjectId, setSavingProjectId] = useState<string | null>(null);
   const [seeded, setSeeded] = useState(false);
   const [msg, setMsg] = useState("");
   const [edit, setEdit] = useState<Listing | null>(null);
@@ -89,7 +98,7 @@ export default function AdminPage() {
     // page looked unchanged. All reads have their own timeouts.
     setLoadingData(true);
     try {
-      const [l, p, b, a, s, e, st, sd] = await Promise.all([
+      const [l, p, b, a, s, e, st, sd, sc] = await Promise.all([
         getListings(),
         getProjects(),
         getBlogs(),
@@ -98,6 +107,7 @@ export default function AdminPage() {
         getEnquiries(),
         getSettings(),
         isFirestoreSeeded(),
+        getSiteContent(),
       ]);
       setListings(l);
       setProjects(p);
@@ -107,6 +117,10 @@ export default function AdminPage() {
       setEnquiries(e);
       setSettings(st);
       setSeeded(sd);
+      setSiteContent(sc);
+      const drafts: Record<string, { status: ProjectStatus; cardImg: string }> = {};
+      for (const pr of p) drafts[pr.id] = { status: pr.status || "Available", cardImg: pr.cardImg || "" };
+      setProjectDrafts(drafts);
     } finally {
       setLoadingData(false);
     }
@@ -293,7 +307,7 @@ export default function AdminPage() {
       ) : null}
 
       <div className="flex gap-2 mt-4 flex-wrap w-full max-w-full min-w-0">
-        {(["Overview", "Listings", "Enquiries", "Projects", "Blogs", "Agencies", "Services", "Settings"] as Tab[]).map((t) => (
+        {(["Overview", "Listings", "Enquiries", "Projects", "Blogs", "Agencies", "Services", "Hero and banners", "About and team", "Settings"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -347,6 +361,32 @@ export default function AdminPage() {
                 Upload seed data to Firestore
               </button>
             ) : null}
+          </div>
+          <div className="border rounded p-4 sm:col-span-2 lg:col-span-4">
+            <p className="font-bold">Website content, no code needed</p>
+            <p className="text-sm text-gray-600 mt-1">Change these here and they show on the live site straight away, no redeploy. Photos are image links only, because photo upload is not built (Firebase Storage is not enabled). Paste a link to a real photo, or a file already on the site such as /img/mgh-lake-aerial.jpg.</p>
+            <div className="grid gap-2 mt-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="border rounded p-3">
+                <p className="font-semibold text-sm">Hero and banners</p>
+                <p className="text-sm text-gray-600 mt-1">Home hero photos, title and tagline, and the banner photos behind the search panel.</p>
+                <button className={btnNavy + " mt-2"} onClick={() => setTab("Hero and banners")}>Edit hero and banners</button>
+              </div>
+              <div className="border rounded p-3">
+                <p className="font-semibold text-sm">About and team</p>
+                <p className="text-sm text-gray-600 mt-1">Our Story text and Our Team members on the About page.</p>
+                <button className={btnNavy + " mt-2"} onClick={() => setTab("About and team")}>Edit About and team</button>
+              </div>
+              <div className="border rounded p-3">
+                <p className="font-semibold text-sm">Projects</p>
+                <p className="text-sm text-gray-600 mt-1">Project status (Available, Coming Soon, Sold Out) and card photo. The status badge shows on home, /projects and the project page.</p>
+                <button className={btnNavy + " mt-2"} onClick={() => setTab("Projects")}>Edit projects</button>
+              </div>
+              <div className="border rounded p-3">
+                <p className="font-semibold text-sm">Partner agencies</p>
+                <p className="text-sm text-gray-600 mt-1">Agency name, logo link and website link. Agencies run in the circular strip on the home page.</p>
+                <button className={btnNavy + " mt-2"} onClick={() => setTab("Agencies")}>Edit agencies</button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -535,13 +575,66 @@ export default function AdminPage() {
       {tab === "Projects" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Projects ({projects.length})</h2>
+          <p className="text-sm text-gray-600">Status and card photo are editable here and show on the live site straight away: the status badge appears on the home project card, on /projects and on the project page. Sold Out shows a red SOLD OUT badge, Coming Soon an amber COMING SOON badge, Available shows no badge. Card photo: a file already on the site, for example global-zamzam-house-wide-v3.jpg, or a full photo link.</p>
+          {!canEdit ? <p className="text-sm text-gray-600 mt-1">Your role is View only. You can see projects but not change them.</p> : null}
           <div className="grid gap-3 mt-2">
-          {projects.map((p) => (
+          {projects.map((p) => {
+            const draft = projectDrafts[p.id] || { status: p.status || "Available", cardImg: p.cardImg || "" };
+            return (
             <div key={p.id} className="border rounded p-3">
               <p className="font-semibold">{p.name} · {p.loc}</p>
               <p className="text-sm text-gray-600">{p.note}</p>
+              <div className="grid gap-2 mt-3 sm:grid-cols-[180px_1fr_auto] items-end">
+                <label className="text-sm font-semibold">Status
+                  <select
+                    value={draft.status}
+                    disabled={!canEdit}
+                    onChange={(e) => setProjectDrafts((prev) => ({ ...prev, [p.id]: { ...draft, status: e.target.value as ProjectStatus } }))}
+                    aria-label={"Status for " + p.name}
+                    className={inputCls + " mt-1 font-normal"}
+                  >
+                    {PROJECT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </label>
+                <label className="text-sm font-semibold">Card photo, file or photo link
+                  <input
+                    value={draft.cardImg}
+                    disabled={!canEdit}
+                    onChange={(e) => setProjectDrafts((prev) => ({ ...prev, [p.id]: { ...draft, cardImg: e.target.value } }))}
+                    placeholder="For example kmc-01-16x10.jpg, or https://example.com/photo.jpg"
+                    aria-label={"Card photo for " + p.name}
+                    className={inputCls + " mt-1 font-normal"}
+                  />
+                </label>
+                {canEdit ? (
+                  <button
+                    className={btnNavy}
+                    disabled={savingProjectId === p.id}
+                    onClick={async () => {
+                      if (isDemo) { setMsg("Demo mode, view only. Changes are not saved."); return; }
+                      setSavingProjectId(p.id);
+                      setMsgError(false);
+                      try {
+                        const updated: Project = { ...p, status: draft.status, cardImg: draft.cardImg.trim() || undefined };
+                        await saveProject(updated);
+                        setProjects((prev) => prev.map((x) => (x.id === p.id ? updated : x)));
+                        setMsg(p.name + " saved. Status " + draft.status + " now shows on the home card, /projects and the project page.");
+                      } catch (err) {
+                        const e2 = err as { message?: string };
+                        setMsgError(true);
+                        setMsg("Could not save " + p.name + ": " + (e2.message || "permission denied"));
+                      } finally {
+                        setSavingProjectId(null);
+                      }
+                    }}
+                  >
+                    {savingProjectId === p.id ? "Saving..." : "Save project"}
+                  </button>
+                ) : null}
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
         </div>
       )}
@@ -625,6 +718,56 @@ export default function AdminPage() {
             </div>
           ))}
         </div>
+        </div>
+      )}
+
+      {tab === "Hero and banners" && (
+        <div className="mt-4">
+          <h2 className="font-bold text-lg">Hero and banners</h2>
+          <p className="text-sm text-gray-600">Changes here show on the home page straight away, no code change, no redeploy. Hero photos: add by image link, remove, or move up and down. A link can be a file already on the site, for example /img/mgh-lake-aerial.jpg, or a full photo link. No photo upload: Firebase Storage is not enabled.</p>
+          <HeroForm
+            initial={siteContent}
+            canEdit={canEdit}
+            isDemo={isDemo}
+            onSave={async (c) => {
+              if (isDemo) { setMsg("Demo mode, view only. Changes are not saved."); return; }
+              try {
+                await saveSiteContent(c);
+                setSiteContent(c);
+                setMsgError(false);
+                setMsg("Hero and banners saved. The home page shows them straight away.");
+              } catch (err) {
+                const e2 = err as { message?: string };
+                setMsgError(true);
+                setMsg("Could not save the hero and banners: " + (e2.message || "permission denied"));
+              }
+            }}
+          />
+        </div>
+      )}
+
+      {tab === "About and team" && (
+        <div className="mt-4">
+          <h2 className="font-bold text-lg">About and team</h2>
+          <p className="text-sm text-gray-600">Changes here show on the About page straight away, no code change, no redeploy. Our Team starts empty: add a member only when the office gives the real name, role and photo link. Nothing is invented here.</p>
+          <AboutForm
+            initial={siteContent}
+            canEdit={canEdit}
+            isDemo={isDemo}
+            onSave={async (c) => {
+              if (isDemo) { setMsg("Demo mode, view only. Changes are not saved."); return; }
+              try {
+                await saveSiteContent(c);
+                setSiteContent(c);
+                setMsgError(false);
+                setMsg("About page saved. The About page shows it straight away.");
+              } catch (err) {
+                const e2 = err as { message?: string };
+                setMsgError(true);
+                setMsg("Could not save the About page: " + (e2.message || "permission denied"));
+              }
+            }}
+          />
         </div>
       )}
 
@@ -738,13 +881,14 @@ function AgencyForm({ initial, onCancel, onSave }: { initial?: Agency; onCancel:
   const [name, setName] = useState(initial?.name || "");
   const [logo, setLogo] = useState(initial?.logo || "");
   const [logoUrl, setLogoUrl] = useState(initial?.logoUrl || "");
+  const [link, setLink] = useState(initial?.link || "");
   const [saving, setSaving] = useState(false);
   const [newId] = useState(() => "agency-" + Date.now().toString(36));
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || saving) return;
     setSaving(true);
-    Promise.resolve(onSave({ id: initial?.id || newId, name: name.trim(), logo: logo.trim(), logoUrl: logoUrl.trim() || undefined })).finally(() => setSaving(false));
+    Promise.resolve(onSave({ id: initial?.id || newId, name: name.trim(), logo: logo.trim(), logoUrl: logoUrl.trim() || undefined, link: link.trim() || undefined })).finally(() => setSaving(false));
   }
   return (
     <form onSubmit={submit} className="border border-navy rounded-lg p-4 mt-4 bg-white grid gap-3 w-full max-w-xl min-w-0">
@@ -758,11 +902,155 @@ function AgencyForm({ initial, onCancel, onSave }: { initial?: Agency; onCancel:
       <label className="text-sm font-semibold">Logo link, optional
         <input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="Photo link, optional, for example https://example.com/logo.png" className={inputCls + " mt-1 font-normal"} />
       </label>
+      <label className="text-sm font-semibold">Website link, optional
+        <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Link, optional, for example https://example.com. Empty means the agency tile links to /contact." className={inputCls + " mt-1 font-normal"} />
+      </label>
       <p className="text-sm text-gray-600">Leave both logo fields empty and the agency shows a navy monogram with its initials.</p>
       <div className="flex gap-2">
         <button disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : "Save agency"}</button>
         <button type="button" disabled={saving} className={btnLine + " disabled:opacity-50"} onClick={onCancel}>Cancel</button>
       </div>
+    </form>
+  );
+}
+
+function HeroForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; canEdit: boolean; isDemo: boolean; onSave: (c: SiteContent) => Promise<void> | void }) {
+  const [title, setTitle] = useState(initial.heroTitle);
+  const [tagline, setTagline] = useState(initial.heroTagline);
+  const [slides, setSlides] = useState<HeroSlide[]>(initial.heroSlides);
+  const [banners, setBanners] = useState<HeroSlide[]>(initial.bannerImages);
+  const [saving, setSaving] = useState(false);
+  // Keep the form in sync when the dashboard reloads fresh data.
+  const [loadedFor, setLoadedFor] = useState(initial);
+  if (loadedFor !== initial) {
+    setLoadedFor(initial);
+    setTitle(initial.heroTitle);
+    setTagline(initial.heroTagline);
+    setSlides(initial.heroSlides);
+    setBanners(initial.bannerImages);
+  }
+  function move(list: HeroSlide[], setList: (v: HeroSlide[]) => void, i: number, dir: number) {
+    const j = i + dir;
+    if (j < 0 || j >= list.length) return;
+    const next = [...list];
+    [next[i], next[j]] = [next[j], next[i]];
+    setList(next);
+  }
+  function slideRows(list: HeroSlide[], setList: (v: HeroSlide[]) => void, label: string) {
+    return (
+      <div>
+        <p className="font-semibold text-sm">{label} ({list.length})</p>
+        <div className="grid gap-2 mt-2">
+          {list.map((s, i) => (
+            <div key={i} className="flex gap-2 items-center flex-wrap border rounded p-2">
+              {s.src ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={s.src} alt="" className="w-20 h-12 object-cover rounded bg-gray-100 shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              ) : null}
+              <input
+                value={s.src}
+                disabled={!canEdit}
+                onChange={(e) => setList(list.map((x, j) => (j === i ? { ...x, src: e.target.value } : x)))}
+                placeholder="/img/photo.jpg or https://example.com/photo.jpg"
+                aria-label={label + " photo " + (i + 1)}
+                className={inputCls + " flex-1 min-w-[180px]"}
+              />
+              <input
+                value={s.alt}
+                disabled={!canEdit}
+                onChange={(e) => setList(list.map((x, j) => (j === i ? { ...x, alt: e.target.value } : x)))}
+                placeholder="Short description, for example Mangla Lake aerial view"
+                aria-label={label + " description " + (i + 1)}
+                className={inputCls + " flex-1 min-w-[180px]"}
+              />
+              <span className="flex gap-1 shrink-0">
+                <button type="button" disabled={!canEdit || i === 0} onClick={() => move(list, setList, i, -1)} aria-label="Move photo up" className={btnLine + " disabled:opacity-40"}>&uarr;</button>
+                <button type="button" disabled={!canEdit || i === list.length - 1} onClick={() => move(list, setList, i, 1)} aria-label="Move photo down" className={btnLine + " disabled:opacity-40"}>&darr;</button>
+                <button type="button" disabled={!canEdit} onClick={() => setList(list.filter((_, j) => j !== i))} aria-label="Remove photo" className={btnLine + " disabled:opacity-40"}>Remove</button>
+              </span>
+            </div>
+          ))}
+        </div>
+        {canEdit ? (
+          <button type="button" className={btnLine + " mt-2"} onClick={() => setList([...list, { src: "", alt: "" }])}>Add a photo</button>
+        ) : null}
+      </div>
+    );
+  }
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (saving || isDemo) return;
+    setSaving(true);
+    const clean = (rows: HeroSlide[]) => rows.filter((r) => r.src.trim()).map((r) => ({ src: r.src.trim(), alt: r.alt.trim() || "Anngan project photo" }));
+    Promise.resolve(onSave({ ...initial, heroTitle: title.trim(), heroTagline: tagline.trim(), heroSlides: clean(slides), bannerImages: clean(banners) })).finally(() => setSaving(false));
+  }
+  const fieldCls = canEdit ? inputCls : inputCls + " bg-gray-100 text-gray-500 cursor-not-allowed";
+  return (
+    <form onSubmit={submit} className="mt-4 grid gap-4 w-full min-w-0">
+      <label className="text-sm font-semibold">Hero heading
+        <input value={title} disabled={!canEdit} onChange={(e) => setTitle(e.target.value)} className={fieldCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Hero tagline
+        <input value={tagline} disabled={!canEdit} onChange={(e) => setTagline(e.target.value)} className={fieldCls + " mt-1 font-normal"} />
+      </label>
+      {slideRows(slides, setSlides, "Hero photos, in order")}
+      <p className="text-sm text-gray-600">Hero photos move continuously on the home page: a slow zoom and pan on the active photo, then a smooth crossfade to the next photo every 10 seconds.</p>
+      {slideRows(banners, setBanners, "Banner photos, behind the search panel")}
+      <p className="text-sm text-gray-600">Banner photos rotate behind the search panel on the home page, under a dark navy overlay.</p>
+      {canEdit ? <button disabled={saving} className={btnRed + " w-fit disabled:opacity-50"}>{saving ? "Saving..." : "Save hero and banners"}</button> : <p className="text-sm text-gray-600">Your role is View only. You can see the hero and banners but not change them.</p>}
+    </form>
+  );
+}
+
+function AboutForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; canEdit: boolean; isDemo: boolean; onSave: (c: SiteContent) => Promise<void> | void }) {
+  const [story, setStory] = useState(initial.aboutStory);
+  const [team, setTeam] = useState<TeamMember[]>(initial.team);
+  const [saving, setSaving] = useState(false);
+  const [loadedFor, setLoadedFor] = useState(initial);
+  if (loadedFor !== initial) {
+    setLoadedFor(initial);
+    setStory(initial.aboutStory);
+    setTeam(initial.team);
+  }
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (saving || isDemo) return;
+    setSaving(true);
+    Promise.resolve(onSave({ ...initial, aboutStory: story.trim(), team: team.filter((m) => m.name.trim()).map((m) => ({ ...m, name: m.name.trim(), role: m.role.trim(), photoUrl: (m.photoUrl || "").trim() || undefined })) })).finally(() => setSaving(false));
+  }
+  const fieldCls = canEdit ? inputCls : inputCls + " bg-gray-100 text-gray-500 cursor-not-allowed";
+  return (
+    <form onSubmit={submit} className="mt-4 grid gap-4 w-full min-w-0">
+      <label className="text-sm font-semibold">Our Story
+        <textarea value={story} disabled={!canEdit} onChange={(e) => setStory(e.target.value)} rows={6} className={fieldCls + " mt-1 font-normal"} />
+      </label>
+      <p className="text-sm text-gray-600">Blank line between paragraphs starts a new paragraph on the About page.</p>
+      <div>
+        <p className="font-semibold text-sm">Our Team ({team.length})</p>
+        {team.length === 0 ? (
+          <p className="text-sm text-gray-600 mt-2 border border-gray-200 rounded-lg p-3 bg-white">No team members yet. The About page says team members will be added here. Add a member only when the office gives the real name, role and photo link.</p>
+        ) : null}
+        <div className="grid gap-2 mt-2">
+          {team.map((m, i) => (
+            <div key={m.id} className="grid gap-2 border rounded p-3 sm:grid-cols-[1fr_1fr_1fr_auto] items-end">
+              <label className="text-sm font-semibold">Name
+                <input value={m.name} disabled={!canEdit} onChange={(e) => setTeam(team.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} aria-label={"Team member " + (i + 1) + " name"} className={fieldCls + " mt-1 font-normal"} />
+              </label>
+              <label className="text-sm font-semibold">Role
+                <input value={m.role} disabled={!canEdit} onChange={(e) => setTeam(team.map((x, j) => (j === i ? { ...x, role: e.target.value } : x)))} aria-label={"Team member " + (i + 1) + " role"} placeholder="For example Sales Manager" className={fieldCls + " mt-1 font-normal"} />
+              </label>
+              <label className="text-sm font-semibold">Photo link, optional
+                <input value={m.photoUrl || ""} disabled={!canEdit} onChange={(e) => setTeam(team.map((x, j) => (j === i ? { ...x, photoUrl: e.target.value } : x)))} aria-label={"Team member " + (i + 1) + " photo link"} placeholder="/img/photo.jpg or https://example.com/photo.jpg" className={fieldCls + " mt-1 font-normal"} />
+              </label>
+              <button type="button" disabled={!canEdit} onClick={() => setTeam(team.filter((_, j) => j !== i))} aria-label="Remove team member" className={btnLine + " disabled:opacity-40"}>Remove</button>
+            </div>
+          ))}
+        </div>
+        {canEdit ? (
+          <button type="button" className={btnLine + " mt-2"} onClick={() => setTeam([...team, { id: "team-" + Date.now().toString(36), name: "", role: "", photoUrl: "" }])}>Add a team member</button>
+        ) : null}
+      </div>
+      {canEdit ? <button disabled={saving} className={btnRed + " w-fit disabled:opacity-50"}>{saving ? "Saving..." : "Save About page"}</button> : <p className="text-sm text-gray-600">Your role is View only. You can see the About page content but not change it.</p>}
     </form>
   );
 }

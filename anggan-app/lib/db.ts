@@ -364,8 +364,28 @@ function mergeSeedProjects(rows: Project[]): Project[] {
   return rows.map((r) => {
     const seed = PROJECTS.find((p) => p.id === r.id);
     if (!seed) return r;
-    return { ...seed, ...r, cardImg: r.cardImg || seed.cardImg, img: r.img || seed.img };
+    // A Firestore value wins over the seed when it is set, including
+    // status and cardImg, so an office edit in /admin is what the
+    // public site shows. A missing field falls back to the seed.
+    return { ...seed, ...r, cardImg: r.cardImg || seed.cardImg, img: r.img || seed.img, status: r.status || seed.status };
   });
+}
+
+export async function saveProject(p: Project): Promise<void> {
+  if (demoMode) throw new Error("Demo mode, view only. Changes are not saved.");
+
+  const db = await getDb();
+  if (db) {
+    const { doc, setDoc } = await fs();
+    const { id, ...rest } = p;
+    await withTimeout(setDoc(doc(db, "projects", id), rest, { merge: true }), WRITE_TIMEOUT_MS, "Saving the project");
+    return;
+  }
+  const store = loadLocal();
+  const i = store.projects.findIndex((x) => x.id === p.id);
+  if (i >= 0) store.projects[i] = p;
+  else store.projects.unshift(p);
+  saveLocal(store);
 }
 
 export async function getProjects(): Promise<Project[]> {

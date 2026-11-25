@@ -6,15 +6,23 @@ body {
   background: #ffffff;
   color: #1a1a1a;
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: clip;
 }
 
-/* Page container: every page returns one root div, and that div gets the
-   decided content width here. The hero on Home is a direct child of
-   <main> (a <section>, not a div), so it spans the full viewport width
-   with w-full and never needs a vw width. That is the fix for the
-   sideways scroll on desktop: the old hero used w-screen (100vw), and
-   100vw counts the classic desktop scrollbar, so the page was about
-   15px wider than the viewport. No vw width remains in the layout. */
+/* MARGINS, one shared container, 2026-11-25 client demand.
+   Every page uses the same content width: 72rem (1152px, the same as
+   max-w-6xl) with 1rem (16px) of side padding, at 1280 and at 390.
+   The rule below is the single source: every page returns one root
+   div, and that div gets this width. The header rows, the footer and
+   the hero text use the same max-w-6xl + px-4, never max-w-7xl and
+   never px-3 or px-6, so no row is wider or narrower than the others.
+   Home is the one exception with a cause: its hero and search band
+   are full-width sections (direct children of <main>), and the rest
+   of home sits inside one root div, so it gets this container too.
+   The Our projects band inside that div uses -mx-4 + px-4, which
+   cancels exactly this padding, so its background spans the full
+   container width and no further. No section touches the viewport
+   edge, and no vw width is used anywhere. */
 main > div {
   width: 100%;
   max-width: 72rem;
@@ -22,6 +30,88 @@ main > div {
   padding-inline: 1rem;
   padding-block: 1.5rem;
   flex: 1 1 auto;
+}
+
+/* Hero Ken Burns: the active slide moves continuously, a slow zoom
+   and pan, instead of sitting still for 10 seconds and then jumping.
+   Two directions alternate per slide, so the movement never reads as
+   a loop of the same pan. 12 seconds per direction, eased, and it
+   respects reduced-motion users (no movement at all for them). */
+@keyframes hero-kenburns-a {
+  from { transform: scale(1) translate(0, 0); }
+  to { transform: scale(1.12) translate(-1.5%, 1%); }
+}
+@keyframes hero-kenburns-b {
+  from { transform: scale(1.12) translate(1.5%, -1%); }
+  to { transform: scale(1) translate(0, 0); }
+}
+.hero-kenburns-a { animation: hero-kenburns-a 12s ease-in-out infinite alternate; will-change: transform; }
+.hero-kenburns-b { animation: hero-kenburns-b 12s ease-in-out infinite alternate; will-change: transform; }
+
+/* Partner agencies marquee: one continuous circular strip. The
+   track holds two copies of the agency list side by side and slides
+   left by exactly half its own width, so the second copy takes the
+   first copy's place with no jump, and logos leaving on the left
+   re-enter on the right. Pause on hover. */
+@keyframes agency-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.agency-marquee-track {
+  animation: agency-marquee 48s linear infinite;
+  will-change: transform;
+}
+.agency-marquee:hover .agency-marquee-track,
+.agency-marquee:focus-within .agency-marquee-track {
+  animation-play-state: paused;
+}
+
+/* Navbar dropdowns: fade + slide on open, and the same in reverse on
+   close (the panel stays mounted and fades out, it is not removed
+   the moment the mouse leaves). */
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.dropdown-panel {
+  animation: dropdown-in 0.18s ease-out;
+}
+@keyframes drawer-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.drawer-panel { animation: drawer-in 0.28s ease-out; }
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.overlay-fade { animation: overlay-in 0.2s ease-out; }
+
+/* Animated underline on nav links: a white line grows from the left
+   on hover and stays under the active page. */
+.nav-underline { position: relative; }
+.nav-underline::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 4px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s ease-out;
+}
+.nav-underline:hover::after,
+.nav-underline:focus-visible::after,
+.nav-underline[data-active="true"]::after {
+  transform: scaleX(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-kenburns-a, .hero-kenburns-b, .agency-marquee-track {
+    animation: none;
+  }
 }
 
 /* Premium Anngan buttons: one look everywhere. Red is the action,

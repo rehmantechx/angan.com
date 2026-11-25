@@ -1,15 +1,17 @@
+// About page. Client component: Our Story and Our Team come from the
+// admin settings in /admin (About and team), falling back to the
+// built-in text until the office saves its own. Our Team starts
+// empty on purpose: the user will tell the team later, so no names,
+// roles or photos are invented here. CEO portrait (ceo-flat.jpg),
+// stats 7/12/13, the 6 real YouTube videos and the FAQ are unchanged.
+// The Mangla lake / MGH main project image section and the What We Do
+// section were removed on the client demand of 2026-11-25.
+"use client";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-const WORK = [
-  { title: "Project marketing", img: "mgh-lake-aerial.jpg", alt: "Mangla Lake, MGH Pakistan", note: "MGH Pakistan, Global Homes Lahore, Al Ghani Phase 7, Urban City, China Town, Pak China Grain Market, Kashmir Modern City." },
-  { title: "For sale", img: "lst-dha-stunning.jpg", alt: "House in DHA Lahore", note: "Houses, flats and portions in Lahore, Karachi, Rawalpindi, Multan and Islamabad. Real photos, real prices." },
-  { title: "For rent", img: "lst-orchard-rent.jpg", alt: "House for rent in Bahria Orchard, Lahore", note: "Houses and portions in Lahore, Rawalpindi and Islamabad. Monthly rent shown." },
-  // VIS-08: the Files card shows a clean thumbnail of the real MGH
-  // Zamindar File allotment letter (the same file shown on proj-1),
-  // not a navy text box.
-  { title: "Files", img: "mgh-zamindar-file.jpg", alt: "MGH Zamindar File allotment letter", note: "MGH Zamindar File, Affidavit MGH, Serene Farm Houses. Call for today's file rate." },
-];
+import { getSiteContent, DEFAULT_SITE_CONTENT } from "../../lib/siteContent";
+import { TeamMember } from "../../lib/seed";
 
 const FAQ = [
   { q: "What is MGH Zamindar File?", a: "A file product of MGH Pakistan at Mangla. Call +92 304 1111 698 for today's rate." },
@@ -17,7 +19,6 @@ const FAQ = [
   { q: "Which cities does Anngan cover?", a: "Karachi, Islamabad, Lahore and Peshawar, plus projects at Mangla, Multan and Kashmir." },
   { q: "How do I create a listing?", a: "Use Create a Listing on this site, or call +92 304 1111 698 with the details and photos." },
 ];
-
 
 // Videos found on the real Anngan YouTube channel (@annganpk,
 // UC7lbVe_2Lfw8dzThSaAq6Aw). Every ID was verified from the channel
@@ -37,36 +38,24 @@ const VIDEOS = [
 const YOUTUBE_URL = "https://www.youtube.com/channel/UC7lbVe_2Lfw8dzThSaAq6Aw";
 
 export default function AboutPage() {
+  const [story, setStory] = useState(DEFAULT_SITE_CONTENT.aboutStory);
+  const [team, setTeam] = useState<TeamMember[]>(DEFAULT_SITE_CONTENT.team);
+  useEffect(() => {
+    getSiteContent().then((c) => {
+      setStory(c.aboutStory);
+      setTeam(c.team);
+    });
+  }, []);
+
   return (
     <div>
       <h1 className="text-3xl font-bold text-navy">About Anngan</h1>
       <p className="text-gray-600 mt-1">
-        Pakistan's most trusted real estate service provider. <span className="urdu-tagline" lang="ur">بنائے خواب حقیقت</span>
+        Pakistan&apos;s most trusted real estate service provider. <span className="urdu-tagline" lang="ur">بنائے خواب حقیقت</span>
       </p>
-
-      <figure className="mt-5 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-        <Image
-          src="/img/mgh-lake-aerial.jpg"
-          alt="Mangla Lake aerial view, MGH Pakistan"
-          width={1200}
-          height={675}
-          className="w-full h-56 sm:h-64 object-cover"
-          sizes="100vw"
-        />
-        <figcaption className="text-xs text-gray-600 px-4 py-2 bg-white">Mangla Lake, MGH Pakistan, our main project.</figcaption>
-      </figure>
 
       <div className="grid gap-6 mt-6 lg:grid-cols-2 items-start">
         <figure className="border border-gray-200 rounded-lg p-4 bg-white max-w-md w-full">
-          {/* LIVE-FAIL FIX 24 Nov 2026: ceo-flat.jpg is the original
-              unpadded photo (1024x683) with its radial-gradient
-              studio backdrop flattened in the file itself to uniform
-              grey 199 (PIL, border-connected backdrop mask only).
-              The gradient's darker top strip was the grey band seen
-              live on both pages. Do NOT "restore" the git-history
-              original, that brings the band back. Clean rounded frame,
-              object-cover object-top, max-height so it never
-              stretches pixelated. No grey letterbox band. */}
           <Image
             src="/img/ceo-flat.jpg"
             alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan"
@@ -81,23 +70,7 @@ export default function AboutPage() {
         </figure>
 
         <div>
-          <h2 className="text-xl font-bold text-navy">Our story</h2>
-          <p className="mt-2 text-sm leading-relaxed">
-            ANNGAN.COM gives customers top-tier real estate solutions under one
-            roof. We work every day to be Pakistan's trusted source for real
-            estate.
-          </p>
-          <p className="mt-2 text-sm leading-relaxed">
-            Our landmark projects are MGH Pakistan at Mangla, Kashmir Modern City
-            and Global Homes Lahore.
-          </p>
-
-          <h2 className="text-xl font-bold text-navy mt-6">Anngan in numbers</h2>
-          {/* PARITY 24 Nov 2026, Section 4: "Listings with photos
-              and prices" wrapped to 2 lines while "Projects on this
-              site" stayed on 1, misaligning the numbers 7, 12, 13.
-              Shortened to "Live listings", and each box is flex
-              flex-col justify-between so the numbers sit level. */}
+          <h2 className="text-xl font-bold text-navy">Anngan in numbers</h2>
           <dl className="mt-3 grid grid-cols-3 gap-2 sm:gap-3 text-center">
             <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white flex flex-col justify-between">
               <dt className="text-xs sm:text-sm text-gray-600">Projects on this site</dt>
@@ -127,29 +100,40 @@ export default function AboutPage() {
         </div>
       </div>
 
-      <h2 className="text-xl font-bold text-navy mt-10">What we do</h2>
-      <div className="grid gap-4 mt-4 sm:grid-cols-2">
-        {WORK.map((w) => (
-          <article key={w.title} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
-            {/* PARITY 24 Nov 2026, Section 1: the Files card is a
-                document, not a photo. The old h-36 object-cover
-                sliced the E-STAMP letter through "MGH PAKISTAN" and
-                "S/O D/O W/O:". Now a tall white frame with
-                object-contain, so the whole letter shows, uncropped. */}
-            {w.img ? (
-              <Image src={`/img/${w.img}`} alt={w.alt} width={1200} height={675} className={w.title === "Files" ? "w-full h-80 object-contain bg-white p-2" : "w-full h-36 object-cover"} loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" />
-            ) : (
-              <div className="w-full h-36 bg-navy flex items-center justify-center px-4">
-                <p className="text-white font-bold text-center">MGH Zamindar File<br /><span className="text-sm font-normal text-blue-100">5 Marla, 125 sq yards, Mangla</span></p>
-              </div>
-            )}
-            <div className="p-4">
-              <h3 className="font-bold text-navy">{w.title}</h3>
-              <p className="text-sm text-gray-600 mt-1">{w.note}</p>
-            </div>
-          </article>
+      <h2 className="text-xl font-bold text-navy mt-10">Our Story</h2>
+      <div className="mt-3 space-y-3 max-w-3xl">
+        {story.split(/\n\s*\n/).map((para, i) => (
+          <p key={i} className="text-sm leading-relaxed">{para.trim()}</p>
         ))}
       </div>
+
+      <h2 className="text-xl font-bold text-navy mt-10">Our Team</h2>
+      {team.length === 0 ? (
+        <p className="mt-3 text-sm text-gray-600 border border-gray-200 rounded-lg p-4 bg-white max-w-3xl">
+          Our team members will be added here. The office adds them in the dashboard, under About and team.
+        </p>
+      ) : (
+        <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
+          {team.map((m) => (
+            <article key={m.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+              {m.photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={m.photoUrl} alt={m.name} loading="lazy" className="w-full h-56 object-cover object-top bg-gray-100" />
+              ) : (
+                <div className="w-full h-56 bg-navy flex items-center justify-center">
+                  <span className="text-white text-4xl font-bold" aria-hidden="true">
+                    {m.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <div className="p-4">
+                <h3 className="font-bold text-navy">{m.name}</h3>
+                {m.role ? <p className="text-sm text-gray-600 mt-1">{m.role}</p> : null}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
 
       <h2 className="text-xl font-bold text-navy mt-10">Watch Muhammad Mahmood Cheema on MGH</h2>
       <p className="text-gray-600 text-sm mt-1">
@@ -166,12 +150,6 @@ export default function AboutPage() {
         {VIDEOS.map((v) => (
           <article key={v.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
             <a href={`https://www.youtube.com/watch?v=${v.id}`} target="_blank" rel="noopener" aria-label={`Watch on YouTube: ${v.title}`} className="relative block w-full aspect-video bg-navy group">
-              {/* Plain <img> with loading="lazy" left a blank white box
-                  for the below-fold videos until they scrolled into view
-                  and loaded. These thumbnails are small local files
-                  (11 to 37 KB each, about 130 KB for all six), so load
-                  them all eagerly on a navy background with the play
-                  button always visible, never a blank white box. */}
               <Image src={`/img/yt-${v.id}.jpg`} alt={v.title} width={480} height={360} loading="eager" className="absolute inset-0 w-full h-full object-cover bg-navy" />
               <span className="absolute inset-0 flex items-center justify-center">
                 <span className="bg-anngan text-white rounded-full w-14 h-14 flex items-center justify-center text-2xl shadow-lg group-hover:bg-[#C81E1E]" aria-hidden="true">&#9654;</span>
