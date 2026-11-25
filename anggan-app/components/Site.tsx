@@ -85,6 +85,18 @@ export function Header() {
   // sub-menu inside it. Mobile drawer accordions use the same labels.
   const [openDrop, setOpenDrop] = useState<string | null>(null);
   const [openSub, setOpenSub] = useState<string | null>(null);
+  // FIRST-CLICK FIX 25 Nov 2026 (live fail, HEAD 57ecf38): the old
+  // code opened a dropdown on hover and TOGGLED it on chevron click.
+  // A real click always moves the mouse onto the button first, so
+  // hover had already opened it and the first click CLOSED it; only
+  // the second click opened it. Same for nested sub-menus. So the
+  // open state now remembers HOW it was opened: "hover" opens are
+  // transient (mouseleave closes after 180ms) and a click on the
+  // chevron PINs it open instead of toggling it shut. A pinned
+  // dropdown only closes on a second chevron click, Escape, or
+  // picking a link. Hovering another top-level item still switches.
+  const [openVia, setOpenVia] = useState<"hover" | "click" | null>(null);
+  const [subVia, setSubVia] = useState<"hover" | "click" | null>(null);
   const [mobileDrop, setMobileDrop] = useState<string | null>(null);
   const [mobileSub, setMobileSub] = useState<string | null>(null);
   // NAV ANIMATION 2026-11-25: hover intent. Moving the mouse away
@@ -92,14 +104,26 @@ export function Header() {
   // the small gap to the panel, or brushing past a neighbouring item,
   // never flickers it shut. Entering again cancels the close.
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  function openDropdown(label: string) {
+  function openDropdown(label: string, via: "hover" | "click" = "hover") {
     if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
     setOpenDrop(label);
+    setOpenVia(via);
     setOpenSub(null);
+    setSubVia(null);
+  }
+  function closeDropdowns() {
+    if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
+    setOpenDrop(null);
+    setOpenSub(null);
+    setOpenVia(null);
+    setSubVia(null);
   }
   function scheduleCloseDropdown() {
+    // A click-pinned dropdown never auto-closes on mouseleave; only
+    // a hover-opened one does, after 180ms.
+    if (openVia === "click") return;
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => { setOpenDrop(null); setOpenSub(null); }, 180);
+    closeTimer.current = setTimeout(() => { closeDropdowns(); }, 180);
   }
   const pathname = usePathname();
   // Active page: exact match, or a detail page under its section
@@ -209,12 +233,12 @@ export function Header() {
                 <div
                   key={l.href + l.label}
                   className="relative shrink-0"
-                  onMouseEnter={() => openDropdown(l.label)}
+                  onMouseEnter={() => { if (openDrop !== l.label) openDropdown(l.label, "hover"); }}
                   onMouseLeave={() => scheduleCloseDropdown()}
-                  onKeyDown={(e) => { if (e.key === "Escape") { setOpenDrop(null); setOpenSub(null); } }}
+                  onKeyDown={(e) => { if (e.key === "Escape") { closeDropdowns(); } }}
                 >
                   <span className={"inline-flex items-center " + (isActive(l.href) ? "bg-white text-navy font-extrabold rounded" : "")}>
-                    <Link href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)} onFocus={() => openDropdown(l.label)}>
+                    <Link href={l.href} aria-current={isActive(l.href) ? "page" : undefined} className={navCls(l.href)} onFocus={() => { if (openDrop !== l.label) openDropdown(l.label, "hover"); }}>
                       {l.label}
                     </Link>
                     <button
@@ -222,8 +246,8 @@ export function Header() {
                       aria-haspopup="true"
                       aria-expanded={openDrop === l.label}
                       aria-label={`${l.label} menu`}
-                      onClick={() => { if (openDrop === l.label) { setOpenDrop(null); setOpenSub(null); } else openDropdown(l.label); }}
-                      onFocus={() => openDropdown(l.label)}
+                      onClick={() => { if (openDrop === l.label && openVia === "click") { closeDropdowns(); } else { openDropdown(l.label, "click"); } }}
+                      onFocus={() => { if (openDrop !== l.label) openDropdown(l.label, "hover"); }}
                       className={"inline-flex items-center min-h-[40px] px-1 rounded transition-transform duration-200 " + (openDrop === l.label ? "rotate-180 " : "") + (isActive(l.href) ? "text-navy" : "text-white hover:bg-white/15")}
                     >
                       {"\u25BC"}
@@ -240,16 +264,16 @@ export function Header() {
                   >
                       {l.dropdown.map((g) =>
                         g.children ? (
-                          <div key={g.href + g.label} className="relative border-b border-gray-100 last:border-b-0" onMouseEnter={() => setOpenSub(g.label)}>
+                          <div key={g.href + g.label} className="relative border-b border-gray-100 last:border-b-0" onMouseEnter={() => { if (openSub !== g.label) { setOpenSub(g.label); setSubVia("hover"); } }}>
                             <div className="flex items-stretch">
-                              <Link href={g.href} onClick={() => setOpenDrop(null)} className="flex-1 px-4 py-2.5 min-h-[44px] inline-flex items-center font-bold hover:bg-blue-50">
+                              <Link href={g.href} onClick={() => closeDropdowns()} className="flex-1 px-4 py-2.5 min-h-[44px] inline-flex items-center font-bold hover:bg-blue-50">
                                 {g.label}
                               </Link>
                               <button
                                 type="button"
                                 aria-expanded={openSub === g.label}
                                 aria-label={`${g.label} sub-menu`}
-                                onClick={() => setOpenSub(openSub === g.label ? null : g.label)}
+                                onClick={() => { if (openSub === g.label && subVia === "click") { setOpenSub(null); setSubVia(null); } else { setOpenSub(g.label); setSubVia("click"); } }}
                                 className="px-3 min-w-[44px] inline-flex items-center justify-center hover:bg-blue-50"
                               >
                                 {openSub === g.label ? "\u25BE" : "\u25B8"}
@@ -260,14 +284,14 @@ export function Header() {
                               aria-hidden={openSub === g.label ? undefined : true}
                             >
                                 {g.children.map((c) => (
-                                  <Link key={c.href} href={c.href} onClick={() => setOpenDrop(null)} className="block px-4 py-2.5 min-h-[44px] hover:bg-blue-50">
+                                  <Link key={c.href} href={c.href} onClick={() => closeDropdowns()} className="block px-4 py-2.5 min-h-[44px] hover:bg-blue-50">
                                     {c.label}
                                   </Link>
                                 ))}
                             </div>
                           </div>
                         ) : (
-                          <Link key={g.href + g.label} href={g.href} onClick={() => setOpenDrop(null)} onMouseEnter={() => setOpenSub(null)} className="block px-4 py-2.5 min-h-[44px] hover:bg-blue-50 border-b border-gray-100 last:border-b-0">
+                          <Link key={g.href + g.label} href={g.href} onClick={() => closeDropdowns()} onMouseEnter={() => { setOpenSub(null); setSubVia(null); }} className="block px-4 py-2.5 min-h-[44px] hover:bg-blue-50 border-b border-gray-100 last:border-b-0">
                             {g.label}
                           </Link>
                         ),

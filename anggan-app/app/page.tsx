@@ -412,7 +412,7 @@ export default function Home() {
           {CITY_CARDS.map((c) => {
             const n = c.kind === "listings" ? cityCount(c.name) : c.kind === "all" ? LISTINGS.filter((l) => l.liveStatus === "live").length : 0;
             return (
-              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.landmark}, ${c.sub}, open project` : c.landmark ? `${c.name}, ${c.landmark}, ${n} ${n === 1 ? "home" : "homes"}, see listings` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
+              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.landmark}, ${c.sub}, ${c.sub === "Kashmir Modern City" ? "view project" : "open project"}` : c.landmark ? `${c.name}, ${c.landmark}, ${n} ${n === 1 ? "home" : "homes"}, see listings` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
                 {/* FAMOUS PLACES 25 Nov 2026 (user order 00:34 PKT):
                     the landmark must FILL the card, large, clear and
                     well-lit, not a tiny dark silhouette. Lahore and
@@ -618,7 +618,7 @@ export default function Home() {
             the left. */}
         <div className="flex flex-wrap justify-center gap-4 mt-4">
           {projects.map((p) => (
-            <Link key={p.id} href={`/projects/${p.id}`} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[16/10] bg-navy w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]" aria-label={`${p.name}, open project`}>
+            <Link key={p.id} href={`/projects/${p.id}`} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[16/10] bg-navy w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]" aria-label={`${p.name}, ${p.status === "Sold Out" ? "view project" : "open project"}`}>
               {p.img || p.cardImg ? (
                 <>
                   {/* LIVE-FAIL FIX 24 Nov 2026: the Global Homes

@@ -5,7 +5,10 @@
 // roles or photos are invented here. CEO portrait (ceo-flat.jpg),
 // stats 7/12/13, the 6 real YouTube videos and the FAQ are unchanged.
 // The Mangla lake / MGH main project image section and the What We Do
-// section were removed on the client demand of 2026-11-25.
+// section were removed on the client demand of 2026-11-25. The Files
+// card was restored as its own section on 25 Nov 2026: it was removed
+// as a side effect of removing What We Do, which the user did not ask
+// to remove.
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -134,6 +137,26 @@ export default function AboutPage() {
           ))}
         </div>
       )}
+
+      {/* FILES 25 Nov 2026 (live fail, HEAD 57ecf38): the Files card
+          was removed as a side effect of removing What We Do, which
+          the user did NOT ask to remove. Restored here as its own
+          section, same as before: the real MGH Zamindar File
+          allotment letter (mgh-zamindar-file.jpg, 1114x1747), tall
+          white frame with object-contain, so the whole E-STAMP letter
+          shows uncropped, "MGH PAKISTAN" and "S/O D/O W/O:" fully
+          visible. What We Do and the Mangla lake / MGH image section
+          stay removed. */}
+      <h2 className="text-xl font-bold text-navy mt-10">Files</h2>
+      <div className="grid gap-4 mt-4 sm:grid-cols-2">
+        <article className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
+          <Image src="/img/mgh-zamindar-file.jpg" alt="MGH Zamindar File allotment letter" width={1114} height={1747} className="w-full h-80 object-contain bg-white p-2" loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" />
+          <div className="p-4">
+            <h3 className="font-bold text-navy">Files</h3>
+            <p className="text-sm text-gray-600 mt-1">MGH Zamindar File, Affidavit MGH, Serene Farm Houses. E-STAMP allotment letter. Call for today&apos;s file rate.</p>
+          </div>
+        </article>
+      </div>
 
       <h2 className="text-xl font-bold text-navy mt-10">Watch Muhammad Mahmood Cheema on MGH</h2>
       <p className="text-gray-600 text-sm mt-1">

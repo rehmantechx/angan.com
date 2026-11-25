@@ -13,7 +13,7 @@ const GUIDES = [
   // top-right). Now kmc-01-16x10.jpg, the same real KMC photo padded
   // in code to 1200x750 with sky/sand bands, both logos whole, the
   // same file the homepage Our projects card already uses.
-  { name: "Kashmir Modern City, Mirpur", note: "Sold Out. Developer Al-Baari. Soft launch at Mirpur, 21 Dec 2022.", href: "/projects/proj-7", label: "Open project", img: "kmc-01-16x10.jpg", caption: "Kashmir Modern City, Mirpur", contain: false },
+  { name: "Kashmir Modern City, Mirpur", note: "Sold Out. Developer Al-Baari. Soft launch at Mirpur, 21 Dec 2022.", href: "/projects/proj-7", label: "View project", img: "kmc-01-16x10.jpg", caption: "Kashmir Modern City, Mirpur", contain: false },
 ];
 
 export default function SocietiesPage() {
