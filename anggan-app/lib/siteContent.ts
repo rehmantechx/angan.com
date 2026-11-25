@@ -105,12 +105,21 @@ export function siteContentFromSettings(s: OfficeSettings): SiteContent {
 }
 
 // QUALITY MIGRATION 25 Nov 2026, see siteContentFromSettings above.
+// HERO FIX 2026-11-25 (user: "shit pic replace this pic"):
+// alghani-aerial.jpg was a 560px CGI render with baked-in text, so a
+// stored copy is swapped for the real Jasmine Block photo; and
+// urban-drone.jpg was a 4-quadrant CGI collage, so a stored copy is
+// dropped outright. Office custom slides are kept exactly.
 const REPLACED_HERO_SLIDES: Record<string, HeroSlide> = {
   "/img/chinatown-bahria-sky.jpg": { src: "/img/hero-bahria-talwar.jpg", alt: "Talwar Chowk, Bahria Town, Lahore" },
   "/img/city-kashmir-neelum.jpg": { src: "/img/hero-sharda-valley.jpg", alt: "Sharda, Neelum Valley, Kashmir" },
+  "/img/alghani-aerial.jpg": { src: "/img/hero-bahria-jasmine.jpg", alt: "Jasmine Block, Bahria Town, Lahore" },
 };
+const DROPPED_HERO_SLIDES = new Set(["/img/urban-drone.jpg"]);
 export function migrateHeroSlides(rows: HeroSlide[]): HeroSlide[] {
-  return rows.map((r) => REPLACED_HERO_SLIDES[r.src] || r);
+  return rows
+    .filter((r) => !DROPPED_HERO_SLIDES.has(r.src))
+    .map((r) => REPLACED_HERO_SLIDES[r.src] || r);
 }
 
 export async function getSiteContent(): Promise<SiteContent> {

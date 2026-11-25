@@ -21,10 +21,10 @@ export type TeamMember = { id: string; name: string; role: string; photoUrl?: st
 // only. Seed defaults below apply until the office saves its own
 // values, so the site works before any edit.
 export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string; ceoPhoto?: string; heroTitle?: string; heroTagline?: string; heroSlides?: HeroSlide[]; bannerImages?: HeroSlide[]; aboutStory?: string; team?: TeamMember[]; techTeam?: TeamMember[] };
-// Home hero, 8 real photos already in the repo, no AI, no invented
-// photo. Order: Mangla lake, Urban City drone, MGH Precinct 01,
+// Home hero, 7 real photos already in the repo, no AI, no invented
+// photo. Order: Mangla lake, MGH Precinct 01,
 // Talwar Chowk Bahria Town, Sharda Neelum Valley, Serene Farm Houses,
-// Urban City golf course, Al Ghani aerial.
+// Urban City golf course, Jasmine Block Bahria Town.
 // QUALITY (user order 2026-11-25): all hero photos were blurry on a
 // full-width hero because the sources are 560-1200px wide and the hero
 // shows up to 1920px wide plus a 1.08 Ken Burns zoom. Slides 4 and 5
@@ -34,19 +34,34 @@ export type OfficeSettings = { phone: string; whatsapp: string; email: string; a
 // hero-bahria-talwar.jpg, 2400px); Sharda, Neelum Valley, 6000px,
 // CC BY-SA 3.0, Umar Jamshaid (hero-sharda-valley.jpg, 2400px). No
 // high-resolution real photo exists on Commons for Mangla Lake aerial,
-// Urban City drone, MGH Precinct 01, Serene Farm Houses, Urban City
-// golf or Al Ghani aerial, so those keep their 1100-1200px originals
-// (Al Ghani 560px) at quality 90; the client must send a real
-// high-resolution photo to make them sharp at 1920px wide.
+// MGH Precinct 01, Serene Farm Houses or Urban City golf, so those
+// keep their 1100-1200px originals at quality 90; the client must send
+// a real high-resolution photo to make them sharp at 1920px wide.
+// SLIDE 8 REMOVED 2026-11-25 (user: "shit pic replace this pic"):
+// alghani-aerial.jpg was a 560px CGI masterplan render with
+// "AL GHANI DEVELOPERS" baked into the image, not a real photo.
+// Replaced by Jasmine Block, Bahria Town, Lahore, 3456px, CC BY 4.0,
+// AlidPedian (hero-bahria-jasmine.jpg, 2400x1350), a real street-level
+// photo of premium houses, checked by eye, no baked-in text.
+// SLIDE 2 REMOVED 2026-11-25: urban-drone.jpg was a 4-quadrant
+// collage of CGI renders with visible seams, not a real drone photo.
+// No real high-resolution Lahore housing aerial exists on Commons
+// (all candidates read by eye and rejected: Walled City top-down
+// street scene, Maraghzar with a red name baked in, Lahore street
+// rickshaws, Old Lahore dark bazaar, Behria panorama driveway,
+// Rizvi Plaza with other businesses' signs), so the slide was
+// dropped, not replaced with a worse photo. Hero is 7 slides now.
+// urban-drone.jpg stays in the repo: it is still the Urban City
+// project gallery image (lib/projectDetails.ts), only the hero
+// rotation dropped it.
 export const DEFAULT_HERO_SLIDES: HeroSlide[] = [
   { src: "/img/mgh-lake-aerial.jpg", alt: "Mangla Lake aerial view, MGH Pakistan" },
-  { src: "/img/urban-drone.jpg", alt: "Urban City, Lahore, drone view" },
   { src: "/img/mgh-precinct-01.jpg", alt: "MGH Pakistan, Precinct 01, Mangla" },
   { src: "/img/hero-bahria-talwar.jpg", alt: "Talwar Chowk, Bahria Town, Lahore" },
   { src: "/img/hero-sharda-valley.jpg", alt: "Sharda, Neelum Valley, Kashmir" },
   { src: "/img/mgh-serene-farmhouses.jpg", alt: "Serene Farm Houses, MGH Pakistan, Mangla" },
   { src: "/img/urban-golf.jpg", alt: "Urban City golf course, Lahore" },
-  { src: "/img/alghani-aerial.jpg", alt: "Al Ghani Garden Phase 7, Lahore, aerial view" },
+  { src: "/img/hero-bahria-jasmine.jpg", alt: "Jasmine Block, Bahria Town, Lahore" },
 ];
 export const DEFAULT_HERO_TITLE = "WELCOME TO ANNGAN.COM";
 export const DEFAULT_HERO_TAGLINE = "Pakistan's Most Trusted Real Estate Service Providers";

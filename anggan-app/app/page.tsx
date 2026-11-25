@@ -453,8 +453,12 @@ export default function Home() {
                     Islamabad Faisal, Karachi Mazar, Multan
                     Shah Rukn-e-Alam, left-cropped so the tomb stays
                     in frame), white gutters, no AI, no night photo.
-                    urban-drone.jpg stays in the repo: hero slide 2
-                    still uses it, and the hero passed. Multan
+                    urban-drone.jpg stays in the repo: it is still
+                    the Urban City project gallery image, but the
+                    hero dropped it 25 Nov 2026, it is a 4-quadrant
+                    CGI collage, not a real drone photo, and no real
+                    high-resolution Lahore housing aerial exists on
+                    Commons to replace it. Multan
                     keeps the sky-extended file and object-left-top
                     (25 Nov fix). The old dusk/night files
                     (city-lahore-badshahi-sky.jpg,
