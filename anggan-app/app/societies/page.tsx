@@ -6,6 +6,7 @@ import { getSiteContent, cityCardSrc, DEFAULT_SITE_CONTENT, SiteContent } from "
 import { getSettings } from "../../lib/db";
 import { SETTINGS, OfficeSettings } from "../../lib/seed";
 import { DEFAULT_SOCIETIES, SocietyGuide } from "../../lib/seed";
+import { StatusBadge } from "../../components/StatusBadge";
 
 // Societies guide, now from the site content (editable in /admin,
 // Societies), falling back to the seed list. The guide entries are
@@ -61,7 +62,7 @@ export default function SocietiesPage() {
               <figcaption className="text-xs text-gray-600 px-4 pt-2">{g.caption}</figcaption>
             </figure>
             <div className="p-4 pt-2 flex flex-col flex-1">
-              <h2 className="font-bold text-navy text-lg leading-snug">{g.name}</h2>
+              <h2 className="font-bold text-navy text-lg leading-snug">{g.name} <StatusBadge status={g.status} showAvailable /></h2>
               <p className="text-sm text-gray-600 mt-1">{g.note}</p>
               <div className="mt-auto pt-3">
                 <Link href={g.href} className="bg-anngan text-white text-sm px-3 py-2.5 rounded font-semibold min-h-[48px] inline-flex items-center inline-block">{g.label}</Link>

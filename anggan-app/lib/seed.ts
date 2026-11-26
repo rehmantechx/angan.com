@@ -5,7 +5,7 @@
 // anywhere on the public site.
 // show no photo: Pak China Grain Market (project) and the Rs 35,000,000 house,
 // which is not among the 12 real listings and is not included here.
-export type Listing = { id: string; title: string; price: string; n: number; beds: number; baths: number; size: string; city: string; loc: string; type: string; status: "sale" | "rent"; img: string; badge: string; url: string; liveStatus: "live" | "pending" | "hidden"; visible: boolean; createdAt: string; submittedBy?: string };
+export type Listing = { id: string; title: string; price: string; n: number; beds: number; baths: number; size: string; city: string; loc: string; type: string; status: "sale" | "rent"; img: string; photos?: string[]; badge: string; url: string; liveStatus: "live" | "pending" | "hidden"; visible: boolean; createdAt: string; submittedBy?: string };
 export type ProjectStatus = "Available" | "Coming Soon" | "Sold Out";
 export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string; cardImg?: string; status?: ProjectStatus; details?: string; order?: number };
 export type Blog = { id: string; date: string; title: string; url: string; coverImg?: string; body?: string };
@@ -21,7 +21,7 @@ export type TeamMember = { id: string; name: string; role: string; photoUrl?: st
 // admin image fields take a photo URL. Seed defaults below apply
 // until the office saves its own values, so the site works before
 // any edit.
-export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string; ceoPhoto?: string; heroTitle?: string; heroTagline?: string; heroSlides?: HeroSlide[]; bannerImages?: HeroSlide[]; aboutStory?: string; team?: TeamMember[]; techTeam?: TeamMember[]; socialLinks?: SocialLink[]; footerAbout?: string; footerCopyright?: string; cityCards?: CityCard[]; homeHeadings?: HomeHeadings; homeMghTitle?: string; homeMghText?: string; homeSocieties?: HomeSocietyChip[]; societies?: SocietyGuide[]; societiesTitle?: string; societiesIntro?: string; aboutIntro?: string; aboutVideos?: AboutVideo[]; aboutFaq?: AboutFaq[]; aboutFilesImg?: string; aboutFilesNote?: string; companies?: CompanyCard[]; contactIntro?: string; legalPrivacy?: string; legalTerms?: string; legalDisclaimer?: string; navHidden?: string[] };
+export type OfficeSettings = { phone: string; whatsapp: string; email: string; address: string; ceo: string; ceoPhoto?: string; heroTitle?: string; heroTagline?: string; heroSlides?: HeroSlide[]; bannerImages?: HeroSlide[]; aboutStory?: string; team?: TeamMember[]; socialLinks?: SocialLink[]; footerAbout?: string; footerCopyright?: string; cityCards?: CityCard[]; homeHeadings?: HomeHeadings; homeMghTitle?: string; homeMghText?: string; homeSocieties?: HomeSocietyChip[]; societies?: SocietyGuide[]; societiesTitle?: string; societiesIntro?: string; aboutIntro?: string; aboutVideos?: AboutVideo[]; aboutFaq?: AboutFaq[]; aboutFilesImg?: string; aboutFilesNote?: string; companies?: CompanyCard[]; contactIntro?: string; legalPrivacy?: string; legalTerms?: string; legalDisclaimer?: string; navHidden?: string[] };
 // "details" on Project and Service is the office's own extra text,
 // edited in /admin, shown on the project/service page under the
 // verified facts. The structured facts themselves (service included
@@ -106,35 +106,6 @@ export const DEFAULT_TEAM: TeamMember[] = [
   { id: "team-talha", name: "M. Talha Mahmood", role: "Director Call Center", photoUrl: "/img/team-talha.jpg" },
   { id: "team-taha", name: "M. Taha Mahmood", role: "Head Of Administration", photoUrl: "/img/team-taha.jpg" },
 ];
-// Tech Team default (user order 2026-11-25): the 3 people who built
-// this website. LinkedIn would not open for a read (profile pages
-// return 429/999 and the authwall, tried 25 Nov 2026), so NO photo
-// could be taken from LinkedIn and no role is claimed from LinkedIn.
-// REAL PHOTOS 26 Nov 2026: the user sent the 3 photos himself, all
-// rotated 90 degrees sideways, rotated upright and cropped to clean
-// head-and-shoulders portraits 1000x1250 in public/img/team/:
-// team-malik-abdur-rehman.jpg (striped shirt), team-m-bilal-shah.jpg
-// (grey Audi quattro sweatshirt), team-muhammad-daud-ali-lashari.jpg
-// (checkered shirt at the SABZ standee). No stock or AI face is used.
-// CARD CROPS 26 Nov 2026: the Development Team cards show a short
-// wide photo box (h-28), and the 1000x1250 portraits with object-top
-// showed only the wall above Daud's head, his face cut off. So each
-// portrait also has a face-centred 1000x620 band, *-card.jpg, which
-// is what the cards actually use. The 1000x1250 originals stay in
-// public/img/team/ unreferenced, never deleted without his say-so.
-// Roles use only facts from the user's own records: Abdur Rehman is
-// a B.S. Computer Science undergrad at Lahore Garrison University and
-// a Python Programming Intern at Decode Labs; M. Bilal Shah Gillani
-// is an AI Championship teammate (SABZ, explains the brain); Muhammad
-// Daud Ali Lashari is founder of Zepra Tech and an entrepreneur and
-// hands-on digital marketer, verified from his public LinkedIn by the
-// main agent on 25 Nov 2026. The office can change name, role, photo
-// link and LinkedIn link for any member in /admin, About and team.
-export const DEFAULT_TECH_TEAM: TeamMember[] = [
-  { id: "tech-abdur-rehman", name: "Malik Abdur Rehman", role: "Python Programming Intern, Decode Labs", photoUrl: "/img/team/team-malik-abdur-rehman-card.jpg", linkedinUrl: "https://www.linkedin.com/in/malik-abdur-rehman-9b4228358/" },
-  { id: "tech-bilal-shah", name: "M. Bilal Shah", role: "AI Championship Team Member, SABZ", photoUrl: "/img/team/team-m-bilal-shah-card.jpg", linkedinUrl: "https://www.linkedin.com/in/m-bilal-shah-3a7980220/" },
-  { id: "tech-daud-lashari", name: "Muhammad Daud Ali Lashari", role: "Founder, Zepra Tech", photoUrl: "/img/team/team-muhammad-daud-ali-lashari-card.jpg", linkedinUrl: "https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/" },
-];
 // FULLY EDITABLE DASHBOARD 25 Nov 2026 (user order: the whole website
 // editable from /admin, no developer needed afterwards). Every text,
 // link and picture below used to be hard-coded in a page file. It now
@@ -145,7 +116,7 @@ export const DEFAULT_TECH_TEAM: TeamMember[] = [
 // only where the words and pictures come from.
 export type SocialLink = { label: string; href: string };
 export type CityCard = { name: string; landmark: string; img: string; alt: string; href: string; kind: "listings" | "project" | "all"; sub?: string; pos?: string };
-export type SocietyGuide = { name: string; note: string; href: string; label: string; img: string; caption: string; contain: boolean };
+export type SocietyGuide = { name: string; note: string; href: string; label: string; img: string; caption: string; contain: boolean; status?: ProjectStatus };
 export type AboutVideo = { id: string; title: string; views: string; date: string };
 export type AboutFaq = { q: string; a: string };
 export type CompanyCard = { id: string; name: string; desc: string; href: string; linkLabel: string };
@@ -182,12 +153,12 @@ export const DEFAULT_CITY_CARDS: CityCard[] = [
 export const DEFAULT_SOCIETIES_TITLE = "Societies guide";
 export const DEFAULT_SOCIETIES_INTRO = "Guides for the societies Anngan covers.";
 export const DEFAULT_SOCIETIES: SocietyGuide[] = [
-  { name: "MGH Pakistan, Mangla", note: "Precincts 01 to 06 on Mangla Gaddari Road, Mangla Cantt, Jhelum.", href: "/projects/proj-1", label: "Open project", img: "mgh-lake-aerial.jpg", caption: "Mangla Lake, MGH Pakistan", contain: false },
-  { name: "Al-Kabir Town, Lahore", note: "China Town sits inside the Al-Kabir Town guide on anngan.com.", href: "/projects/proj-5", label: "Open China Town", img: "chinatown-bahria-sky.jpg", caption: "Bahria Sky, where China Town is located", contain: false },
-  { name: "Paragon City, Lahore", note: "Anngan head office: 57-S, 2nd Floor, Imperial Homes, Paragon City.", href: "/contact", label: "Visit us", img: "", caption: "Anngan head office, Paragon City", contain: false },
-  { name: "DHA Lahore", note: "10 Marla houses and 1 Kanal houses in the real listings on this site.", href: "/properties?q=DHA", label: "See DHA listings", img: "lst-dha-stunning.jpg", caption: "House in DHA Lahore", contain: false },
-  { name: "Bahria Town, Lahore and Rawalpindi", note: "Houses for sale and rent in Bahria Town on this site.", href: "/properties?q=Bahria", label: "See Bahria listings", img: "bahria-eiffel.jpg", caption: "Eiffel Tower, Bahria Town, Lahore", contain: false },
-  { name: "Kashmir Modern City, Mirpur", note: "Sold Out. Developer Al-Baari. Soft launch at Mirpur, 21 Dec 2022.", href: "/projects/proj-7", label: "View project", img: "kmc-01-16x10.jpg", caption: "Kashmir Modern City, Mirpur", contain: false },
+  { name: "MGH Pakistan, Mangla", note: "Precincts 01 to 06 on Mangla Gaddari Road, Mangla Cantt, Jhelum.", href: "/projects/proj-1", label: "Open project", img: "mgh-lake-aerial.jpg", caption: "Mangla Lake, MGH Pakistan", contain: false, status: "Available" },
+  { name: "Al-Kabir Town, Lahore", note: "China Town sits inside the Al-Kabir Town guide on anngan.com.", href: "/projects/proj-5", label: "Open China Town", img: "chinatown-bahria-sky.jpg", caption: "Bahria Sky, where China Town is located", contain: false, status: "Available" },
+  { name: "Paragon City, Lahore", note: "Anngan head office: 57-S, 2nd Floor, Imperial Homes, Paragon City.", href: "/contact", label: "Visit us", img: "", caption: "Anngan head office, Paragon City", contain: false, status: "Available" },
+  { name: "DHA Lahore", note: "10 Marla houses and 1 Kanal houses in the real listings on this site.", href: "/properties?q=DHA", label: "See DHA listings", img: "lst-dha-stunning.jpg", caption: "House in DHA Lahore", contain: false, status: "Available" },
+  { name: "Bahria Town, Lahore and Rawalpindi", note: "Houses for sale and rent in Bahria Town on this site.", href: "/properties?q=Bahria", label: "See Bahria listings", img: "bahria-eiffel.jpg", caption: "Eiffel Tower, Bahria Town, Lahore", contain: false, status: "Available" },
+  { name: "Kashmir Modern City, Mirpur", note: "Sold Out. Developer Al-Baari. Soft launch at Mirpur, 21 Dec 2022.", href: "/projects/proj-7", label: "View project", img: "kmc-01-16x10.jpg", caption: "Kashmir Modern City, Mirpur", contain: false, status: "Sold Out" },
 ];
 export const DEFAULT_ABOUT_INTRO = "Pakistan's most trusted real estate service provider.";
 export const DEFAULT_ABOUT_VIDEOS: AboutVideo[] = [
@@ -453,11 +424,10 @@ export const PROJECTS: Project[] = [
     "city": "Mangla",
     "page": "project-mgh.html",
     "img": "mgh-lake-aerial.jpg",
-    // PARITY 24 Nov 2026, Section 5: the Mangla lake photo was used
-    // 3 times on home (Hero 1, Societies, Projects). The project card
-    // uses the real MGH Precinct 02 night photo instead, so each slot
-    // shows a different real MGH photo.
-    "cardImg": "mgh-precinct-02-night.jpg",
+    // REAL PHOTO ONLY, 26 Nov 2026: the old card photo,
+    // mgh-precinct-02-night.jpg, is a night CGI render, not a real
+    // photo, so the card now uses the real Precinct 01 aerial.
+    "cardImg": "mgh-precinct-01.jpg",
     "status": "Available",
     "note": "Zamindar File, Affidavit MGH and Serene Farm Houses, inside one project."
   },

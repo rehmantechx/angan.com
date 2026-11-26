@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* SMOOTH SCROLL 26 Nov 2026 (user order): same-page links in the
+   top nav, such as AGENCIES to #partner-agencies, glide to the
+   section instead of jumping. Users who ask for less motion get the
+   instant jump instead. */
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 body {
   background: #ffffff;
   color: #1a1a1a;

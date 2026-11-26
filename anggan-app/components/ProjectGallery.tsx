@@ -1,48 +1,72 @@
+// Project gallery, rebuilt 26 Nov 2026 (user order: the MGH picture
+// layout was bad). Pictorial only: one big photo first, then the rest
+// in a clean two-column grid, every photo the same size, one short
+// plain caption under each (2-4 words). Real photos only, in story
+// order. Tap a photo to zoom; Next and Prev move through the photos
+// (see Lightbox, bubbling fix 26 Nov 2026).
+// The map is NOT in the photo grid: it has small text in it, so it
+// gets its own full-width row with the whole map showing, nothing
+// cut. The allotment letter is a document, not a photo, and keeps its
+// own centred row below the photos.
 "use client";
 import Image from "next/image";
 import { GalleryLightbox } from "./Lightbox";
 
-// Client wrapper so the server project page can pass plain photo data
-// (serializable props) and the lightbox still opens at the clicked
-// photo. PARITY 24 Nov 2026, Section 1 (HIGHEST PRIORITY): gallery
-// photos are flyers, banners and maps with text in them. They are
-// NEVER cropped: w-full h-auto object-contain at their natural aspect
-// ratio, inside a clean white frame with subtle padding, so zero text
-// or map labels are ever cut. The old aspect-[16/10] object-cover
-// clipped Sialkot off the MGH map, chopped the Global Homes flyer on
-// all 4 sides, and cut the Al Ghani banner and the E-STAMP letter.
 export function ProjectGallery({
   galleryPhotos,
+  mapPhotos,
   documentPhotos,
 }: {
   galleryPhotos: { file: string; caption: string }[];
+  mapPhotos: { file: string; caption: string }[];
   documentPhotos: { file: string; caption: string }[];
 }) {
-  const allImages = [...galleryPhotos, ...documentPhotos].map((ph) => ({
+  const allImages = [...galleryPhotos, ...mapPhotos, ...documentPhotos].map((ph) => ({
     src: `/img/${ph.file}`,
     alt: ph.caption,
   }));
   const galleryCount = galleryPhotos.length;
+  const mapCount = mapPhotos.length;
   return (
     <>
       {galleryCount > 0 ? (
-        <GalleryLightbox images={allImages}>
-          {(open) => (
-            <div className="grid gap-4 mt-5 sm:grid-cols-2">
-              {galleryPhotos.map((ph, i) => {
-                const lastSingle = i === galleryCount - 1 && i > 0 && (galleryCount - 1) % 2 === 1;
-                return (
-                  <figure key={ph.file} className={i === 0 || lastSingle ? "sm:col-span-2" : ""}>
+        <div className="mt-6">
+          <h2 className="text-xl font-bold text-navy">Photos</h2>
+          <p className="text-sm text-gray-600 mt-1">Tap a photo to see it big.</p>
+          <GalleryLightbox images={allImages}>
+            {(open) => (
+              <div className="grid gap-4 mt-4 sm:grid-cols-2">
+                {galleryPhotos.map((ph, i) => (
+                  <figure key={ph.file} className={i === 0 ? "sm:col-span-2" : ""}>
                     <button type="button" onClick={() => open(i)} className="block w-full text-left focus:outline-none focus:ring-2 focus:ring-anngan rounded-lg" aria-label={"Zoom photo: " + ph.caption}>
-                      <Image src={`/img/${ph.file}`} alt={ph.caption} width={1200} height={675} className="w-full h-auto rounded-lg object-contain bg-white border border-gray-200 p-2" loading={i === 0 ? "eager" : "lazy"} sizes="(max-width: 768px) 100vw, 60vw" />
+                      <Image src={`/img/${ph.file}`} alt={ph.caption} width={1200} height={750} className="w-full aspect-[16/10] rounded-lg object-cover bg-white border border-gray-200" loading={i === 0 ? "eager" : "lazy"} sizes={i === 0 ? "100vw" : "(max-width: 768px) 100vw, 50vw"} />
                     </button>
-                    <figcaption className="text-sm text-gray-600 mt-1">{ph.caption} &middot; Tap to zoom</figcaption>
+                    <figcaption className="font-bold text-navy mt-2">{ph.caption}</figcaption>
                   </figure>
-                );
-              })}
-            </div>
-          )}
-        </GalleryLightbox>
+                ))}
+              </div>
+            )}
+          </GalleryLightbox>
+        </div>
+      ) : null}
+      {mapCount > 0 ? (
+        <div className="mt-8">
+          <h2 className="text-xl font-bold text-navy">Where is it</h2>
+          <GalleryLightbox images={allImages}>
+            {(open) => (
+              <div>
+                {mapPhotos.map((ph, mi) => (
+                  <figure key={ph.file} className="mt-3">
+                    <button type="button" onClick={() => open(galleryCount + mi)} className="block w-full focus:outline-none focus:ring-2 focus:ring-anngan rounded-lg" aria-label={"Zoom map: " + ph.caption}>
+                      <Image src={`/img/${ph.file}`} alt={ph.caption} width={1200} height={675} className="w-full h-auto rounded-lg object-contain bg-white border border-gray-200 p-2" loading="lazy" sizes="100vw" />
+                    </button>
+                    <figcaption className="font-bold text-navy mt-2">{ph.caption}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            )}
+          </GalleryLightbox>
+        </div>
       ) : null}
       {documentPhotos.length > 0 ? (
         <div className="mt-8">
@@ -52,10 +76,10 @@ export function ProjectGallery({
               <div>
                 {documentPhotos.map((ph, di) => (
                   <figure key={ph.file} className="max-w-[480px] mx-auto mt-3">
-                    <button type="button" onClick={() => open(galleryCount + di)} className="block w-full focus:outline-none focus:ring-2 focus:ring-anngan rounded-lg" aria-label={"Zoom document: " + ph.caption}>
+                    <button type="button" onClick={() => open(galleryCount + mapCount + di)} className="block w-full focus:outline-none focus:ring-2 focus:ring-anngan rounded-lg" aria-label={"Zoom document: " + ph.caption}>
                       <Image src={`/img/${ph.file}`} alt={ph.caption} width={1114} height={1747} className="w-full h-auto rounded-lg bg-white border border-gray-200" loading="lazy" sizes="480px" />
                     </button>
-                    <figcaption className="text-sm text-gray-600 mt-1 text-center">{ph.caption} &middot; Tap to zoom</figcaption>
+                    <figcaption className="font-bold text-navy mt-2 text-center">{ph.caption}</figcaption>
                   </figure>
                 ))}
               </div>

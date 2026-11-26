@@ -54,9 +54,14 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   // The Zamindar File allotment letter is a document scan, not a gallery
   // photo. It lives in its own full-width row below the gallery, centred
   // and bounded, so the gallery grid never ends with an empty column.
+  // The map is the same: small text in it, so it gets its own
+  // full-width row ("Where is it"), never squeezed into the photo grid.
   const isDocument = (file: string, caption: string) =>
     file.includes("zamindar") || caption.toLowerCase().includes("allotment letter");
-  const galleryPhotos = d.photos.filter((ph) => !isDocument(ph.file, ph.caption));
+  const isMap = (file: string, caption: string) =>
+    file.includes("-map") || caption.toLowerCase().includes("map");
+  const galleryPhotos = d.photos.filter((ph) => !isDocument(ph.file, ph.caption) && !isMap(ph.file, ph.caption));
+  const mapPhotos = d.photos.filter((ph) => isMap(ph.file, ph.caption) && !isDocument(ph.file, ph.caption));
   const documentPhotos = d.photos.filter((ph) => isDocument(ph.file, ph.caption));
   const galleryCount = galleryPhotos.length;
 
@@ -91,9 +96,9 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         </section>
       )}
 
-      <ProjectGallery galleryPhotos={galleryPhotos} documentPhotos={documentPhotos} />
+      <ProjectGallery galleryPhotos={galleryPhotos} mapPhotos={mapPhotos} documentPhotos={documentPhotos} />
 
-      {galleryCount === 0 && documentPhotos.length === 0 ? (
+      {galleryCount === 0 && mapPhotos.length === 0 && documentPhotos.length === 0 ? (
         <div className="mt-5 rounded-lg overflow-hidden">
           <ProjectFallback name={p.name} loc={p.loc} className="w-full h-56" />
         </div>

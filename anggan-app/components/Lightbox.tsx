@@ -58,7 +58,13 @@ export function Lightbox({
             <span className="text-sm font-semibold">
               {open + 1} of {images.length} &middot; {images[open].alt}
             </span>
-            <button type="button" onClick={() => setOpen(null)} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]" aria-label="Close zoom">
+            {/* NEXT/PREV FIX 26 Nov 2026: these buttons sit inside the
+                overlay, which closes on any click. A click on Next or
+                Prev used to bubble up to the overlay and close the
+                photo instead of moving to the next one. Every button
+                now stops the click, so only X or the dark background
+                closes it. */}
+            <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(null); }} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]" aria-label="Close zoom">
               Close X
             </button>
           </div>
@@ -66,9 +72,9 @@ export function Lightbox({
             <img src={images[open].src} alt={images[open].alt} className="max-w-full max-h-[80vh] object-contain rounded bg-white" />
           </div>
           {images.length > 1 ? (
-            <div className="flex gap-2 mt-3">
-              <button type="button" onClick={() => setOpen((o) => (o === null ? o : (o - 1 + images.length) % images.length))} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]">&larr; Prev</button>
-              <button type="button" onClick={() => setOpen((o) => (o === null ? o : (o + 1) % images.length))} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]">Next &rarr;</button>
+            <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setOpen((o) => (o === null ? o : (o - 1 + images.length) % images.length)); }} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]">&larr; Prev</button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setOpen((o) => (o === null ? o : (o + 1) % images.length)); }} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]">Next &rarr;</button>
             </div>
           ) : null}
         </div>
@@ -109,15 +115,20 @@ export function GalleryLightbox({
         <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4" role="dialog" aria-label={"Zoomed photo: " + images[open].alt} onClick={() => setOpen(null)}>
           <div className="flex gap-2 w-full max-w-4xl justify-between items-center text-white pb-2">
             <span className="text-sm font-semibold">{open + 1} of {images.length} &middot; {images[open].alt}</span>
-            <button type="button" onClick={() => setOpen(null)} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]" aria-label="Close zoom">Close X</button>
+            {/* NEXT/PREV FIX 26 Nov 2026: same bubbling bug as above.
+                The buttons sit inside the overlay that closes on any
+                click, so Next and Prev closed the photo. Every button
+                now stops the click; only X or the dark background
+                closes it. */}
+            <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(null); }} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]" aria-label="Close zoom">Close X</button>
           </div>
           <div className="relative w-full max-w-4xl max-h-[80vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
             <img src={images[open].src} alt={images[open].alt} className="max-w-full max-h-[80vh] object-contain rounded bg-white" />
           </div>
           {images.length > 1 ? (
-            <div className="flex gap-2 mt-3">
-              <button type="button" onClick={() => setOpen((o) => (o === null ? o : (o - 1 + images.length) % images.length))} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]">&larr; Prev</button>
-              <button type="button" onClick={() => setOpen((o) => (o === null ? o : (o + 1) % images.length))} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]">Next &rarr;</button>
+            <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setOpen((o) => (o === null ? o : (o - 1 + images.length) % images.length)); }} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]">&larr; Prev</button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setOpen((o) => (o === null ? o : (o + 1) % images.length)); }} className="bg-white text-navy font-bold px-4 py-2 rounded min-h-[48px]">Next &rarr;</button>
             </div>
           ) : null}
         </div>

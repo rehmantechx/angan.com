@@ -1,22 +1,16 @@
-// About page. Client component: Our Story, Our Team, Development
-// Team and the CEO photo come from the admin settings in /admin
-// (About and team), falling back to the built-in text until the office
-// saves its own. Our Team is the MAIN team, 3 people from the old
-// anngan.com/about-us (user order 2026-11-25): M. Mahmood Cheema,
-// Chairman and Chief Executive Officer (user order 2026-11-26, not
-// "CEO" only), M. Talha Mahmood Director Call Center, M. Taha Mahmood
-// Head Of Administration, with real photos from the old site.
-// Development Team is the SUB team, the 3 people who built this
-// website (user order 2026-11-25), with REAL photos the user sent
-// himself on 26 Nov 2026 (rotated upright, cropped head-and-shoulders,
-// public/img/team/). SUB TEAM SIZE (user order 2026-11-26): the
-// Development Team cards are MUCH SMALLER than the main team cards,
-// smaller photos, smaller cards, clearly a sub team, not the same
-// size as the main team.
+// About page. Client component: Our Story, Our Team and the CEO photo
+// come from the admin settings in /admin (About and team), falling
+// back to the built-in text until the office saves its own. Our Team
+// is the MAIN team, 3 people from the old anngan.com/about-us (user
+// order 2026-11-25): M. Mahmood Cheema, Chairman and Chief Executive
+// Officer (user order 2026-11-26, not "CEO" only), M. Talha Mahmood
+// Director Call Center, M. Taha Mahmood Head Of Administration, with
+// real photos from the old site. There is no Development Team section
+// on this page: the user asked for it to be removed on 26 Nov 2026.
 // The Mangla lake / MGH main project image section and the What We Do
 // section were removed on the client demand of 2026-11-25. The Files
 // card was restored as its own section on 25 Nov 2026: it was removed
-// as a side effect of removing What We Do, which the user did not ask
+// as a side effect of removing What We Do, which the user did NOT ask
 // to remove.
 "use client";
 import { useEffect, useState } from "react";
@@ -44,7 +38,6 @@ const YOUTUBE_URL = "https://www.youtube.com/channel/UC7lbVe_2Lfw8dzThSaAq6Aw";
 export default function AboutPage() {
   const [story, setStory] = useState(DEFAULT_SITE_CONTENT.aboutStory);
   const [team, setTeam] = useState<TeamMember[]>(DEFAULT_SITE_CONTENT.team);
-  const [techTeam, setTechTeam] = useState<TeamMember[]>(DEFAULT_SITE_CONTENT.techTeam);
   const [ceoPhoto, setCeoPhoto] = useState(DEFAULT_SITE_CONTENT.ceoPhoto);
   const [content, setContent] = useState(DEFAULT_SITE_CONTENT);
   // Stats are counted from the live data, never typed in: projects,
@@ -55,7 +48,6 @@ export default function AboutPage() {
       setContent(c);
       setStory(c.aboutStory);
       setTeam(c.team);
-      setTechTeam(c.techTeam);
       setCeoPhoto(c.ceoPhoto);
     });
     getProjects().then((rows) => { if (rows.length > 0) setCounts((v) => ({ ...v, projects: rows.length })); }).catch(() => {});
@@ -70,17 +62,17 @@ export default function AboutPage() {
         {content.aboutIntro} <span className="urdu-tagline" lang="ur">بنائے خواب حقیقت</span>
       </p>
 
-      <div className="grid gap-6 mt-6 lg:grid-cols-2 items-start">
-        <figure className="border border-gray-200 rounded-lg p-4 bg-white max-w-md w-full">
+      <div className="grid gap-6 mt-8 lg:grid-cols-2 items-start">
+        <figure className="border border-gray-200 rounded-xl p-4 bg-white max-w-md w-full shadow-sm">
           <Image
             src={ceoPhoto || "/img/ceo-flat.jpg"}
             alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan"
             width={1024}
             height={683}
-            className="w-full h-[380px] sm:h-[420px] object-cover object-top rounded-lg bg-white"
+            className="w-full h-[400px] sm:h-[440px] object-cover object-top rounded-lg bg-white"
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
-          <figcaption className="text-sm text-gray-600 mt-2">
+          <figcaption className="text-sm text-gray-600 mt-3">
             Muhammad Mahmood Cheema, Chairman and Chief Executive Officer.
           </figcaption>
         </figure>
@@ -88,15 +80,15 @@ export default function AboutPage() {
         <div>
           <h2 className="text-xl font-bold text-navy">Anngan in numbers</h2>
           <dl className="mt-3 grid grid-cols-3 gap-2 sm:gap-3 text-center">
-            <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white flex flex-col justify-between">
+            <div className="border border-gray-200 rounded-xl p-3 sm:p-4 bg-white flex flex-col justify-between shadow-sm">
               <dt className="text-xs sm:text-sm text-gray-600">Projects on this site</dt>
               <dd className="text-2xl font-bold text-navy">{counts.projects}</dd>
             </div>
-            <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white flex flex-col justify-between">
+            <div className="border border-gray-200 rounded-xl p-3 sm:p-4 bg-white flex flex-col justify-between shadow-sm">
               <dt className="text-xs sm:text-sm text-gray-600">Live listings</dt>
               <dd className="text-2xl font-bold text-navy">{counts.listings}</dd>
             </div>
-            <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white flex flex-col justify-between">
+            <div className="border border-gray-200 rounded-xl p-3 sm:p-4 bg-white flex flex-col justify-between shadow-sm">
               <dt className="text-xs sm:text-sm text-gray-600">Partner agencies</dt>
               <dd className="text-2xl font-bold text-navy">{counts.agencies}</dd>
             </div>
@@ -116,23 +108,23 @@ export default function AboutPage() {
         </div>
       </div>
 
-      <h2 className="text-xl font-bold text-navy mt-10">Our Story</h2>
+      <h2 className="text-xl font-bold text-navy mt-12">Our Story</h2>
       <div className="mt-3 space-y-3 max-w-3xl">
         {story.split(/\n\s*\n/).map((para, i) => (
           <p key={i} className="text-sm leading-relaxed">{para.trim()}</p>
         ))}
       </div>
 
-      <h2 className="text-xl font-bold text-navy mt-10">Our Team</h2>
+      <h2 className="text-xl font-bold text-navy mt-12">Our Team</h2>
       <p className="text-gray-600 text-sm mt-1 max-w-3xl">Our main team, the leadership of Anngan.</p>
       {team.length === 0 ? (
         <p className="mt-3 text-sm text-gray-600 border border-gray-200 rounded-lg p-4 bg-white max-w-3xl">
-          Our team members will be added here. The office adds them in the dashboard, under About and team.
+          Our team members will be added here. The office adds them in the dashboard, under About.
         </p>
       ) : (
         <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-3">
           {team.map((m) => (
-            <article key={m.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+            <article key={m.id} className="card border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
               {m.photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={m.photoUrl} alt={m.name} loading="lazy" className="w-full h-56 object-cover object-top bg-gray-100" />
@@ -152,47 +144,6 @@ export default function AboutPage() {
         </div>
       )}
 
-      {/* DEVELOPMENT TEAM 25 Nov 2026 (user order): the team who built
-          this website, a SUB team below the main team, in the old
-          anngan.com/about-us "Meet our Team" style, photo card with
-          name and role, plus a link to their LinkedIn profile.
-          REAL PHOTOS 26 Nov 2026: the user sent the 3 photos himself,
-          rotated upright and cropped to head-and-shoulders portraits.
-          No stock or AI face is used, and no role is invented: roles
-          use only verified facts from the user's own records, and the
-          office can change name, role, photo link and LinkedIn link
-          in /admin, About and team. SUB TEAM SIZE 26 Nov 2026: these
-          cards are MUCH SMALLER than the main team cards above
-          (photo 96-112px tall vs 224px, card about half the width),
-          clearly a sub team, not the main team. */}
-      <h2 className="text-xl font-bold text-navy mt-10">Development Team</h2>
-      <p className="text-gray-600 text-sm mt-1 max-w-3xl">Our sub team, the team who built this website.</p>
-      <div className="grid gap-3 mt-4 grid-cols-3 max-w-xl">
-        {techTeam.map((m) => (
-          <article key={m.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
-            {m.photoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={m.photoUrl} alt={m.name} loading="lazy" className="w-full h-24 sm:h-28 object-cover object-center bg-gray-100" />
-            ) : (
-              <div className="w-full h-24 sm:h-28 bg-navy flex items-center justify-center">
-                <span className="text-white text-2xl font-bold" aria-hidden="true">
-                  {m.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
-                </span>
-              </div>
-            )}
-            <div className="p-2 sm:p-3">
-              <h3 className="font-bold text-navy text-sm">{m.name}</h3>
-              {m.role ? <p className="text-xs text-gray-600 mt-0.5">{m.role}</p> : null}
-              {m.linkedinUrl ? (
-                <p className="text-xs mt-1.5">
-                  <a href={m.linkedinUrl} target="_blank" rel="noopener" className="text-anngan-dark font-semibold underline">LinkedIn profile</a>
-                </p>
-              ) : null}
-            </div>
-          </article>
-        ))}
-      </div>
-
       {/* FILES 25 Nov 2026 (live fail, HEAD 57ecf38): the Files card
           was removed as a side effect of removing What We Do, which
           the user did NOT ask to remove. Restored here as its own
@@ -202,9 +153,9 @@ export default function AboutPage() {
           shows uncropped, "MGH PAKISTAN" and "S/O D/O W/O:" fully
           visible. What We Do and the Mangla lake / MGH image section
           stay removed. */}
-      <h2 className="text-xl font-bold text-navy mt-10">Files</h2>
+      <h2 className="text-xl font-bold text-navy mt-12">Files</h2>
       <div className="grid gap-4 mt-4 sm:grid-cols-2">
-        <article className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
+        <article className="card border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm flex flex-col h-full">
           <Image src={content.aboutFilesImg} alt="MGH Zamindar File allotment letter" width={1114} height={1747} className="w-full h-80 object-contain bg-white p-2" loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" />
           <div className="p-4">
             <h3 className="font-bold text-navy">Files</h3>
@@ -213,7 +164,7 @@ export default function AboutPage() {
         </article>
       </div>
 
-      <h2 className="text-xl font-bold text-navy mt-10">Watch Muhammad Mahmood Cheema on MGH</h2>
+      <h2 className="text-xl font-bold text-navy mt-12">Watch Muhammad Mahmood Cheema on MGH</h2>
       <p className="text-gray-600 text-sm mt-1">
         Short briefings from the Anngan YouTube channel, @annganpk. Tap a
         video to watch it on YouTube, or open the channel.
@@ -226,7 +177,7 @@ export default function AboutPage() {
       </div>
       <div className="grid gap-4 mt-4 sm:grid-cols-2">
         {content.aboutVideos.map((v) => (
-          <article key={v.id} className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
+          <article key={v.id} className="card border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm flex flex-col h-full">
             <a href={`https://www.youtube.com/watch?v=${v.id}`} target="_blank" rel="noopener" aria-label={`Watch on YouTube: ${v.title}`} className="relative block w-full aspect-video bg-navy group">
               <Image src={`/img/yt-${v.id}.jpg`} alt={v.title} width={480} height={360} loading="eager" className="absolute inset-0 w-full h-full object-cover bg-navy" />
               <span className="absolute inset-0 flex items-center justify-center">
@@ -244,10 +195,10 @@ export default function AboutPage() {
         ))}
       </div>
 
-      <h2 className="text-xl font-bold text-navy mt-10">Frequently asked questions</h2>
+      <h2 className="text-xl font-bold text-navy mt-12">Frequently asked questions</h2>
       <div className="mt-3 space-y-3">
         {content.aboutFaq.map((f) => (
-          <div key={f.q} className="border border-gray-200 rounded-lg p-4 bg-white">
+          <div key={f.q} className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm">
             <p className="font-semibold">{f.q}</p>
             <p className="text-sm text-gray-600 mt-1">{f.a}</p>
           </div>

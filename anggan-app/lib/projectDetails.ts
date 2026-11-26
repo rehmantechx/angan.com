@@ -21,13 +21,21 @@ export const PROJECT_DETAILS: Record<string, ProjectDetails> = {
   "proj-1": {
     intro:
       "MGH Pakistan at Mangla is Pakistan's first and biggest natural lake view housing project, on 7KM Mangla Gaddari Road, Mangla Cantt, Jhelum. Anngan is a Platinum partner of the project.",
+    // PICTORIAL GALLERY 26 Nov 2026 (user order): real photos only,
+    // in story order, short plain captions. The old night photo,
+    // mgh-precinct-02-night.jpg, is a CGI render, not a real photo,
+    // so it is out of the gallery. The two new photos are real
+    // Wikimedia Commons photographs of Mangla Dam and Mangla Lake,
+    // read by eye before use. The map and the allotment letter stay
+    // in this list but render in their own rows, not in the photo grid.
     photos: [
-      { file: "mgh-lake-aerial.jpg", caption: "Mangla Lake aerial view" },
-      { file: "mgh-precinct-01.jpg", caption: "MGH Pakistan Precinct 01" },
-      { file: "mgh-precinct-02-night.jpg", caption: "MGH Pakistan Precinct 02 at night" },
-      { file: "mgh-serene-farmhouses.jpg", caption: "Serene Farm Houses, Precincts 05 and 06" },
-      { file: "mgh-map.jpg", caption: "MGH Pakistan map" },
-      { file: "mgh-zamindar-file.jpg", caption: "MGH Zamindar File allotment letter" },
+      { file: "mgh-lake-aerial.jpg", caption: "Mangla Lake" },
+      { file: "mgh-mangla-dam-aerial.jpg", caption: "Mangla Dam" },
+      { file: "mgh-precinct-01.jpg", caption: "Precinct 01" },
+      { file: "mgh-serene-farmhouses.jpg", caption: "Serene Farm Houses" },
+      { file: "mgh-mangla-lake-sunset.jpg", caption: "Lake at sunset" },
+      { file: "mgh-map.jpg", caption: "MGH map" },
+      { file: "mgh-zamindar-file.jpg", caption: "Zamindar File letter" },
     ],
     facts: [
       { label: "Location", value: "7KM Mangla Gaddari Road, Mangla Cantt, Jhelum" },

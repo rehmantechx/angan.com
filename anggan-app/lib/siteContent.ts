@@ -42,7 +42,6 @@ import {
   DEFAULT_SOCIETIES_INTRO,
   DEFAULT_SOCIETIES_TITLE,
   DEFAULT_TEAM,
-  DEFAULT_TECH_TEAM,
   AboutFaq,
   AboutVideo,
   CityCard,
@@ -63,7 +62,6 @@ export type SiteContent = {
   bannerImages: HeroSlide[];
   aboutStory: string;
   team: TeamMember[];
-  techTeam: TeamMember[];
   ceoPhoto: string;
   socialLinks: SocialLink[];
   footerAbout: string;
@@ -100,7 +98,6 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   bannerImages: DEFAULT_BANNER_IMAGES,
   aboutStory: DEFAULT_ABOUT_STORY,
   team: DEFAULT_TEAM,
-  techTeam: DEFAULT_TECH_TEAM,
   // Empty means the built-in CEO photos apply: ceo-portrait-v2.jpg on
   // home, ceo-flat.jpg on About. When the office sets a photo link in
   // /admin, home and About both use it.
@@ -214,6 +211,7 @@ export function cleanSocieties(rows: unknown): SocietyGuide[] {
       img: String((r as { img?: unknown }).img || "").trim(),
       caption: String((r as { caption?: unknown }).caption || "").trim() || name,
       contain: Boolean((r as { contain?: unknown }).contain),
+      status: ["Available", "Coming Soon", "Sold Out"].includes(String((r as { status?: unknown }).status || "")) ? (String((r as { status?: unknown }).status) as "Available" | "Coming Soon" | "Sold Out") : "Available",
     });
   }
   return out;
@@ -296,32 +294,22 @@ function cleanHeadings(v: unknown): HomeHeadings {  const d = DEFAULT_HOME_HEADI
 }
 
 // TEAM MIGRATION 26 Nov 2026: the office saved the team once, so
-// the stored settings/office document still lists Cheema as "CEO"
-// and the Development Team with no photos. The seed defaults alone
-// cannot change them, because a stored list wins over the defaults.
-// A stored member keeps its own name and any photo the office set,
-// but a missing photo is filled from the matching seed member, and
-// a stored "CEO" role for team-cheema becomes "Chairman and Chief
-// Executive Officer" (user order 26 Nov 2026). Any other stored
-// member (an office customisation) is kept exactly as stored.
-// CARD CROPS 26 Nov 2026: a stored Development Team photo pointing
-// at the 1000x1250 portrait is moved to the matching face-centred
-// *-card.jpg, because the short wide card box cropped the portrait
-// so badly Daud's face did not show at all.
-const TECH_CARD_PHOTO: Record<string, string> = {
-  "/img/team/team-malik-abdur-rehman.jpg": "/img/team/team-malik-abdur-rehman-card.jpg",
-  "/img/team/team-m-bilal-shah.jpg": "/img/team/team-m-bilal-shah-card.jpg",
-  "/img/team/team-muhammad-daud-ali-lashari.jpg": "/img/team/team-muhammad-daud-ali-lashari-card.jpg",
-};
+// the stored settings/office document still lists Cheema as "CEO".
+// The seed defaults alone cannot change them, because a stored list
+// wins over the defaults. A stored member keeps its own name and any
+// photo the office set, but a missing photo is filled from the
+// matching seed member, and a stored "CEO" role for team-cheema
+// becomes "Chairman and Chief Executive Officer" (user order 26 Nov
+// 2026). Any other stored member (an office customisation) is kept
+// exactly as stored.
 function mergeTeamWithSeed(stored: TeamMember[], seed: TeamMember[]): TeamMember[] {
   return stored.map((m) => {
     const s = seed.find((x) => x.id === m.id);
     if (!s) return m;
-    const photoUrl = TECH_CARD_PHOTO[(m.photoUrl || "").trim()] || m.photoUrl || s.photoUrl;
     return {
       ...m,
       role: m.id === "team-cheema" && m.role.trim() === "CEO" ? "Chairman and Chief Executive Officer" : m.role,
-      photoUrl,
+      photoUrl: m.photoUrl || s.photoUrl,
     };
   });
 }
@@ -329,7 +317,6 @@ function mergeTeamWithSeed(stored: TeamMember[], seed: TeamMember[]): TeamMember
 export function siteContentFromSettings(s: OfficeSettings): SiteContent {
   const heroSlides = cleanSlides(s.heroSlides);
   const bannerImages = cleanSlides(s.bannerImages);
-  const techTeam = cleanTeam(s.techTeam);
   const team = cleanTeam(s.team);
   const socialLinks = cleanSocialLinks(s.socialLinks);
   const cityCards = cleanCityCards(s.cityCards);
@@ -353,13 +340,12 @@ export function siteContentFromSettings(s: OfficeSettings): SiteContent {
     heroSlides: heroSlides.length > 0 ? migrateHeroSlides(heroSlides) : DEFAULT_HERO_SLIDES,
     bannerImages: bannerImages.length > 0 ? bannerImages : DEFAULT_BANNER_IMAGES,
     aboutStory: (s.aboutStory || "").trim() || DEFAULT_ABOUT_STORY,
-    // MAIN TEAM 25 Nov 2026: same fallback as the Tech Team, a stored
+    // MAIN TEAM 25 Nov 2026: same fallback as before, a stored
     // empty team list (saved when Our Team was empty) must not hide
     // the main team defaults. Any stored non-empty list wins, with
     // the 26 Nov 2026 team migration applied (photos filled, "CEO"
     // becomes "Chairman and Chief Executive Officer").
     team: team.length > 0 ? mergeTeamWithSeed(team, DEFAULT_TEAM) : DEFAULT_TEAM,
-    techTeam: techTeam.length > 0 ? mergeTeamWithSeed(techTeam, DEFAULT_TECH_TEAM) : DEFAULT_TECH_TEAM,
     ceoPhoto: (s.ceoPhoto || "").trim(),
     socialLinks: socialLinks.length > 0 ? socialLinks : DEFAULT_SOCIAL_LINKS,
     footerAbout: (s.footerAbout || "").trim() || DEFAULT_FOOTER_ABOUT,
@@ -422,7 +408,6 @@ export async function saveSiteContent(c: SiteContent): Promise<void> {
     bannerImages: cleanSlides(c.bannerImages),
     aboutStory: c.aboutStory.trim() || DEFAULT_ABOUT_STORY,
     team: cleanTeam(c.team),
-    techTeam: cleanTeam(c.techTeam),
     ceoPhoto: (c.ceoPhoto || "").trim(),
     socialLinks: cleanSocialLinks(c.socialLinks),
     footerAbout: c.footerAbout.trim() || DEFAULT_FOOTER_ABOUT,

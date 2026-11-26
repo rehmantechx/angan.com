@@ -5,7 +5,7 @@ import { LISTINGS } from "../../../lib/seed";
 import { getListingById, getSettings } from "../../../lib/db";
 import { SETTINGS, OfficeSettings } from "../../../lib/seed";
 import { EnquiryForm } from "../../../components/EnquiryForm";
-import { Lightbox } from "../../../components/Lightbox";
+import { Lightbox, GalleryLightbox } from "../../../components/Lightbox";
 import { formatPrice, whatsappFor } from "../../../lib/formatPrice";
 import { BedIcon, BathIcon, SizeIcon, HomeIcon } from "../../../lib/icons";
 import { ListingCard } from "../../../components/ListingCard";
@@ -56,14 +56,49 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
       </p>
       <h1 className="text-3xl font-bold text-navy mt-2">{l.title}</h1>
       <p className="text-gray-600 mt-1">{l.loc}</p>
-      <p className="text-anngan-dark font-extrabold text-2xl mt-3">{formatPrice(l.n, l.status)}</p>
+      <p className="text-anngan-dark font-extrabold text-3xl mt-3">{formatPrice(l.n, l.status)}</p>
       <p className="mt-2"><span className={l.status === "rent" ? "bg-[#005F90] text-white text-xs font-extrabold px-3 py-1.5 rounded-full" : "bg-anngan text-white text-xs font-extrabold px-3 py-1.5 rounded-full"}>{l.status === "rent" ? "FOR RENT" : "FOR SALE"}</span></p>
 
-      {l.img ? (
-        <div className="mt-5">
-          <Lightbox images={[{ src: l.img.startsWith("http") ? l.img : `/img/${l.img}`, alt: l.title }]} label={l.title} />
-        </div>
-      ) : null}
+      {(() => {
+        // PHOTOS 26 Nov 2026: a listing can now carry several photos
+        // (create-listing needs at least 3). Show them all as one
+        // gallery: one big photo first, small photos under it, tap any
+        // photo to zoom, Next and Prev move through them. A listing
+        // with one photo shows that one photo, as before.
+        const srcs = l.photos && l.photos.length > 0 ? l.photos : l.img ? [l.img] : [];
+        const images = srcs.map((s) => ({ src: s.startsWith("http") ? s : `/img/${s}`, alt: l.title }));
+        if (images.length === 0) return null;
+        if (images.length === 1) {
+          return (
+            <div className="mt-5">
+              <Lightbox images={images} label={l.title} />
+            </div>
+          );
+        }
+        return (
+          <div className="mt-5">
+            <p className="text-sm text-gray-600">Tap a photo to see it big. {images.length} photos.</p>
+            <GalleryLightbox images={images}>
+              {(open) => (
+                <div className="mt-2">
+                  <button type="button" onClick={() => open(0)} className="block w-full text-left focus:outline-none focus:ring-2 focus:ring-anngan rounded-lg" aria-label={"Zoom photo 1 of " + images.length}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={images[0].src} alt={l.title} className="w-full h-auto rounded-lg object-contain bg-navy" />
+                  </button>
+                  <div className="grid grid-cols-4 gap-2 mt-2">
+                    {images.map((im, i) => (
+                      <button key={im.src + i} type="button" onClick={() => open(i)} className="block focus:outline-none focus:ring-2 focus:ring-anngan rounded-lg" aria-label={"Zoom photo " + (i + 1) + " of " + images.length}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={im.src} alt={l.title + " photo " + (i + 1)} className="w-full aspect-square object-cover rounded-lg bg-gray-100 border border-gray-200" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </GalleryLightbox>
+          </div>
+        );
+      })()}
 
       <div className="grid gap-6 mt-8 lg:grid-cols-2">
         <div>
@@ -96,16 +131,6 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
             <a href={"tel:+" + settings.phone.replace(/[^0-9]/g, "").replace(/^0+/, "")} className="btn btn-navy">Call {settings.phone}</a>
             <a href={whatsappFor(l.title, l.city, formatPrice(l.n, l.status), settings.whatsapp)} target="_blank" rel="noopener" className="btn btn-green">WhatsApp</a>
           </div>
-          {others.length > 0 ? (
-            <div className="mt-8">
-              <h2 className="text-xl font-bold text-navy">More in {l.city}</h2>
-              <div className="grid gap-4 mt-3 sm:grid-cols-2">
-                {others.map((o) => (
-                  <ListingCard key={o.id} l={o} />
-                ))}
-              </div>
-            </div>
-          ) : null}
         </div>
         <div>
           <EnquiryForm asked={l.title} compact />
@@ -113,6 +138,16 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
             <Link href="/properties" className="text-anngan-dark font-semibold underline">Back to all properties</Link>
           </p>
         </div>
+        {others.length > 0 ? (
+          <div className="lg:col-span-2">
+            <h2 className="text-xl font-bold text-navy">More in {l.city}</h2>
+            <div className="grid gap-4 mt-3 sm:grid-cols-2 lg:grid-cols-3">
+              {others.map((o) => (
+                <ListingCard key={o.id} l={o} />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

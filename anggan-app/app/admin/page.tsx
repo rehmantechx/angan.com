@@ -43,16 +43,16 @@ import { ImageUploadField } from "../../components/ImageUploadField";
 import { isValidPakPhone } from "../../components/EnquiryForm";
 import { uploadConfigured } from "../../lib/upload";
 
-type Tab = "Overview" | "Listings" | "Enquiries" | "Projects" | "Blogs" | "Agencies" | "Services" | "Hero and banners" | "About and team" | "Header and footer" | "Home page" | "Societies" | "Companies" | "Contact and legal" | "Settings" | "Staff Access";
-const ALL_TABS: Tab[] = ["Overview", "Listings", "Enquiries", "Projects", "Blogs", "Agencies", "Services", "Hero and banners", "About and team", "Header and footer", "Home page", "Societies", "Companies", "Contact and legal", "Settings", "Staff Access"];
+type Tab = "Overview" | "Listings" | "Enquiries" | "Projects" | "Blogs" | "Agencies" | "Services" | "Hero" | "About" | "Header" | "Home" | "Societies" | "Companies" | "Contact" | "Settings" | "Staff";
+const ALL_TABS: Tab[] = ["Overview", "Listings", "Enquiries", "Projects", "Blogs", "Agencies", "Services", "Hero", "About", "Header", "Home", "Societies", "Companies", "Contact", "Settings", "Staff"];
 
 // PRO-01: the dedicated admin sidebar groups the 16 tabs into 4
 // buckets, so the office finds a section without scanning 16 pills.
 const TAB_GROUPS: { label: string; tabs: Tab[] }[] = [
   { label: "Operations", tabs: ["Overview", "Listings", "Enquiries"] },
   { label: "Catalog", tabs: ["Projects", "Societies", "Agencies", "Services", "Companies", "Blogs"] },
-  { label: "Website CMS", tabs: ["Home page", "Hero and banners", "About and team", "Header and footer", "Contact and legal", "Settings"] },
-  { label: "Office", tabs: ["Staff Access"] },
+  { label: "Website CMS", tabs: ["Home", "Hero", "About", "Header", "Contact", "Settings"] },
+  { label: "Office", tabs: ["Staff"] },
 ];
 
 const PROJECT_STATUSES: ProjectStatus[] = ["Available", "Coming Soon", "Sold Out"];
@@ -75,15 +75,15 @@ function TabIcon({ tab, size = 18 }: { tab: Tab; size?: number }) {
     Blogs: (<><path d="M5 4h14v16H5z" /><path d="M9 9h6M9 13h6M9 17h4" /></>),
     Agencies: (<><circle cx="8" cy="8" r="3.5" /><circle cx="16" cy="8" r="3.5" /><path d="M3 20c0-3 2-5 5-5s5 2 5 5M11 20c0-3 2-5 5-5s5 2 5 5" /></>),
     Services: (<><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z" /></>),
-    "Hero and banners": (<><rect x="3" y="4" width="18" height="12" rx="1" /><path d="M3 16l5-5 4 4 3-3 6 6" /></>),
-    "About and team": (<><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></>),
-    "Header and footer": (<><path d="M3 5h18M3 12h18M3 19h18" /></>),
-    "Home page": (<><path d="M4 11 12 3l8 8" /><path d="M6 10v10h12V10" /></>),
+    "Hero": (<><rect x="3" y="4" width="18" height="12" rx="1" /><path d="M3 16l5-5 4 4 3-3 6 6" /></>),
+    "About": (<><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></>),
+    "Header": (<><path d="M3 5h18M3 12h18M3 19h18" /></>),
+    "Home": (<><path d="M4 11 12 3l8 8" /><path d="M6 10v10h12V10" /></>),
     Societies: (<><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></>),
     Companies: (<><rect x="4" y="4" width="16" height="16" rx="1" /><path d="M9 9h2M13 9h2M9 13h2M13 13h2M9 17h6" /></>),
-    "Contact and legal": (<><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" /></>),
+    "Contact": (<><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" /></>),
     Settings: (<><circle cx="12" cy="12" r="3.5" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" /></>),
-    "Staff Access": (<><rect x="4" y="10" width="16" height="10" rx="1" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>),
+    "Staff": (<><rect x="4" y="10" width="16" height="10" rx="1" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>),
   };
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
@@ -265,9 +265,9 @@ export default function AdminPage() {
   }
 
   const canEdit = user.role === "Full access" || user.role === "Staff";
-  // CMS-04: Staff Access is visible only to the office owner.
+  // CMS-04: Staff is visible only to the office owner.
   const isOwner = (user.email || "").toLowerCase() === "ceo@anngan.com";
-  const visibleTabs: Tab[] = ALL_TABS.filter((t) => t !== "Staff Access" || isOwner);
+  const visibleTabs: Tab[] = ALL_TABS.filter((t) => t !== "Staff" || isOwner);
   // Temporary demo credential (demo@anngan.com, created in the Firebase
   // console, role View only). Remove it from Firebase when testing is done.
   const isDemo = user.demo === true || user.email === DEMO_EMAIL;
@@ -604,46 +604,46 @@ export default function AdminPage() {
           </div>
           <div className="border rounded p-4 sm:col-span-2 lg:col-span-4">
             <p className="font-bold">Website content, no code needed</p>
-            <p className="text-sm text-gray-600 mt-1">Change these here and they show on the live site straight away, no redeploy. Every photo field has an upload button: pick a real photo from your computer or phone. Upload works once the owner sets up the free Cloudinary account (see the notice at the top of this page). Until then the upload button says so honestly, and the photo link field below it still works: paste a link to a real photo, or a file already on the site such as /img/mgh-lake-aerial.jpg.</p>
+            <p className="text-sm text-gray-600 mt-1">Change these here and they show on the live site straight away. Every photo field has an upload button: pick a real photo from your computer or phone.</p>
             <div className="grid gap-2 mt-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="border rounded p-3 flex flex-col justify-between">
-                <p className="font-semibold text-sm">Hero and banners</p>
-                <p className="text-sm text-gray-600 mt-1">Home hero photos, title and tagline, and the banner photos behind the search panel.</p>
-                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Hero and banners")}>Edit hero and banners</button>
+                <p className="font-semibold text-sm">Hero</p>
+                <p className="text-sm text-gray-600 mt-1">Home hero photos, title and tagline.</p>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Hero")}>Edit hero</button>
               </div>
               <div className="border rounded p-3 flex flex-col justify-between">
-                <p className="font-semibold text-sm">About and team</p>
-                <p className="text-sm text-gray-600 mt-1">Our Story text and Our Team members on the About page.</p>
-                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("About and team")}>Edit About and team</button>
+                <p className="font-semibold text-sm">About</p>
+                <p className="text-sm text-gray-600 mt-1">Our Story text and Our Team members.</p>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("About")}>Edit About</button>
               </div>
               <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">Projects</p>
-                <p className="text-sm text-gray-600 mt-1">Project status (Available, Coming Soon, Sold Out) and card photo. The status badge shows on home, /projects and the project page.</p>
+                <p className="text-sm text-gray-600 mt-1">Project status and card photo.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Projects")}>Edit projects</button>
               </div>
               <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">Partner agencies</p>
-                <p className="text-sm text-gray-600 mt-1">Agency name, logo link and website link. Agencies run in the circular strip on the home page.</p>
+                <p className="text-sm text-gray-600 mt-1">Agency name, logo and website link.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Agencies")}>Edit agencies</button>
               </div>
               <div className="border rounded p-3 flex flex-col justify-between">
-                <p className="font-semibold text-sm">Header and footer</p>
-                <p className="text-sm text-gray-600 mt-1">Social links, footer text and copyright, shown on every page.</p>
-                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Header and footer")}>Edit header and footer</button>
+                <p className="font-semibold text-sm">Header</p>
+                <p className="text-sm text-gray-600 mt-1">Social links, footer text and copyright.</p>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Header")}>Edit header</button>
               </div>
               <div className="border rounded p-3 flex flex-col justify-between">
-                <p className="font-semibold text-sm">Home page</p>
-                <p className="text-sm text-gray-600 mt-1">Section headings, city cards, societies strip and the MGH spotlight text.</p>
-                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Home page")}>Edit home page</button>
+                <p className="font-semibold text-sm">Home</p>
+                <p className="text-sm text-gray-600 mt-1">Section headings, city cards and societies strip.</p>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Home")}>Edit home</button>
               </div>
               <div className="border rounded p-3 flex flex-col justify-between">
-                <p className="font-semibold text-sm">Societies, companies, contact and legal</p>
-                <p className="text-sm text-gray-600 mt-1">Societies guide, group companies, contact intro and the privacy, terms and disclaimer texts.</p>
+                <p className="font-semibold text-sm">Societies and companies</p>
+                <p className="text-sm text-gray-600 mt-1">Societies guide and group companies.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Societies")}>Edit societies</button>
               </div>
               <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">Services</p>
-                <p className="text-sm text-gray-600 mt-1">Service names, short notes and the office long text on each service page.</p>
+                <p className="text-sm text-gray-600 mt-1">Service names and notes.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Services")}>Edit services</button>
               </div>
             </div>
@@ -1115,9 +1115,9 @@ export default function AdminPage() {
         </div>
       )}
 
-      {tab === "Hero and banners" && (
+      {tab === "Hero" && (
         <div className="mt-4">
-          <h2 className="font-bold text-lg">Hero and banners</h2>
+          <h2 className="font-bold text-lg">Hero</h2>
           <p className="text-sm text-gray-600">Changes here show on the home page straight away, no code change, no redeploy. Hero photos: upload a real photo or paste a photo link, remove, or move up and down. Upload works once the free Cloudinary account is set up; until then the photo link field still works.</p>
           <HeroForm
             initial={siteContent}
@@ -1129,7 +1129,7 @@ export default function AdminPage() {
                 await saveSiteContent(c);
                 setSiteContent(c);
                 setMsgError(false);
-                setMsg("Hero and banners saved. The home page shows them straight away.");
+                setMsg("Hero saved. The home page shows them straight away.");
               } catch (err) {
                 const e2 = err as { message?: string };
                 setMsgError(true);
@@ -1140,10 +1140,10 @@ export default function AdminPage() {
         </div>
       )}
 
-      {tab === "About and team" && (
+      {tab === "About" && (
         <div className="mt-4">
-          <h2 className="font-bold text-lg">About and team</h2>
-          <p className="text-sm text-gray-600">Changes here show on the About page straight away, no code change, no redeploy. Our Team is the main team: M. Mahmood Cheema (Chairman and Chief Executive Officer), M. Talha Mahmood (Director Call Center), M. Taha Mahmood (Head Of Administration), with real photos from the old website. Change a name, role or photo link only when the office gives the real one. Nothing is invented here. Development Team is the sub team who built this website, with a LinkedIn link per member. CEO photo: leave empty to keep the built-in photos, or set a photo link to change the CEO photo on home and About.</p>
+          <h2 className="font-bold text-lg">About</h2>
+          <p className="text-sm text-gray-600">Changes here show on the About page straight away. Our Team is the main team: M. Mahmood Cheema (Chairman and Chief Executive Officer), M. Talha Mahmood (Director Call Center), M. Taha Mahmood (Head Of Administration), with real photos. Change a name, role or photo only when the office gives the real one. CEO photo: leave empty to keep the built-in photos.</p>
           <AboutForm
             initial={siteContent}
             canEdit={canEdit}
@@ -1165,28 +1165,28 @@ export default function AdminPage() {
         </div>
       )}
 
-      {tab === "Header and footer" && (
+      {tab === "Header" && (
         <div className="mt-4">
-          <h2 className="font-bold text-lg">Header and footer</h2>
+          <h2 className="font-bold text-lg">Header</h2>
           <p className="text-sm text-gray-600">Social links, footer text and copyright, shown on every page. The logo is not editable here, it stays the full original logo.</p>
           <HeaderFooterForm
             initial={siteContent}
             canEdit={canEdit}
             isDemo={isDemo}
-            onSave={async (c) => { await saveContentTab(c, "Header and footer saved. The header and footer show it straight away."); }}
+            onSave={async (c) => { await saveContentTab(c, "Header saved. The header and footer show it straight away."); }}
           />
         </div>
       )}
 
-      {tab === "Home page" && (
+      {tab === "Home" && (
         <div className="mt-4">
-          <h2 className="font-bold text-lg">Home page</h2>
+          <h2 className="font-bold text-lg">Home</h2>
           <p className="text-sm text-gray-600">Section headings, the MGH spotlight text, the Browse by city cards and the Societies strip on home. City card photos are real famous-landmark photos only, never stock or AI.</p>
           <HomePageForm
             initial={siteContent}
             canEdit={canEdit}
             isDemo={isDemo}
-            onSave={async (c) => { await saveContentTab(c, "Home page saved. The home page shows it straight away."); }}
+            onSave={async (c) => { await saveContentTab(c, "Home saved. The home page shows it straight away."); }}
           />
         </div>
       )}
@@ -1194,7 +1194,7 @@ export default function AdminPage() {
       {tab === "Societies" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Societies</h2>
-          <p className="text-sm text-gray-600">The Societies guide page: title, intro and the guide cards. Only real societies and projects Anngan covers, nothing invented.</p>
+          <p className="text-sm text-gray-600">The Societies guide page. Set each society&apos;s status: Available, Coming Soon, or Sold Out. The status shows as a badge on the guide page.</p>
           <SocietiesForm
             initial={siteContent}
             canEdit={canEdit}
@@ -1207,7 +1207,7 @@ export default function AdminPage() {
       {tab === "Companies" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Companies</h2>
-          <p className="text-sm text-gray-600">The Anngan group companies on /companies. The office band under them (address, phone, email) is edited in Settings.</p>
+          <p className="text-sm text-gray-600">The Anngan group companies. They show on /companies and on the contact page. Add a new company, or remove one, below.</p>
           <CompaniesForm
             initial={siteContent}
             canEdit={canEdit}
@@ -1217,15 +1217,15 @@ export default function AdminPage() {
         </div>
       )}
 
-      {tab === "Contact and legal" && (
+      {tab === "Contact" && (
         <div className="mt-4">
-          <h2 className="font-bold text-lg">Contact and legal</h2>
+          <h2 className="font-bold text-lg">Contact</h2>
           <p className="text-sm text-gray-600">The contact page intro and the privacy, terms and disclaimer texts. The office line under each legal page (address, phone, email) is edited in Settings.</p>
           <ContactLegalForm
             initial={siteContent}
             canEdit={canEdit}
             isDemo={isDemo}
-            onSave={async (c) => { await saveContentTab(c, "Contact and legal saved. The pages show it straight away."); }}
+            onSave={async (c) => { await saveContentTab(c, "Contact saved. The pages show it straight away."); }}
           />
         </div>
       )}
@@ -1242,7 +1242,7 @@ export default function AdminPage() {
         />
       )}
 
-      {tab === "Staff Access" && isOwner && (
+      {tab === "Staff" && isOwner && (
         <StaffAccessTab
           users={officeUsers}
           currentEmail={user.email || ""}
@@ -1565,9 +1565,9 @@ function HeroForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; 
         <input value={tagline} disabled={!canEdit} onChange={(e) => setTagline(e.target.value)} className={fieldCls + " mt-1 font-normal"} />
       </label>
       {slideRows(slides, setSlides, "Hero photos, in order")}
-      <p className="text-sm text-gray-600">Hero photos move continuously on the home page: a slow zoom and pan on the active photo, then a smooth crossfade to the next photo every 10 seconds.</p>
+      <p className="text-sm text-gray-600">Hero photos change every 10 seconds with a slow zoom.</p>
       {slideRows(banners, setBanners, "Banner photos, behind the search panel")}
-      <p className="text-sm text-gray-600">Banner photos rotate behind the search panel on the home page, under a dark navy overlay.</p>
+      <p className="text-sm text-gray-600">Banner photos show behind the search panel.</p>
       {canEdit ? <button disabled={saving} className={btnRed + " w-fit disabled:opacity-50"}>{saving ? "Saving..." : "Save hero and banners"}</button> : <p className="text-sm text-gray-600">Your role is View only. You can see the hero and banners but not change them.</p>}
     </form>
   );
@@ -1576,7 +1576,6 @@ function HeroForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; 
 function AboutForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; canEdit: boolean; isDemo: boolean; onSave: (c: SiteContent) => Promise<void> | void }) {
   const [story, setStory] = useState(initial.aboutStory);
   const [team, setTeam] = useState<TeamMember[]>(initial.team);
-  const [techTeam, setTechTeam] = useState<TeamMember[]>(initial.techTeam);
   const [ceoPhoto, setCeoPhoto] = useState(initial.ceoPhoto);
   const [aboutIntro, setAboutIntro] = useState(initial.aboutIntro);
   const [videos, setVideos] = useState<AboutVideo[]>(initial.aboutVideos);
@@ -1589,7 +1588,6 @@ function AboutForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent;
     setLoadedFor(initial);
     setStory(initial.aboutStory);
     setTeam(initial.team);
-    setTechTeam(initial.techTeam);
     setCeoPhoto(initial.ceoPhoto);
     setAboutIntro(initial.aboutIntro);
     setVideos(initial.aboutVideos);
@@ -1612,25 +1610,25 @@ function AboutForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent;
     setSaving(true);
     const cleanVideos = videos.filter((v) => v.id.trim()).map((v) => ({ id: v.id.trim(), title: v.title.trim() || "Anngan video", views: v.views.trim(), date: v.date.trim() }));
     const cleanFaq = faq.filter((f) => f.q.trim()).map((f) => ({ q: f.q.trim(), a: f.a.trim() }));
-    Promise.resolve(onSave({ ...initial, aboutStory: story.trim(), team: cleanMembers(team), techTeam: cleanMembers(techTeam), ceoPhoto: ceoPhoto.trim(), aboutIntro: aboutIntro.trim(), aboutVideos: cleanVideos, aboutFaq: cleanFaq, aboutFilesImg: filesImg.trim(), aboutFilesNote: filesNote.trim() })).finally(() => setSaving(false));
+    Promise.resolve(onSave({ ...initial, aboutStory: story.trim(), team: cleanMembers(team), ceoPhoto: ceoPhoto.trim(), aboutIntro: aboutIntro.trim(), aboutVideos: cleanVideos, aboutFaq: cleanFaq, aboutFilesImg: filesImg.trim(), aboutFilesNote: filesNote.trim() })).finally(() => setSaving(false));
   }
   const fieldCls = canEdit ? inputCls : inputCls + " bg-gray-100 text-gray-500 cursor-not-allowed";
   return (
     <form onSubmit={submit} className="mt-4 grid gap-4 w-full min-w-0">
-      <label className="text-sm font-semibold">Intro line, under the About heading
+      <label className="text-sm font-semibold">Intro line
         <input value={aboutIntro} disabled={!canEdit} onChange={(e) => setAboutIntro(e.target.value)} className={fieldCls + " mt-1 font-normal"} />
       </label>
       <label className="text-sm font-semibold">Our Story
         <textarea value={story} disabled={!canEdit} onChange={(e) => setStory(e.target.value)} rows={6} className={fieldCls + " mt-1 font-normal"} />
       </label>
-      <p className="text-sm text-gray-600">Blank line between paragraphs starts a new paragraph on the About page.</p>
+      <p className="text-sm text-gray-600">Blank line between paragraphs starts a new paragraph.</p>
       <div>
         <ImageUploadField value={ceoPhoto} onChange={setCeoPhoto} folder="team" label="CEO photo, optional" disabled={!canEdit} />
       </div>
-      <p className="text-sm text-gray-600">Leave empty and the site keeps its built-in CEO photos (home and About). Set a photo and home and About both use it. Real photo only, no AI face.</p>
+      <p className="text-sm text-gray-600">Leave empty to keep the built-in CEO photos. Real photo only, no AI face.</p>
       <div>
         <p className="font-semibold text-sm">Videos on the About page ({videos.length})</p>
-        <p className="text-sm text-gray-600 mt-1">Real Anngan YouTube videos only, from the @annganpk channel. Video ID is the code after watch?v= in the YouTube link.</p>
+        <p className="text-sm text-gray-600 mt-1">Real Anngan YouTube videos only. Video ID is the code after watch?v= in the YouTube link.</p>
         <div className="grid gap-2 mt-2">
           {videos.map((v, i) => (
             <div key={i} className="grid gap-2 border rounded p-3 sm:grid-cols-2 items-end">
@@ -1698,32 +1696,6 @@ function AboutForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent;
         </div>
         {canEdit ? (
           <button type="button" className={btnLine + " mt-2"} onClick={() => setTeam([...team, { id: "team-" + Date.now().toString(36), name: "", role: "", photoUrl: "" }])}>Add a team member</button>
-        ) : null}
-      </div>
-      <div>
-        <p className="font-semibold text-sm">Development Team ({techTeam.length})</p>
-        <p className="text-sm text-gray-600 mt-1">The sub team who built this website, shown on the About page under Development Team. Photos are the real photos the user sent on 26 Nov 2026; a member with no photo shows a clean initials monogram until the office adds one. Photos are clear photo links only, no blurry photo, no stock or AI face.</p>
-        <div className="grid gap-2 mt-2">
-          {techTeam.map((m, i) => (
-            <div key={m.id} className="grid gap-2 border rounded p-3 sm:grid-cols-2 items-end">
-              <label className="text-sm font-semibold">Name
-                <input value={m.name} disabled={!canEdit} onChange={(e) => setTechTeam(techTeam.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} aria-label={"Tech team member " + (i + 1) + " name"} className={fieldCls + " mt-1 font-normal"} />
-              </label>
-              <label className="text-sm font-semibold">Role
-                <input value={m.role} disabled={!canEdit} onChange={(e) => setTechTeam(techTeam.map((x, j) => (j === i ? { ...x, role: e.target.value } : x)))} aria-label={"Tech team member " + (i + 1) + " role"} placeholder="For example Founder, Zepra Tech" className={fieldCls + " mt-1 font-normal"} />
-              </label>
-              <div>
-                <ImageUploadField value={m.photoUrl || ""} onChange={(v) => setTechTeam(techTeam.map((x, j) => (j === i ? { ...x, photoUrl: v } : x)))} folder="team" label={"Tech team member " + (i + 1) + " photo, optional"} disabled={!canEdit} />
-              </div>
-              <label className="text-sm font-semibold">LinkedIn link, optional
-                <input value={m.linkedinUrl || ""} disabled={!canEdit} onChange={(e) => setTechTeam(techTeam.map((x, j) => (j === i ? { ...x, linkedinUrl: e.target.value } : x)))} aria-label={"Tech team member " + (i + 1) + " LinkedIn link"} placeholder="https://www.linkedin.com/in/..." className={fieldCls + " mt-1 font-normal"} />
-              </label>
-              <button type="button" disabled={!canEdit} onClick={() => setTechTeam(techTeam.filter((_, j) => j !== i))} aria-label="Remove tech team member" className={btnLine + " disabled:opacity-40 w-fit"}>Remove</button>
-            </div>
-          ))}
-        </div>
-        {canEdit ? (
-          <button type="button" className={btnLine + " mt-2"} onClick={() => setTechTeam([...techTeam, { id: "tech-" + Date.now().toString(36), name: "", role: "", photoUrl: "", linkedinUrl: "" }])}>Add a tech team member</button>
         ) : null}
       </div>
       {canEdit ? <button disabled={saving} className={btnRed + " w-fit disabled:opacity-50"}>{saving ? "Saving..." : "Save About page"}</button> : <p className="text-sm text-gray-600">Your role is View only. You can see the About page content but not change it.</p>}
@@ -1948,7 +1920,7 @@ function SocietiesForm({ initial, canEdit, isDemo, onSave }: { initial: SiteCont
     e.preventDefault();
     if (saving || isDemo) return;
     setSaving(true);
-    const clean = guides.filter((g) => g.name.trim() && g.img.trim()).map((g) => ({ name: g.name.trim(), note: g.note.trim(), href: g.href.trim() || "/properties", label: g.label.trim() || "Open", img: g.img.trim(), caption: g.caption.trim(), contain: !!g.contain }));
+    const clean = guides.filter((g) => g.name.trim() && g.img.trim()).map((g) => ({ name: g.name.trim(), note: g.note.trim(), href: g.href.trim() || "/properties", label: g.label.trim() || "Open", img: g.img.trim(), caption: g.caption.trim(), contain: !!g.contain, status: (PROJECT_STATUSES.includes(g.status as ProjectStatus) ? g.status : "Available") as ProjectStatus }));
     Promise.resolve(onSave({ ...initial, societiesTitle: title.trim(), societiesIntro: intro.trim(), societies: clean })).finally(() => setSaving(false));
   }
   const fieldCls = canEdit ? inputCls : inputCls + " bg-gray-100 text-gray-500 cursor-not-allowed";
@@ -1967,6 +1939,11 @@ function SocietiesForm({ initial, canEdit, isDemo, onSave }: { initial: SiteCont
             <div key={i} className="grid gap-2 border rounded p-3 sm:grid-cols-2 items-end">
               <label className="text-sm font-semibold">Society name
                 <input value={g.name} disabled={!canEdit} onChange={(e) => setGuides(guides.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} aria-label={"Society " + (i + 1) + " name"} className={fieldCls + " mt-1 font-normal"} />
+              </label>
+              <label className="text-sm font-semibold">Status
+                <select value={g.status || "Available"} disabled={!canEdit} onChange={(e) => setGuides(guides.map((x, j) => (j === i ? { ...x, status: e.target.value as ProjectStatus } : x)))} aria-label={"Society " + (i + 1) + " status"} className={fieldCls + " mt-1 font-normal"}>
+                  {PROJECT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
               </label>
               <label className="text-sm font-semibold">Link, where the card goes
                 <input value={g.href} disabled={!canEdit} onChange={(e) => setGuides(guides.map((x, j) => (j === i ? { ...x, href: e.target.value } : x)))} aria-label={"Society " + (i + 1) + " link"} placeholder="/properties?q=DHA or /projects/proj-1" className={fieldCls + " mt-1 font-normal"} />

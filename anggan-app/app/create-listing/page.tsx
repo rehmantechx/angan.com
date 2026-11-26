@@ -1,3 +1,9 @@
+// Create a listing: plain and simple, for a dealer, not a developer.
+// Three steps only: 1) add at least 3 photos, 2) write the details,
+// 3) send it to the office for approval. Nothing goes live until the
+// office approves it. Photos are upload only (free Cloudinary upload,
+// already wired in lib/upload.ts). There is NO photo-link field here:
+// the user asked for upload only, at least 3 photos, on 26 Nov 2026.
 "use client";
 import { useRef, useState } from "react";
 import { useAuth } from "../../lib/auth";
@@ -5,15 +11,14 @@ import { DEMO_EMAIL } from "../../lib/auth-context";
 import { saveListing } from "../../lib/db";
 import { isValidPakPhone } from "../../components/EnquiryForm";
 import { GoogleButton } from "../../components/GoogleButton";
+import { uploadImage } from "../../lib/upload";
 import Link from "next/link";
 
-// VIS-06: 3 quick visual steps, so a dealer sees in one glance how
-// listing works: photo, details, then office approval on WhatsApp.
 function ListSteps() {
   const steps = [
-    { n: "1", t: "Photo", d: "Add photos of your property" },
-    { n: "2", t: "Details", d: "Title, price, city and beds" },
-    { n: "3", t: "WhatsApp / Approval", d: "Office approves, buyers WhatsApp you" },
+    { n: "1", t: "Photos", d: "Add at least 3 photos" },
+    { n: "2", t: "Details", d: "Title, price, city" },
+    { n: "3", t: "Approval", d: "Office checks it, then it goes live" },
   ];
   return (
     <ol className="grid gap-2 sm:grid-cols-3 mt-4">
@@ -44,15 +49,41 @@ export default function CreateListingPage() {
   const [type, setType] = useState("House");
   const [status, setStatus] = useState("sale");
   const [phone, setPhone] = useState("");
-  const [photo, setPhoto] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(0);
+  const [photoErr, setPhotoErr] = useState("");
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
   const [error, setError] = useState("");
-  // FIX-06: per-field errors, so an invalid price or phone is named
-  // next to its own field instead of only in one banner at the bottom.
   const [priceErr, setPriceErr] = useState("");
   const [phoneErr, setPhoneErr] = useState("");
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  async function onPick(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setPhotoErr("");
+    const list = Array.from(files);
+    setUploading((n) => n + list.length);
+    let added = 0;
+    for (const file of list) {
+      try {
+        const url = await uploadImage(file, "listings");
+        setPhotos((prev) => [...prev, url]);
+        added++;
+      } catch (e) {
+        const err = e as { message?: string };
+        setPhotoErr(err.message || "That photo did not upload. Try again.");
+      } finally {
+        setUploading((n) => Math.max(0, n - 1));
+      }
+    }
+    // The "fix the highlighted fields" message from a blocked send
+    // must go away the moment the photo rule is met, not only on the
+    // next submit, or the dealer sees an error next to a fixed form.
+    if (photos.length + added >= 3) setError("");
+    if (fileRef.current) fileRef.current.value = "";
+  }
 
   if (loading) return <p>Loading...</p>;
 
@@ -85,14 +116,13 @@ export default function CreateListingPage() {
     if (busyRef.current) return;
     if (user?.demo || user?.email === DEMO_EMAIL) { setError("Demo, view only. Sign in with an authorized office account to send a listing."); return; }
     if (!title.trim() || !loc.trim()) { setError("Please write a title and an area or society for the property."); return; }
-    // FIX-06: price must be a number above zero, Rs prefix shown next
-    // to the field. Letters or an empty price no longer slip through
-    // as "Price on call". Phone is optional, but when filled it must
-    // pass the same Pakistani mobile check as /contact.
     let ok = true;
     const n = parseInt(price.replace(/[^0-9]/g, ""), 10) || 0;
     if (!/^[0-9][0-9, ]*$/.test(price.trim()) || n <= 0) { setPriceErr("Please write a price in Rs, numbers only, above zero."); ok = false; } else setPriceErr("");
     if (phone.trim() && !isValidPakPhone(phone.trim())) { setPhoneErr("Please write a valid Pakistani mobile number, for example 0304 1111698."); ok = false; } else setPhoneErr("");
+    // PHOTOS 26 Nov 2026 (user order): at least 3 photos, upload
+    // only. Fewer than 3 blocks the send with a plain message.
+    if (photos.length < 3) { setPhotoErr(`Add at least 3 photos. You have ${photos.length} now.`); ok = false; } else setPhotoErr("");
     if (!ok) { setError("Please fix the highlighted fields, then send again."); return; }
     busyRef.current = true;
     setBusy(true);
@@ -111,7 +141,8 @@ export default function CreateListingPage() {
         loc: loc.trim() || city,
         type,
         status: status as "sale" | "rent",
-        img: photo.trim(),
+        img: photos[0],
+        photos,
         badge: "Pending approval",
         url: "",
         liveStatus: "pending",
@@ -139,10 +170,36 @@ export default function CreateListingPage() {
       <p className="text-gray-600 mt-1 break-words">
         Signed in as {user.email}. Your listing goes to the office for approval and does not go live until approved.
       </p>
-      {/* FIX-05: every field has a persistent visible label above it,
-          so once a user types, the field is still named. Placeholders
-          are hints only, never the only label. */}
       <form onSubmit={submit} noValidate className="grid gap-3 mt-4 w-full max-w-xl min-w-0">
+        <div className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm">
+          <p className="text-sm font-semibold">Photos, at least 3 <span className="text-gray-600 font-normal">({photos.length} of 3 added{photos.length >= 3 ? ", done" : ""})</span></p>
+          {photos.length > 0 ? (
+            <div className="grid grid-cols-3 gap-2 mt-3">
+              {photos.map((src, i) => (
+                <figure key={src + i} className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt={"Photo " + (i + 1)} className="w-full aspect-square object-cover rounded-lg bg-gray-100 border border-gray-200" />
+                  <button type="button" onClick={() => setPhotos(photos.filter((_, j) => j !== i))} aria-label={"Remove photo " + (i + 1)} className="absolute top-1 right-1 bg-white text-navy text-xs font-bold px-2 py-1 rounded shadow min-h-[32px]">Remove</button>
+                </figure>
+              ))}
+            </div>
+          ) : null}
+          <div className="flex gap-2 items-center flex-wrap mt-3">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              disabled={busy || user.demo || user.email === DEMO_EMAIL}
+              aria-label="Choose photos to upload"
+              className="text-sm"
+              onChange={(e) => onPick(e.target.files)}
+            />
+            <span className="text-sm text-gray-600">{uploading > 0 ? `Uploading ${uploading} photo${uploading > 1 ? "s" : ""}...` : "Choose photos from your phone or computer."}</span>
+          </div>
+          <p className="text-sm text-gray-600 mt-2">JPG, PNG or WebP, up to 5 MB each. The first photo is the main photo buyers see first.</p>
+          {photoErr ? <p role="alert" className="text-red-700 text-sm font-semibold mt-2">{photoErr}</p> : null}
+        </div>
         <label className="text-sm font-semibold">Title
           <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title, for example 5 Marla house for sale in DHA Lahore" aria-label="Title" className={inputCls + " mt-1 font-normal"} />
         </label>
@@ -197,10 +254,6 @@ export default function CreateListingPage() {
           <input type="tel" inputMode="tel" value={phone} onChange={(e) => { setPhone(e.target.value); if (phoneErr) setPhoneErr(""); }} placeholder="Your phone number, for example 0304 1111698" aria-label="Your phone number" aria-invalid={!!phoneErr} aria-describedby={phoneErr ? "phone-error" : undefined} className={inputCls + " mt-1 font-normal"} />
           {phoneErr ? <span id="phone-error" role="alert" className="text-red-700 text-sm font-normal block mt-1">{phoneErr}</span> : null}
         </label>
-        <label className="text-sm font-semibold">Photo link, optional
-          <input value={photo} onChange={(e) => setPhoto(e.target.value)} placeholder="Photo link, optional, for example https://example.com/photo.jpg" aria-label="Photo link, optional" className={inputCls + " mt-1 font-normal"} />
-        </label>
-        <p className="text-sm text-gray-600">Photo is optional. You can paste a photo link, or leave it empty and the office adds a real photo after approval.</p>
         <button disabled={busy || user.demo || user.email === DEMO_EMAIL} className="bg-anngan text-white px-4 py-2.5 rounded min-h-[48px] inline-flex items-center w-fit disabled:opacity-50">
           {busy ? "Sending..." : "Send to office for approval"}
         </button>
