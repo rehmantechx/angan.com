@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    formats: ["image/avif", "image/webp"],
+    // No AVIF (26 Nov 2026): the optimizer generated AVIF variants on a
+    // cold cache, 1-4s per image on first load of /projects, /societies
+    // and /about. WebP stays, JPEG is the fallback for browsers without
+    // WebP. No image file itself was changed.
+    formats: ["image/webp"],
     // QUALITY 25 Nov 2026: 1920 added, so the optimizer serves a
     // 1920px variant for the full-width hero instead of upscaling
     // the 1200px one. The hero shows up to 1920px wide plus a 1.08
