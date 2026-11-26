@@ -543,8 +543,14 @@ export default function Home() {
                           // logo URL can be any real http(s) link, and
                           // next/image only serves configured remote
                           // hosts. Local /img files work the same way.
+                          // HUNT 26 Nov 2026: loading="lazy" left the
+                          // marquee logos unloaded (empty boxes) until
+                          // each one slid into view, so a fast scroll
+                          // or screenshot showed them broken. 13 small
+                          // logos are cheap: load them eagerly so the
+                          // strip is complete from the first paint.
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={src} alt={a.name + " logo"} loading="lazy" className="absolute inset-0 w-full h-full object-contain p-3" />
+                          <img src={src} alt={a.name + " logo"} loading="eager" className="absolute inset-0 w-full h-full object-contain p-3" />
                         ) : (
                           <span className="absolute inset-0 flex items-center justify-center rounded bg-navy text-white text-2xl font-bold">{a.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}</span>
                         )}
