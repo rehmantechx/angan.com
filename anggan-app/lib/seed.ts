@@ -491,7 +491,20 @@ export const PROJECTS: Project[] = [
     // never changed across v0/v2, so the cache never busted. Fix v3:
     // same v2 bytes, RENAMED to global-zamzam-house-wide-v3.jpg.
     // Never change an image's pixels without renaming it.
-    "cardImg": "global-zamzam-house-wide-v3.jpg",
+    // FIX v4 26 Nov 2026: live check found v3 badly cropped and low
+    // resolution on /projects and home Our projects, a deep-blue band
+    // with vertical striping across the top third and the roof cut off
+    // at the top edge. Root cause: v2's 64px sky band was built
+    // column-wise from the portrait's top sky row, so every column
+    // carried its own colour downward as a vertical streak (band
+    // horizontal std 17.81). v4 keeps the same 64px geometry but the
+    // band is one smooth vertical gradient from the photo's own
+    // top-row edge sky (band std 0.00, seam diff 4.30, JPEG noise),
+    // roof below it with sky above, pyramid peak intact. The upper
+    // roof's peak tip is cut in the source portrait itself (red
+    // pixels start at row 4), no repo file holds it, none invented.
+    // Same stale-cache rule: NEW filename v4.
+    "cardImg": "global-zamzam-house-wide-v4.jpg",
     "status": "Available",
     "note": "Zam Zam City, Lahore. LDA approved."
   },

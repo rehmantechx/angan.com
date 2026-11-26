@@ -645,8 +645,14 @@ export default function Home() {
                       no stale entry of any size or format can be
                       served, on Vercel or locally. Rule learned:
                       NEVER change an image file's pixels without
-                      renaming it. */}
-                  <Image src={projectCardSrc(p)} alt={p.name} fill quality={90} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-wide-v3.jpg" ? "object-cover object-top" : "object-cover"} />
+                      renaming it. FIX v4 26 Nov 2026: live check
+                      found v3's sky band vertically striped (the
+                      column-wise sky build) with the roof cut at the
+                      top edge. v4 rebuilds the same 64px band as one
+                      smooth gradient from the photo's own top-row
+                      edge sky, band std 0.00, roof below it with sky
+                      above, pyramid peak intact. */}
+                  <Image src={projectCardSrc(p)} alt={p.name} fill quality={90} sizes="(max-width: 768px) 50vw, 33vw" loading="lazy" className={(p.cardImg || p.img) === "global-zamzam-house-wide-v4.jpg" ? "object-cover object-top" : "object-cover"} />
                   <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
                   <span className="absolute top-2 left-2 z-10"><StatusBadge status={p.status} /></span>
                   <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg md:text-xl leading-tight drop-shadow">{p.name}</span>

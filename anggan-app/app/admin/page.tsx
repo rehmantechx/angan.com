@@ -848,7 +848,7 @@ export default function AdminPage() {
       {tab === "Projects" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Projects ({projects.length})</h2>
-          <p className="text-sm text-gray-600">Status and card photo are editable here and show on the live site straight away: the status badge appears on the home project card, on /projects and on the project page. Sold Out shows a red SOLD OUT badge, Coming Soon an amber COMING SOON badge, Available shows no badge. Card photo: a file already on the site, for example global-zamzam-house-wide-v3.jpg, or a full photo link. Add a project, or delete one, the same way: it shows on the home page, /projects and its project page straight away, no code change.</p>
+          <p className="text-sm text-gray-600">Status and card photo are editable here and show on the live site straight away: the status badge appears on the home project card, on /projects and on the project page. Sold Out shows a red SOLD OUT badge, Coming Soon an amber COMING SOON badge, Available shows no badge. Card photo: a file already on the site, for example global-zamzam-house-wide-v4.jpg, or a full photo link. Add a project, or delete one, the same way: it shows on the home page, /projects and its project page straight away, no code change.</p>
           {!canEdit ? <p className="text-sm text-gray-600 mt-1">Your role is View only. You can see projects but not change them.</p> : null}
           {canEdit && !showProjectAdd ? (
             <button className={btnRed + " mt-3"} onClick={() => setShowProjectAdd(true)}>Add project</button>

@@ -77,6 +77,14 @@ export async function uploadImage(file: File, folder: string): Promise<string> {
   if (!file.type.startsWith("image/")) {
     throw new Error("That file is not a photo. Choose a JPG, PNG or WebP image.");
   }
+  // The unsigned preset only accepts JPG, PNG and WebP (verified in
+  // the Cloudinary dashboard 2026-11-26; the preset editor has no
+  // max-size field, so size is enforced below). Reject any other
+  // image format here, before any upload attempt, with a clear
+  // message, instead of letting Cloudinary reject it mid-upload.
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    throw new Error("That photo is not a JPG, PNG or WebP file. The upload only accepts JPG, PNG and WebP.");
+  }
   if (file.size > MAX_BYTES) {
     throw new Error("That photo is over 5 MB. Choose a smaller photo, or compress it first.");
   }
