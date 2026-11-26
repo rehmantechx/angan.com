@@ -15,6 +15,7 @@ export function ImageUploadField({
   folder,
   disabled,
   hint,
+  widePreview,
 }: {
   label: string;
   value: string;
@@ -22,6 +23,9 @@ export function ImageUploadField({
   folder: string;
   disabled?: boolean;
   hint?: string;
+  // widePreview: one crisp 16:9 preview (hero and banner slides).
+  // Default is the small 160x96 preview used everywhere else.
+  widePreview?: boolean;
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -56,7 +60,7 @@ export function ImageUploadField({
       <span className="text-sm font-semibold">{label}</span>
       {value ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={previewSrc} alt="" className="w-40 h-24 object-cover rounded-lg bg-gray-100 border border-gray-200" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+        <img src={previewSrc} alt="" className={widePreview ? "w-full max-w-sm aspect-video object-cover rounded-lg bg-gray-100 border border-gray-200" : "w-40 h-24 object-cover rounded-lg bg-gray-100 border border-gray-200"} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
       ) : null}
       <div className="flex gap-2 items-center flex-wrap">
         <input

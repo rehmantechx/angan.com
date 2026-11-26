@@ -95,6 +95,9 @@ export default function AdminPage() {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("Overview");
+  // FIXED SIDEBAR, 26 Nov 2026: the mobile drawer state. Desktop
+  // never uses it, the sidebar is always visible there.
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [listings, setListings] = useState<Listing[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -245,7 +248,20 @@ export default function AdminPage() {
     return () => window.removeEventListener("anngan-data", h);
   }, [loading, user]);
 
-  if (loading || !user) return <p>Loading...</p>;
+  // While auth resolves or the signed-out redirect runs, show a
+  // branded loading screen, never a bare "Loading..." on white.
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+        <div className="text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/img/logo.png" alt="Anngan logo" className="h-12 w-auto mx-auto" />
+          <div className="mx-auto mt-6 h-8 w-8 rounded-full border-4 border-slate-200 border-t-[#0a2540] animate-spin" aria-hidden="true" />
+          <p className="text-sm text-gray-600 mt-4">Opening the office dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   const canEdit = user.role === "Full access" || user.role === "Staff";
   // CMS-04: Staff Access is visible only to the office owner.
@@ -392,8 +408,7 @@ export default function AdminPage() {
   const missing = missingSeedListings(listings);
 
   return (
-    <div className="w-full max-w-full min-w-0 bg-slate-50 -mx-4 md:-mx-6 px-4 md:px-6 py-4 sm:py-6">
-      <div className="flex flex-col lg:flex-row gap-4 items-start">
+    <div className="min-h-screen bg-slate-50">
       {/* PRO-01: dedicated admin shell. Slim dark-navy left sidebar,
           grouped into Operations, Catalog, Website CMS and Office,
           with icons and pending/new badges. The public header, footer
@@ -404,9 +419,29 @@ export default function AdminPage() {
           white at 60% opacity, inactive tabs are white with a white
           10% hover, the active tab is white with #0a2540 text. The
           top bar "View live site" button uses the same #0a2540, so
-          the whole dashboard chrome is one navy. */}
-      <aside className="w-full lg:w-60 shrink-0 lg:sticky lg:top-4 bg-[#0a2540] text-white rounded-xl p-3" aria-label="Dashboard sections">
-        <p className="px-2 pt-1 pb-2 font-bold text-base">Anngan office</p>
+          the whole dashboard chrome is one navy.
+          FIXED SIDEBAR, 26 Nov 2026 (user order, the sidebar was
+          moving): the sidebar is position fixed, full viewport
+          height, with its own scroll, so it NEVER moves when the
+          main content scrolls. Desktop: always visible on the left,
+          the content sits to its right (lg:pl-60 below). Mobile:
+          hidden off-canvas, opens as a drawer from the menu button
+          in the top bar, closes on the overlay, the close button,
+          or when a tab is picked. */}
+      {mobileNavOpen ? (
+        <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setMobileNavOpen(false)} aria-hidden="true" />
+      ) : null}
+      <aside className={"fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col bg-[#0a2540] text-white p-3 transition-transform duration-200 lg:z-40 lg:w-60 lg:max-w-none " + (mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0")} aria-label="Dashboard sections">
+        <div className="flex items-center justify-between gap-2 shrink-0">
+          <p className="px-2 pt-1 pb-2 font-bold text-base">Anngan office</p>
+          <button type="button" onClick={() => setMobileNavOpen(false)} aria-label="Close dashboard menu" className="lg:hidden shrink-0 px-2 py-2 min-h-[40px] min-w-[40px] rounded-lg text-white hover:bg-white/10 inline-flex items-center justify-center">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" /></svg>
+          </button>
+        </div>
+        {/* The tab list alone scrolls inside the sidebar. The
+            "Anngan office" header and the signed-in line never move,
+            so the sidebar header can never scroll out of view. */}
+        <div className="flex-1 overflow-y-auto min-h-0">
         <nav className="grid gap-4" role="tablist" aria-label="Dashboard sections">
           {TAB_GROUPS.map((g) => {
             const groupTabs = g.tabs.filter((t) => visibleTabs.includes(t));
@@ -420,7 +455,7 @@ export default function AdminPage() {
                       key={t}
                       role="tab"
                       aria-selected={tab === t}
-                      onClick={() => setTab(t)}
+                      onClick={() => { setTab(t); setMobileNavOpen(false); }}
                       className={
                         (tab === t
                           ? "bg-white text-[#0a2540] font-semibold "
@@ -439,12 +474,17 @@ export default function AdminPage() {
             );
           })}
         </nav>
-        <p className="px-2 pt-3 text-xs text-white/60">Signed in as {user.email}</p>
+        </div>
+        <p className="px-2 pt-3 mt-3 border-t border-white/10 text-xs text-white/60 shrink-0">Signed in as {user.email}</p>
       </aside>
-      <div className="flex-1 min-w-0 w-full">
+      <div className="min-w-0 lg:pl-60 px-4 md:px-6 py-4 sm:py-6">
       {/* PRO-01: clean top bar with breadcrumb, View live site link,
-          signed-in user pill and Sign out. */}
+          signed-in user pill and Sign out. On mobile the menu button
+          opens the fixed sidebar drawer. */}
       <div className="flex flex-wrap items-center gap-2 justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+        <button type="button" onClick={() => setMobileNavOpen(true)} aria-label="Open dashboard menu" className="lg:hidden shrink-0 px-2 py-2 min-h-[40px] min-w-[40px] rounded-lg border border-gray-200 text-navy hover:bg-slate-100 inline-flex items-center justify-center">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+        </button>
         <nav aria-label="Breadcrumb" className="text-sm min-w-0">
           <span className="text-gray-600">Dashboard</span>
           <span className="text-gray-400 mx-1" aria-hidden="true">/</span>
@@ -465,7 +505,9 @@ export default function AdminPage() {
       {!noticeDismissed && !uploadConfigured() ? (
         <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm rounded-xl px-4 py-2.5 mt-4 flex gap-3 items-start">
           <p className="flex-1 min-w-0">Photo upload is not set up yet, it needs a free Cloudinary account and upload preset. Until then, use the photo link field under each upload button.</p>
-          <button type="button" onClick={() => setNoticeDismissed(true)} aria-label="Dismiss photo upload notice" className="shrink-0 px-2 py-0.5 rounded hover:bg-black/10 font-bold min-h-[32px] min-w-[32px]">&#10005;</button>
+          <button type="button" onClick={() => setNoticeDismissed(true)} aria-label="Dismiss photo upload notice" className="shrink-0 px-2 py-1 rounded hover:bg-black/10 min-h-[32px] min-w-[32px] inline-flex items-center justify-center">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" /></svg>
+          </button>
         </div>
       ) : null}
       {/* OFFICE LOGIN (user order 2026-11-25): /admin is office
@@ -506,8 +548,8 @@ export default function AdminPage() {
       {msg ? (
         <p role="status" className={(msgError ? "bg-red-50 text-red-900 " : "bg-green-50 text-green-900 ") + "fixed bottom-4 left-1/2 -translate-x-1/2 z-[70] w-[calc(100%-2rem)] max-w-xl text-sm rounded-lg p-3 shadow-lg flex gap-3 items-start"}>
           <span className="flex-1 min-w-0 break-words">{msg}</span>
-          <button type="button" onClick={() => setMsg("")} aria-label="Close message" className="shrink-0 px-2 py-0.5 rounded hover:bg-black/10 font-bold min-h-[32px] min-w-[32px]">
-            &#10005;
+          <button type="button" onClick={() => setMsg("")} aria-label="Close message" className="shrink-0 px-2 py-1 rounded hover:bg-black/10 min-h-[32px] min-w-[32px] inline-flex items-center justify-center">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" /></svg>
           </button>
         </p>
       ) : null}
@@ -1222,7 +1264,6 @@ export default function AdminPage() {
 
       </div>
       </div>
-      </div>
       {detail ? (
         <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-label="Listing details">
           <div className="absolute inset-0 bg-black/50" onClick={() => setDetail(null)} />
@@ -1457,8 +1498,8 @@ function HeroForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; 
   }
   // PRO-06: each slide is a clean card: a header row with the slide
   // number (Slide 1, Slide 2, ...) and tidy icon buttons for Move Up,
-  // Move Down and Remove, a crisp 16:9 thumbnail preview, then the
-  // photo upload field and the description.
+  // Move Down and Remove, one crisp 16:9 thumbnail preview inside
+  // the photo upload field, then the description.
   function slideRows(list: HeroSlide[], setList: (v: HeroSlide[]) => void, label: string) {
     const isBanner = label.toLowerCase().indexOf("banner") !== -1;
     return (
@@ -1475,12 +1516,10 @@ function HeroForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; 
                   <button type="button" disabled={!canEdit} onClick={() => setList(list.filter((_, j) => j !== i))} aria-label={"Remove " + (isBanner ? "banner " : "slide ") + (i + 1)} title="Remove" className={btnLine + " disabled:opacity-40"}>Remove</button>
                 </span>
               </div>
-              {s.src ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={s.src} alt={s.alt || (isBanner ? "Banner " + (i + 1) : "Slide " + (i + 1))} className="w-full max-w-sm aspect-video object-cover rounded-lg bg-gray-100 border border-gray-200 mt-2" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-              ) : (
-                <div className="w-full max-w-sm aspect-video rounded-lg bg-gray-100 border border-gray-200 mt-2 flex items-center justify-center text-sm text-gray-500">No photo yet</div>
-              )}
+              {/* One clean preview per slide: the upload field below
+                  renders the single 16:9 preview. A second standalone
+                  preview used to render here too, so each slide showed
+                  the same photo twice. Removed 26 Nov 2026. */}
               <div className="mt-2">
                 <ImageUploadField
                   value={s.src}
@@ -1488,6 +1527,7 @@ function HeroForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; 
                   folder="hero"
                   label={(isBanner ? "Banner " : "Slide ") + (i + 1) + " photo"}
                   disabled={!canEdit}
+                  widePreview
                 />
               </div>
               <input
