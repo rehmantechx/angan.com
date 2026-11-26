@@ -40,6 +40,7 @@ import {
 import { getSiteContent, saveSiteContent, SiteContent, DEFAULT_SITE_CONTENT, NAV_TOGGLE_LABELS } from "../../lib/siteContent";
 import { Listing, Project, ProjectStatus, Blog, Agency, Service, Enquiry, OfficeSettings, HeroSlide, TeamMember, SocialLink, CityCard, SocietyGuide, CompanyCard, AboutVideo, AboutFaq, HomeSocietyChip } from "../../lib/seed";
 import { ImageUploadField } from "../../components/ImageUploadField";
+import { isValidPakPhone } from "../../components/EnquiryForm";
 import { uploadConfigured } from "../../lib/upload";
 
 type Tab = "Overview" | "Listings" | "Enquiries" | "Projects" | "Blogs" | "Agencies" | "Services" | "Hero and banners" | "About and team" | "Header and footer" | "Home page" | "Societies" | "Companies" | "Contact and legal" | "Settings" | "Staff Access";
@@ -2403,11 +2404,17 @@ function WalkInLeadForm({ onCancel, onDone }: { onCancel: () => void; onDone: ()
     e.preventDefault();
     let ok = true;
     if (!name.trim()) { setNameErr("Enter the lead name."); ok = false; } else setNameErr("");
-    if (!phone.trim()) { setPhoneErr("Enter a phone number."); ok = false; } else setPhoneErr("");
+    // E2E FIX 26 Nov 2026: a non-numeric phone ("abc") used to save
+    // straight to Enquiries. Reuse the exact Pakistani phone check
+    // from /contact, so "abc" is blocked with the same inline error.
+    const p = phone.trim();
+    if (!p) { setPhoneErr("Enter a phone number."); ok = false; }
+    else if (!isValidPakPhone(p)) { setPhoneErr("Please write a valid Pakistani mobile number, for example 0304 1111698."); ok = false; }
+    else setPhoneErr("");
     if (!ok || saving) return;
     setSaving(true);
     try {
-      await addEnquiry({ name: name.trim(), phone: phone.trim(), asked: asked.trim() || "Asked at the office", how, next: next.trim() || "Call back" });
+      await addEnquiry({ name: name.trim(), phone: p, asked: asked.trim() || "Asked at the office", how, next: next.trim() || "Call back" });
       onDone();
     } finally {
       setSaving(false);

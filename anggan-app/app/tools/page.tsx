@@ -113,7 +113,10 @@ export default function ToolsPage() {
             onClick={() => {
               const a = parseFloat(ccArea);
               const r = parseFloat(ccRate);
-              if (!a || !r) { setCcOut("Enter both the covered area and your rate per sqft."); return; }
+              if (Number.isNaN(a) || Number.isNaN(r)) { setCcOut("Enter both the covered area and your rate per sqft."); return; }
+              // E2E FIX 26 Nov 2026: zero or negative area/rate used to
+              // compute a zero or negative cost. Amounts must be above zero.
+              if (a <= 0 || r <= 0) { setCcOut("Enter a covered area and a rate per sqft above zero."); return; }
               const total = a * r;
               const grand = ccCont ? total * 1.1 : total;
               setCcOut("Cost: Rs " + Math.round(total).toLocaleString("en-PK") + (ccCont ? " + 10% extra = Rs " + Math.round(grand).toLocaleString("en-PK") : ""));
@@ -134,7 +137,12 @@ export default function ToolsPage() {
               const P = parseFloat(lnAmt);
               const y = parseFloat(lnYears);
               const rate = parseFloat(lnRate);
-              if (!P || !y || lnRate.trim() === "" || Number.isNaN(rate) || rate < 0) { setLnOut("Enter the loan amount, years and yearly markup."); return; }
+              if (lnAmt.trim() === "" || lnYears.trim() === "" || lnRate.trim() === "" || Number.isNaN(P) || Number.isNaN(y) || Number.isNaN(rate)) { setLnOut("Enter the loan amount, years and yearly markup."); return; }
+              // E2E FIX 26 Nov 2026: a negative loan amount (-1000, 10 yrs,
+              // 18%) used to compute a negative payment (Rs -18/mo). Loan
+              // and years must be above zero; markup is 0 or more (0% is
+              // a real rate: no markup, just split the loan).
+              if (P <= 0 || y <= 0 || rate < 0) { setLnOut("Enter a loan amount and years above zero, and a yearly markup of 0 or more."); return; }
               const n = y * 12;
               // 0% markup is a real rate: no markup, just split the loan
               // over the months, never divide by zero.
@@ -160,7 +168,10 @@ export default function ToolsPage() {
             className={btnCls}
             onClick={() => {
               const v = parseFloat(acVal);
-              if (!v) { setAcOut("Enter a number first."); return; }
+              if (Number.isNaN(v)) { setAcOut("Enter a number first."); return; }
+              // E2E FIX 26 Nov 2026: zero or negative amounts used to
+              // convert to a zero or negative area. Amounts must be above zero.
+              if (v <= 0) { setAcOut("Enter a number above zero."); return; }
               const sqft = ({ Marla: 272.25, Kanal: 5445, Sqft: 1, Sqyd: 9, Acre: 43560 } as Record<string, number>)[acFrom] * v;
               setAcOut(v + " " + acFrom + " = " + sqft.toLocaleString("en-PK") + " sqft = " + (sqft / 272.25).toFixed(2) + " Marla = " + (sqft / 5445).toFixed(2) + " Kanal = " + (sqft / 9).toFixed(2) + " sqyd = " + (sqft / 43560).toFixed(3) + " Acre");
             }}

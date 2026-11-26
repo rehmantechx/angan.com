@@ -53,12 +53,17 @@ export function ImageUploadField({
   // Preview: a full URL or /img/... path as-is, a bare file name
   // served from /img, the same rule as cityCardSrc on the public
   // site. A raw bare name would 404 against /admin otherwise.
-  const previewSrc = !value ? "" : value.startsWith("http") || value.startsWith("/") ? value : "/img/" + value;
+  // E2E FIX 26 Nov 2026: normalize relative file names (not starting
+  // with / or http) to /img/<name> here in the preview renderer, and
+  // trim first, so a pasted name with a stray space can never 404
+  // into a blank grey box. Whitespace-only shows no preview at all.
+  const raw = (value || "").trim();
+  const previewSrc = !raw ? "" : raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("/") ? raw : "/img/" + raw;
 
   return (
     <div className="grid gap-2">
       <span className="text-sm font-semibold">{label}</span>
-      {value ? (
+      {raw ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={previewSrc} alt="" className={widePreview ? "w-full max-w-sm aspect-video object-cover rounded-lg bg-gray-100 border border-gray-200" : "w-40 h-24 object-cover rounded-lg bg-gray-100 border border-gray-200"} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
       ) : null}
