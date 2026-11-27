@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { FadeImage } from "../../components/FadeImage";
 import Link from "next/link";
 import { getProjects, getSettings } from "../../lib/db";
 import { SETTINGS, OfficeSettings } from "../../lib/seed";
@@ -38,7 +38,7 @@ export default function ProjectsPage() {
               // object-contain squeezed into a narrow strip with white
               // pillars. Every other card stays object-cover.
               <div className="relative">
-                <Image src={projectCardSrc(p)} alt={p.name} width={1200} height={675} className={(p.cardImg || p.img) === "global-zamzam-house-wide-v4.jpg" ? "w-full h-48 object-cover object-top bg-navy" : "w-full h-48 object-cover bg-navy"} loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                <FadeImage src={projectCardSrc(p)} alt={p.name} width={1200} height={675} className={(p.cardImg || p.img) === "global-zamzam-house-wide-v4.jpg" ? "w-full h-48 object-cover object-top" : "w-full h-48 object-cover"} loading={i < 3 ? "eager" : "lazy"} priority={i < 3} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                 <span className="absolute top-2 left-2"><StatusBadge status={p.status} /></span>
               </div>
             ) : (

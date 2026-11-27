@@ -125,7 +125,7 @@ const NAV_LINKS: NavItem[] = [
     href: "/companies",
     label: "ANNGAN COMPANIES",
     dropdown: [
-      { href: "/services", label: "Anngan Technologies" },
+      { href: "/services", label: "Angan Tech" },
       // NAV-02: the /companies cards carry these ids, verified below.
       { href: "/companies#construction", label: "Anngan Construction" },
       { href: "/companies#marketing", label: "Corporate Angle Marketing" },
@@ -133,7 +133,7 @@ const NAV_LINKS: NavItem[] = [
   },
   // PARITY 24 Nov 2026, Section 3: ANGAN TECH is NOT a separate
   // top-level item any more. It is already inside the ANNGAN
-  // COMPANIES dropdown as Anngan Technologies, just like on
+  // COMPANIES dropdown as Angan Tech, just like on
   // anngan.com, and 12 nav items pushed OFFICE LOGIN past the right
   // viewport edge. The footer still links Angan Tech.
 ];

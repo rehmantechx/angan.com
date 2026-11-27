@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { FadeImage } from "../../components/FadeImage";
 import Link from "next/link";
 import { getSiteContent, cityCardSrc, DEFAULT_SITE_CONTENT, SiteContent } from "../../lib/siteContent";
 import { getSettings } from "../../lib/db";
@@ -40,18 +40,18 @@ export default function SocietiesPage() {
                 // DHA house photo (lst-dha-stunning.jpg): no wider
                 // real DHA exterior shot exists in the repo, so no
                 // wider shot was invented. Flagged in NOTES.md.
-                <Image
+                <FadeImage
                   src={cityCardSrc(g.img)}
                   alt={g.caption}
                   width={1200}
                   height={675}
-                  className="w-full aspect-[16/10] object-cover object-top bg-navy"
+                  className="w-full aspect-[16/10] object-cover object-top"
                   loading={i < 2 ? "eager" : "lazy"}
                   priority={i < 2}
                   sizes="(max-width: 640px) 100vw, 50vw"
                 />
               ) : (
-                <div className="w-full h-40 bg-navy flex flex-col items-center justify-center text-white px-4 text-center">
+                <div className="w-full aspect-[16/10] bg-navy flex flex-col items-center justify-center text-white px-4 text-center">
                   <svg viewBox="0 0 64 40" width="48" height="30" aria-hidden="true" className="shrink-0">
                     <path d="M4 38 V22 L32 4 L60 22 V38 H44 V26 H20 V38 Z" fill="none" stroke="#DDB78B" strokeWidth="3" strokeLinejoin="round" />
                   </svg>

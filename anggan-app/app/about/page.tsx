@@ -15,6 +15,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { FadeImage, FadeImg } from "../../components/FadeImage";
 import Link from "next/link";
 import { getSiteContent, DEFAULT_SITE_CONTENT } from "../../lib/siteContent";
 import { getProjects, getListings, getAgencies } from "../../lib/db";
@@ -64,12 +65,12 @@ export default function AboutPage() {
 
       <div className="grid gap-6 mt-8 lg:grid-cols-2 items-start">
         <figure className="border border-gray-200 rounded-xl p-4 bg-white max-w-md w-full shadow-sm">
-          <Image
+          <FadeImage
             src={ceoPhoto || "/img/ceo-flat.jpg"}
             alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan"
             width={1024}
             height={683}
-            className="w-full h-[400px] sm:h-[440px] object-cover object-top rounded-lg bg-white"
+            className="w-full h-[400px] sm:h-[440px] object-cover object-top rounded-lg"
             sizes="(max-width: 1024px) 100vw, 50vw"
           />
           <figcaption className="text-sm text-gray-600 mt-3">
@@ -126,8 +127,7 @@ export default function AboutPage() {
           {team.map((m) => (
             <article key={m.id} className="card border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
               {m.photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={m.photoUrl} alt={m.name} loading="lazy" className="w-full h-56 object-cover object-top bg-gray-100" />
+                <FadeImg src={m.photoUrl} alt={m.name} loading="lazy" className="w-full h-56 object-cover object-top" />
               ) : (
                 <div className="w-full h-56 bg-navy flex items-center justify-center">
                   <span className="text-white text-4xl font-bold" aria-hidden="true">
@@ -156,7 +156,7 @@ export default function AboutPage() {
       <h2 className="text-xl font-bold text-navy mt-12">Files</h2>
       <div className="grid gap-4 mt-4 sm:grid-cols-2">
         <article className="card border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm flex flex-col h-full">
-          <Image src={content.aboutFilesImg} alt="MGH Zamindar File allotment letter" width={1114} height={1747} className="w-full h-80 object-contain bg-white p-2" loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" />
+          <FadeImage src={content.aboutFilesImg} alt="MGH Zamindar File allotment letter" width={1114} height={1747} className="w-full h-80 object-contain p-2" loading="lazy" sizes="(max-width: 640px) 100vw, 50vw" />
           <div className="p-4">
             <h3 className="font-bold text-navy">Files</h3>
             <p className="text-sm text-gray-600 mt-1">{content.aboutFilesNote}</p>
