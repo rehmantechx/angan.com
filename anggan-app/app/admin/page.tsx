@@ -35,6 +35,7 @@ import {
   isFirestoreSeeded,
   firebaseOn,
   setDemoMode,
+  normalizeSlug,
   OfficeUser,
 } from "../../lib/db";
 import { getSiteContent, saveSiteContent, SiteContent, DEFAULT_SITE_CONTENT, NAV_TOGGLE_LABELS } from "../../lib/siteContent";
@@ -116,6 +117,8 @@ export default function AdminPage() {
   const [edit, setEdit] = useState<Listing | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [q, setQ] = useState("");
+  // Blogs search 27 Nov 2026: same simple title search as Listings.
+  const [blogQ, setBlogQ] = useState("");
   const [cityF, setCityF] = useState("All");
   const [typeF, setTypeF] = useState("All");
   const [statusF, setStatusF] = useState("All");
@@ -297,6 +300,13 @@ export default function AdminPage() {
   });
   const cities = ["All", ...Array.from(new Set(listings.map((l) => l.city)))];
   const types = ["All", ...Array.from(new Set(listings.map((l) => l.type)))];
+
+  // Blogs search: title or date, same simple match as Listings.
+  const filteredBlogs = blogs.filter((b) => {
+    const needle = blogQ.trim().toLowerCase();
+    if (!needle) return true;
+    return (b.title + " " + b.date).toLowerCase().indexOf(needle) !== -1;
+  });
 
   async function doSave(l: Listing) {
     if (isDemo) {
@@ -990,8 +1000,20 @@ export default function AdminPage() {
               }}
             />
           ) : null}
+          <div className="mt-2">
+            <input
+              value={blogQ}
+              onChange={(e) => setBlogQ(e.target.value)}
+              placeholder="Search blog titles"
+              aria-label="Search blogs"
+              className="border border-gray-300 rounded px-3 py-2 text-sm w-full min-w-0"
+            />
+          </div>
+          {filteredBlogs.length === 0 ? (
+            <p className="text-sm text-gray-600 mt-3">No blog posts match your search.</p>
+          ) : null}
           <div className="grid gap-2 mt-2">
-          {blogs.map((b) => (
+          {filteredBlogs.map((b) => (
             <div key={b.id} className="border rounded p-3 text-sm">
               <span className="text-gray-600">{b.date} · </span>
               <a href={`/blogs/${b.id}`} target="_blank" rel="noopener noreferrer" className="text-navy underline">{b.title}<span aria-hidden="true"> ↗</span><span className="sr-only"> (opens in a new tab)</span></a>
@@ -1118,7 +1140,7 @@ export default function AdminPage() {
       {tab === "Hero" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Hero</h2>
-          <p className="text-sm text-gray-600">Changes here show on the home page straight away, no code change, no redeploy. Hero photos: upload a real photo or paste a photo link, remove, or move up and down. Upload works once the free Cloudinary account is set up; until then the photo link field still works.</p>
+          <p className="text-sm text-gray-600">Changes here show on the home page straight away, no code change, no redeploy. Hero photos: upload a real photo or paste a photo link, remove, or move up and down. Uploaded photos go to Cloudinary.</p>
           <HeroForm
             initial={siteContent}
             canEdit={canEdit}
@@ -1376,6 +1398,11 @@ function ProjectForm({ initial, onCancel, onSave }: { initial?: Project; onCance
   const [img, setImg] = useState(initial?.img || "");
   const [cardImg, setCardImg] = useState(initial?.cardImg || "");
   const [details, setDetails] = useState(initial?.details || "");
+  // SEO FIELDS 27 Nov 2026: optional, set by the SEO in /admin.
+  // Empty means the page uses the name and short note instead.
+  const [metaTitle, setMetaTitle] = useState(initial?.metaTitle || "");
+  const [metaDescription, setMetaDescription] = useState(initial?.metaDescription || "");
+  const [slug, setSlug] = useState(initial?.slug || "");
   const [saving, setSaving] = useState(false);
   const [newId] = useState(() => "proj-" + Date.now().toString(36));
   function submit(e: React.FormEvent) {
@@ -1393,6 +1420,9 @@ function ProjectForm({ initial, onCancel, onSave }: { initial?: Project; onCance
       cardImg: cardImg.trim() || undefined,
       status,
       details: details.trim() || undefined,
+      metaTitle: metaTitle.trim() || undefined,
+      metaDescription: metaDescription.trim() || undefined,
+      slug: normalizeSlug(slug) || undefined,
     })).finally(() => setSaving(false));
   }
   return (
@@ -1427,6 +1457,16 @@ function ProjectForm({ initial, onCancel, onSave }: { initial?: Project; onCance
       <label className="text-sm font-semibold">Office text, shown on the project page under From the office
         <textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={4} placeholder="Long text the office wants on this project page, blank line starts a new paragraph" className={inputCls + " mt-1 font-normal"} />
       </label>
+      <label className="text-sm font-semibold">Meta title, optional
+        <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder="The title Google shows for this page" aria-label="Meta title, optional" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Meta description, optional
+        <input value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} placeholder="The short text Google shows under the title" aria-label="Meta description, optional" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Page address (slug), optional
+        <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="For example mgh-pakistan-mangla" aria-label="Page address, optional" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <p className="text-sm text-gray-600">Leave these empty to use the project name and short note. A slug uses letters, numbers and - only. The old page address still works after you set a slug.</p>
       <div className="flex gap-2 flex-wrap">
         <button type="submit" disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : initial ? "Save project" : "Add project"}</button>
         <button type="button" onClick={onCancel} className={btnLine}>Cancel</button>
@@ -2084,6 +2124,11 @@ function BlogForm({ initial, onCancel, onSave }: { initial?: Blog; onCancel: () 
   const [coverImg, setCoverImg] = useState(initial?.coverImg || "");
   const [body, setBody] = useState(initial?.body || "");
   const [url, setUrl] = useState(initial?.url || "");
+  // SEO FIELDS 27 Nov 2026: optional, set by the SEO in /admin.
+  // Empty means the page uses the title and body text instead.
+  const [metaTitle, setMetaTitle] = useState(initial?.metaTitle || "");
+  const [metaDescription, setMetaDescription] = useState(initial?.metaDescription || "");
+  const [slug, setSlug] = useState(initial?.slug || "");
   const [saving, setSaving] = useState(false);
   const [newId] = useState(() => "blog-" + Date.now().toString(36));
   function submit(e: React.FormEvent) {
@@ -2097,6 +2142,9 @@ function BlogForm({ initial, onCancel, onSave }: { initial?: Blog; onCancel: () 
       url: url.trim() || "",
       coverImg: coverImg.trim() || undefined,
       body: body.trim() || undefined,
+      metaTitle: metaTitle.trim() || undefined,
+      metaDescription: metaDescription.trim() || undefined,
+      slug: normalizeSlug(slug) || undefined,
     })).finally(() => setSaving(false));
   }
   return (
@@ -2117,6 +2165,16 @@ function BlogForm({ initial, onCancel, onSave }: { initial?: Blog; onCancel: () 
       <label className="text-sm font-semibold">Link, optional
         <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Link to the full story, optional, for example https://example.com/story" className={inputCls + " mt-1 font-normal"} />
       </label>
+      <label className="text-sm font-semibold">Meta title, optional
+        <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder="The title Google shows for this page" aria-label="Meta title, optional" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Meta description, optional
+        <input value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} placeholder="The short text Google shows under the title" aria-label="Meta description, optional" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Page address (slug), optional
+        <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="For example lahore-rates-this-month" aria-label="Page address, optional" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <p className="text-sm text-gray-600">Leave these empty to use the title and body text. A slug uses letters, numbers and - only. The old page address still works after you set a slug.</p>
       <div className="flex gap-2 flex-wrap">
         <button type="submit" disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : initial ? "Save blog post" : "Add blog post"}</button>
         <button type="button" onClick={onCancel} className={btnLine}>Cancel</button>
@@ -2232,6 +2290,11 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
   const [type, setType] = useState(initial?.type || "House");
   const [status, setStatus] = useState(initial?.status || "sale");
   const [photo, setPhoto] = useState(initial?.img || "");
+  // SEO FIELDS 27 Nov 2026: optional, set by the SEO in /admin.
+  // Empty means the page uses the title and normal text instead.
+  const [metaTitle, setMetaTitle] = useState(initial?.metaTitle || "");
+  const [metaDescription, setMetaDescription] = useState(initial?.metaDescription || "");
+  const [slug, setSlug] = useState(initial?.slug || "");
   // In-flight submit lock. The live bug: the first save showed "Saved."
   // but the admin list still showed 12, so the form was saved a second
   // time and two identical listings were created. The button disables
@@ -2287,6 +2350,9 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
       img: photo.trim(),
       badge: status === "rent" ? "For Rent" : "For Sale",
       url: initial?.url || "",
+      metaTitle: metaTitle.trim() || undefined,
+      metaDescription: metaDescription.trim() || undefined,
+      slug: normalizeSlug(slug) || undefined,
       liveStatus: initial?.liveStatus || "live",
       visible: initial?.visible !== false,
       createdAt: initial?.createdAt || new Date().toISOString().slice(0, 10),
@@ -2355,9 +2421,24 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
         </select>
       </label>
       <div>
-        <ImageUploadField value={REAL_PHOTOS.includes(photo) ? "" : photo} onChange={setPhoto} folder="listings" label="Photo upload or link, optional" />
+        {/* E2E FIX 27 Nov 2026: the upload field gets the real photo
+            value, so the live thumbnail preview shows for the photo
+            picked above, the same as the Edit Project form. Passing ""
+            here used to hide the preview for every real site photo, so
+            the modal showed only the file name string. */}
+        <ImageUploadField value={photo} onChange={setPhoto} folder="listings" label="Photo upload or link, optional" />
       </div>
-      <p className="text-sm text-gray-600">Upload works once the free Cloudinary account is set up. Until then, pick a real photo from the site above, or paste a photo link.</p>
+      <p className="text-sm text-gray-600">Pick a real photo from the site above, upload a new photo, or paste a photo link. Uploaded photos go to Cloudinary and show on the site once you save.</p>
+      <label className="text-sm font-semibold">Meta title, optional
+        <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder="The title Google shows for this page" aria-label="Meta title, optional" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Meta description, optional
+        <input value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} placeholder="The short text Google shows under the title" aria-label="Meta description, optional" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <label className="text-sm font-semibold">Page address (slug), optional
+        <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="For example dha-1-kanal-house" aria-label="Page address, optional" className={inputCls + " mt-1 font-normal"} />
+      </label>
+      <p className="text-sm text-gray-600">Leave these empty to use the title and normal text. A slug uses letters, numbers and - only. The old page address still works after you set a slug.</p>
       <div className="flex gap-2">
         <button disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : "Save listing"}</button>
         <button type="button" disabled={saving} className={btnLine + " disabled:opacity-50"} onClick={onCancel}>Cancel</button>

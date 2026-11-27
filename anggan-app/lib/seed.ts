@@ -5,10 +5,10 @@
 // anywhere on the public site.
 // show no photo: Pak China Grain Market (project) and the Rs 35,000,000 house,
 // which is not among the 12 real listings and is not included here.
-export type Listing = { id: string; title: string; price: string; n: number; beds: number; baths: number; size: string; city: string; loc: string; type: string; status: "sale" | "rent"; img: string; photos?: string[]; badge: string; url: string; liveStatus: "live" | "pending" | "hidden"; visible: boolean; createdAt: string; submittedBy?: string };
+export type Listing = { id: string; title: string; price: string; n: number; beds: number; baths: number; size: string; city: string; loc: string; type: string; status: "sale" | "rent"; img: string; photos?: string[]; badge: string; url: string; liveStatus: "live" | "pending" | "hidden"; visible: boolean; createdAt: string; submittedBy?: string; metaTitle?: string; metaDescription?: string; slug?: string };
 export type ProjectStatus = "Available" | "Coming Soon" | "Sold Out";
-export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string; cardImg?: string; status?: ProjectStatus; details?: string; order?: number };
-export type Blog = { id: string; date: string; title: string; url: string; coverImg?: string; body?: string };
+export type Project = { id: string; name: string; loc: string; city: string; page: string; img: string; note: string; cardImg?: string; status?: ProjectStatus; details?: string; order?: number; metaTitle?: string; metaDescription?: string; slug?: string };
+export type Blog = { id: string; date: string; title: string; url: string; coverImg?: string; body?: string; metaTitle?: string; metaDescription?: string; slug?: string };
 export type Agency = { id: string; name: string; logo: string; logoUrl?: string; link?: string; order?: number };
 export type Service = { id: string; name: string; note: string; page: string; details?: string; order?: number };
 export type Enquiry = { id: string; name: string; phone: string; asked: string; how: string; stage: "New" | "Called" | "Visit" | "Deal Done"; next: string; date: string };

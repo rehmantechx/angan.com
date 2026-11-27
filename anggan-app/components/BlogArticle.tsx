@@ -9,16 +9,18 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BLOGS, Blog } from "../lib/seed";
-import { getBlogs } from "../lib/db";
+import { getBlogs, normalizeSlug } from "../lib/db";
 
 export function BlogArticle({ id }: { id: string }) {
-  const seed = BLOGS.find((b) => b.id === id);
+  // SEO 27 Nov 2026: resolves by id OR by a saved URL slug, so a
+  // slug address opens the same article as the id address.
+  const seed = BLOGS.find((b) => b.id === id || normalizeSlug(b.slug || "") === normalizeSlug(id));
   const [article, setArticle] = useState<Blog | undefined>(seed);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     getBlogs()
       .then((rows) => {
-        const row = rows.find((b) => b.id === id);
+        const row = rows.find((b) => b.id === id || normalizeSlug(b.slug || "") === normalizeSlug(id));
         if (row) setArticle(row);
         setLoaded(true);
       })

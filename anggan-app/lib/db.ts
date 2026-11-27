@@ -232,6 +232,84 @@ export async function getListingById(id: string): Promise<Listing | null> {
   return local || null;
 }
 
+// SEO FIELDS 27 Nov 2026: optional Meta Title, Meta Description and
+// URL Slug on listings, projects and blogs, set in /admin. A slug is
+// only letters, numbers and single hyphens, lower case, at most 80
+// characters. An empty slug means no slug, the id address keeps
+// working.
+export function normalizeSlug(v: string): string {
+  return (v || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+// Resolve a detail page address: the record id first, then a saved
+// URL slug. The old id address always keeps working, even when a slug
+// is set, so no live listing, project or blog ever 404s because the
+// office set a slug. A Firestore row wins over the seed when it exists
+// (an office edit of a seed record, including its SEO fields),
+// otherwise the seed is the answer. An exact id costs one document
+// read; only a slug (or a record that exists only in Firestore) scans
+// the list.
+async function firestoreDocById<T>(collectionName: string, id: string): Promise<T | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const { doc, getDoc } = await fs();
+  try {
+    const snap = await withTimeout(getDoc(doc(db, collectionName, id)), READ_TIMEOUT_MS, "Reading " + collectionName);
+    return snap.exists() ? ({ id: snap.id, ...(snap.data() as object) } as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function resolveListing(idOrSlug: string): Promise<Listing | null> {
+  const needle = normalizeSlug(idOrSlug);
+  const seed = LISTINGS.find((l) => l.id === idOrSlug || (l.slug || "").trim().toLowerCase() === needle);
+  if (seed && seed.id === idOrSlug) {
+    const live = await firestoreDocById<Listing>("listings", idOrSlug);
+    return live ? { ...seed, ...live } : seed;
+  }
+  const rows = await getListings().catch(() => [] as Listing[]);
+  const live = rows.find((l) => l.id === idOrSlug || (l.slug || "").trim().toLowerCase() === needle);
+  if (live) return seed ? { ...seed, ...live } : live;
+  return seed || null;
+}
+
+export async function resolveProject(idOrSlug: string): Promise<Project | null> {
+  const needle = normalizeSlug(idOrSlug);
+  const seed = PROJECTS.find((p) => p.id === idOrSlug || (p.slug || "").trim().toLowerCase() === needle);
+  if (seed && seed.id === idOrSlug) {
+    const live = await firestoreDocById<Project>("projects", idOrSlug);
+    return live ? { ...seed, ...live } : seed;
+  }
+  const rows = await getProjects().catch(() => [] as Project[]);
+  const live = rows.find((p) => p.id === idOrSlug || (p.slug || "").trim().toLowerCase() === needle);
+  if (live) return seed ? { ...seed, ...live } : live;
+  return seed || null;
+}
+
+export async function resolveBlog(idOrSlug: string): Promise<Blog | null> {
+  const needle = normalizeSlug(idOrSlug);
+  const seed = BLOGS.find((b) => b.id === idOrSlug || (b.slug || "").trim().toLowerCase() === needle);
+  // Seed first: at build time the 23 historic articles resolve here
+  // with no Firestore call, so the build stays fast. At request time
+  // a Firestore row (an office edit, or a post added in /admin) wins
+  // when it exists, so saved SEO fields show without a redeploy.
+  if (seed && seed.id === idOrSlug) {
+    if (process.env.NEXT_PHASE === "phase-production-build") return seed;
+    const live = await firestoreDocById<Blog>("blogs", idOrSlug);
+    return live ? { ...seed, ...live } : seed;
+  }
+  const rows = await getBlogs().catch(() => [] as Blog[]);
+  const live = rows.find((b) => b.id === idOrSlug || (b.slug || "").trim().toLowerCase() === needle);
+  if (live) return seed ? { ...seed, ...live } : live;
+  return seed || null;
+}
+
 // True when Firestore already has seed data, meaning the seed was
 // uploaded. Used to hide the seed button once data is already online.
 // Fixed 2026-11-22: the old version read ONLY the settings/office
