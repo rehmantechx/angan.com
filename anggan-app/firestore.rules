@@ -42,8 +42,30 @@ service cloud.firestore {
       allow create, update, delete: if isOffice();
     }
     // Enquiries: public can create only, office can read and update stage
+    // SECURITY 27 Nov 2026: create used to accept ANY document from
+    // anyone, any fields, any size, so a bot could flood the enquiries
+    // collection with junk or giant payloads. Now a public create must
+    // be exactly the 7 fields the website form and the walk-in lead
+    // modal write, with plain limits (name 2-100, phone digits 10-15,
+    // asked 1-200, how 1-50, next 1-500, date YYYY-MM-DD, stage New).
+    // The form already checks the phone is a real Pakistani number;
+    // the rules check shape and size, which is what the server can
+    // trust. Publish this file in the Firebase console for the fix to
+    // take effect live.
+    function validEnquiry() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['name', 'phone', 'asked', 'how', 'next', 'date', 'stage'])
+        && d.name is string && d.name.size() >= 2 && d.name.size() <= 100
+        && d.phone is string && d.phone.size() >= 10 && d.phone.size() <= 15
+        && d.phone.matches('^[0-9 +\\-()]+$')
+        && d.asked is string && d.asked.size() >= 1 && d.asked.size() <= 200
+        && d.how is string && d.how.size() >= 1 && d.how.size() <= 50
+        && d.next is string && d.next.size() >= 1 && d.next.size() <= 500
+        && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.stage == 'New';
+    }
     match /enquiries/{id} {
-      allow create: if true;
+      allow create: if validEnquiry();
       allow read, update: if isOfficeAnyRole();
       allow delete: if isOffice();
     }
