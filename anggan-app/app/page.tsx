@@ -705,17 +705,17 @@ export default function Home() {
       <section className="mt-10">
         <div className="grid gap-6 md:grid-cols-2 items-center">
           <div className="flex justify-center md:justify-start">
-            {/* HOME CEO PHOTO, 26 Nov 2026 (user order): the photo was
-                too big and looked wrong. It is now shown at its real
-                size, 220px wide on mobile and 240px on desktop, the
-                file itself is 215x356, so it is never enlarged or
-                stretched. Same real portrait as before
-                (ceo-portrait-v2.jpg, head-and-shoulders crop of
-                ceo-flat.jpg, head 83.7% of frame at widest row, side
-                bands 8.4% / 7.9%), head and shoulders whole, no grey
-                bands, no bad crop. /about keeps ceo-flat.jpg and its
-                own box, unchanged. */}
-            <Image src={ceoPhoto || "/img/ceo-portrait-v2.jpg"} alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={215} height={356} className="w-[220px] sm:w-[240px] h-auto object-cover object-top rounded-lg bg-white" loading="lazy" sizes="240px" />
+            {/* HOME CEO PHOTO, 28 Nov 2026 (user order, screenshot):
+                "make this pic FULL like earlier". The tight
+                head-and-shoulders crop (ceo-portrait-v2.jpg, 215x356)
+                cut the photo off at the chest. Restored the full real
+                picture like the earlier e3635e3 version: ceo-flat.jpg
+                (1024x683), the whole photo, head to clasped hands,
+                shown at its natural ratio with object-contain, no crop,
+                no cut at the bottom. Same file /about uses. Nothing
+                else in this section changed: heading, name, title,
+                7/12/13 stats and Read our story button are untouched. */}
+            <Image src={ceoPhoto || "/img/ceo-flat.jpg"} alt="Muhammad Mahmood Cheema, Chairman and Chief Executive Officer, Anngan" width={1024} height={683} className="w-full md:w-[450px] h-auto object-contain object-top rounded-lg" loading="lazy" sizes="(max-width: 768px) 100vw, 450px" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-navy">{content.homeHeadings.whoIsAnngan}</h2>
