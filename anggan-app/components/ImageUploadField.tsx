@@ -83,13 +83,13 @@ export function ImageUploadField({
         <p role="alert" className="text-sm text-red-900 bg-red-50 border border-red-200 rounded-lg p-3">{error}</p>
       ) : null}
       {done ? <p role="status" className="text-sm text-green-900 bg-green-50 border border-green-200 rounded-lg p-3">{done}</p> : null}
-      <label className="text-sm font-semibold">Or paste an image URL
+      <label className="text-sm font-semibold">Or paste a photo link
         <input
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
           placeholder="/img/photo.jpg or https://example.com/photo.jpg"
-          aria-label={label + ", image URL"}
+          aria-label={label + ", photo link"}
           className="border border-gray-300 rounded px-3 py-2 w-full min-w-0 mt-1 font-normal"
         />
       </label>

@@ -47,12 +47,35 @@ import { uploadConfigured } from "../../lib/upload";
 type Tab = "Overview" | "Listings" | "Enquiries" | "Projects" | "Blogs" | "Agencies" | "Services" | "Hero" | "About" | "Header" | "Home" | "Societies" | "Companies" | "Contact" | "Settings" | "Staff";
 const ALL_TABS: Tab[] = ["Overview", "Listings", "Enquiries", "Projects", "Blogs", "Agencies", "Services", "Hero", "About", "Header", "Home", "Societies", "Companies", "Contact", "Settings", "Staff"];
 
+// DASHBOARD EASY, 28 Nov 2026: plain display labels for the tabs. The
+// Tab keys stay the same in code; only the words the office sees change.
+// "Hero" is the big photos at the top of the home page, "Header" is the
+// top bar and footer, "Settings" holds the office phone and address.
+const TAB_LABELS: Record<Tab, string> = {
+  Overview: "Overview",
+  Listings: "Listings",
+  Enquiries: "Enquiries",
+  Projects: "Projects",
+  Blogs: "Blogs",
+  Agencies: "Agencies",
+  Services: "Services",
+  Hero: "Top photos",
+  About: "About",
+  Header: "Top bar and footer",
+  Home: "Home sections",
+  Societies: "Societies",
+  Companies: "Companies",
+  Contact: "Contact",
+  Settings: "Office details",
+  Staff: "Office staff",
+};
+
 // PRO-01: the dedicated admin sidebar groups the 16 tabs into 4
 // buckets, so the office finds a section without scanning 16 pills.
 const TAB_GROUPS: { label: string; tabs: Tab[] }[] = [
   { label: "Operations", tabs: ["Overview", "Listings", "Enquiries"] },
-  { label: "Catalog", tabs: ["Projects", "Societies", "Agencies", "Services", "Companies", "Blogs"] },
-  { label: "Website CMS", tabs: ["Home", "Hero", "About", "Header", "Contact", "Settings"] },
+  { label: "Lists", tabs: ["Projects", "Societies", "Agencies", "Services", "Companies", "Blogs"] },
+  { label: "Website", tabs: ["Home", "Hero", "About", "Header", "Contact", "Settings"] },
   { label: "Office", tabs: ["Staff"] },
 ];
 
@@ -340,6 +363,30 @@ export default function AdminPage() {
     await reload();
   }
 
+  // DASHBOARD EASY, 28 Nov 2026: changing a project status saves at
+  // once, the same as the enquiry stage. Before, the status only
+  // changed a local draft and was lost if the office left the tab
+  // without pressing Save project.
+  async function saveProjectStatus(p: Project, status: ProjectStatus) {
+    if (isDemo) { setMsg("Demo mode, view only. Changes are not saved."); return; }
+    setSavingProjectId(p.id);
+    const updated: Project = { ...p, status };
+    setProjects((prev) => prev.map((x) => (x.id === p.id ? updated : x)));
+    setProjectDrafts((prev) => ({ ...prev, [p.id]: { ...(prev[p.id] || { status: p.status || "Available", cardImg: p.cardImg || "" }), status } }));
+    try {
+      await saveProject(updated);
+      setMsgError(false);
+      setMsg(p.name + " is now " + status + ".");
+    } catch (err) {
+      const e2 = err as { message?: string };
+      setMsgError(true);
+      setMsg("Could not save " + p.name + ": " + (e2.message || "permission denied"));
+      await reload();
+    } finally {
+      setSavingProjectId(null);
+    }
+  }
+
   // Delete flow: the Delete button only opens the in-app dialog above.
   // Confirming removes the row from state immediately (optimistic), so
   // the change is visible at once, then deletes in Firestore, then
@@ -421,7 +468,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* PRO-01: dedicated admin shell. Slim dark-navy left sidebar,
-          grouped into Operations, Catalog, Website CMS and Office,
+          grouped into Operations, Lists, Website and Office,
           with icons and pending/new badges. The public header, footer
           and navbar never render here (see components/SiteChrome).
           SIDEBAR COLOUR, 26 Nov 2026 (user order): the sidebar is
@@ -475,7 +522,7 @@ export default function AdminPage() {
                       }
                     >
                       <TabIcon tab={t} />
-                      <span className="flex-1 min-w-0">{t}</span>
+                      <span className="flex-1 min-w-0">{TAB_LABELS[t]}</span>
                       {t === "Enquiries" && newEnq > 0 ? <span className="shrink-0 bg-anngan text-white text-xs font-bold rounded-full px-2 py-0.5">{newEnq} new</span> : null}
                       {t === "Listings" && pending.length > 0 ? <span className="shrink-0 bg-amber-400 text-navy text-xs font-bold rounded-full px-2 py-0.5">{pending.length} pending</span> : null}
                     </button>
@@ -499,7 +546,7 @@ export default function AdminPage() {
         <nav aria-label="Breadcrumb" className="text-sm min-w-0">
           <span className="text-gray-600">Dashboard</span>
           <span className="text-gray-400 mx-1" aria-hidden="true">/</span>
-          <span className="font-bold text-navy">{tab}</span>
+          <span className="font-bold text-navy">{TAB_LABELS[tab]}</span>
         </nav>
         <div className="flex gap-2 items-center flex-wrap">
           <span className="text-sm text-navy bg-slate-100 border border-slate-200 rounded-full px-3 py-2 min-w-0 break-words">
@@ -538,19 +585,17 @@ export default function AdminPage() {
       ) : null}
       {user.role === "View only" && !isDemo && firebaseOn() ? (
         <p className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">
-          Your role is View only. To change listings, the owner must raise your role in the Firebase console:
-          Firestore, collection users, your user document, field role, set to Full access or Staff.
+          Your role is View only. You can look but not change anything. Ask the CEO to change your role in the Staff tab.
         </p>
       ) : null}
       {!isDemo && !firebaseOn() ? (
         <p className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">
-          Firebase is not connected. Changes are saved in this browser only (local test mode).
-          Connect Firebase with .env.local to save online.
+          Not connected. Changes save in this browser only, not online.
         </p>
       ) : null}
       {!isDemo && firebaseOn() ? (
         <p className="bg-green-50 text-green-900 text-sm rounded p-3 mt-3">
-          Firebase is connected. Changes save to Firestore and show on the public site.
+          Connected. Changes save online and show on the public site.
         </p>
       ) : null}
       {/* CRUD-07: the toast is fixed at the bottom of the screen, so
@@ -567,7 +612,36 @@ export default function AdminPage() {
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 mt-4">
       {tab === "Overview" && (
-        <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          {/* DASHBOARD EASY, 28 Nov 2026: the Overview is the start
+              page. The 4 most common office jobs are big plain buttons
+              on top, so the office never has to guess which tab to open.
+              "Add a listing" opens the Listings tab with the Add
+              listing form already open. */}
+          <div className="mt-4">
+            <p className="font-bold text-lg">What do you want to do?</p>
+            <div className="grid gap-2 mt-2 sm:grid-cols-2">
+              {canEdit ? (
+                <button type="button" onClick={() => { setEdit(null); setShowAdd(true); setTab("Listings"); }} className="border border-navy bg-navy text-white rounded-xl p-4 text-left min-h-[64px]">
+                  <span className="font-bold block">Add a listing</span>
+                  <span className="text-sm text-white/80 block mt-0.5">Put a new house or flat on the site</span>
+                </button>
+              ) : null}
+              <button type="button" onClick={() => setTab("Enquiries")} className="border border-gray-300 bg-white rounded-xl p-4 text-left min-h-[64px]">
+                <span className="font-bold block text-navy">See enquiries{newEnq > 0 ? " (" + newEnq + " new)" : ""}</span>
+                <span className="text-sm text-gray-600 block mt-0.5">People who asked about a property</span>
+              </button>
+              <button type="button" onClick={() => setTab("Hero")} className="border border-gray-300 bg-white rounded-xl p-4 text-left min-h-[64px]">
+                <span className="font-bold block text-navy">Change home photos</span>
+                <span className="text-sm text-gray-600 block mt-0.5">The big photos at the top of the home page</span>
+              </button>
+              <button type="button" onClick={() => setTab("Projects")} className="border border-gray-300 bg-white rounded-xl p-4 text-left min-h-[64px]">
+                <span className="font-bold block text-navy">Change a project</span>
+                <span className="text-sm text-gray-600 block mt-0.5">Project photo or status, like Sold Out</span>
+              </button>
+            </div>
+          </div>
+          <div className="grid gap-4 mt-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* CRUD-03: while the first Firestore load is running, show
               loading skeletons, never a false 0. The counts only
               render once loading finishes. */}
@@ -582,16 +656,16 @@ export default function AdminPage() {
             </>
           ) : (
             <>
-          <div className="border rounded p-4"><p className="text-2xl font-bold">{live.length}</p><p>Live listings on the public site</p></div>
-          <div className="border rounded p-4"><p className="text-2xl font-bold">{pending.length}</p><p>Waiting for approval</p></div>
-          {/* PRO-05: the Hidden count was missing, so Live 12 plus
-              Waiting 1 never added up to the 14 in Listings by city.
-              Live plus Waiting plus Hidden now equals All listings. */}
-          <div className="border rounded p-4"><p className="text-2xl font-bold">{hidden.length}</p><p>Hidden listings</p></div>
-          <div className="border rounded p-4"><p className="text-2xl font-bold">{enquiries.length}</p><p>Enquiries ({newEnq} new)</p></div>
-          <div className="border rounded p-4"><p className="text-2xl font-bold">{projects.length}</p><p>Projects</p></div>
-          <div className="border rounded p-4"><p className="text-2xl font-bold">{blogs.length}</p><p>Blogs</p></div>
-          <div className="border rounded p-4"><p className="text-2xl font-bold">{agencies.length}</p><p>Agencies</p></div>
+          {/* DASHBOARD EASY, 28 Nov 2026: the number cards are buttons.
+              Tap one to open that section, instead of finding the tab
+              in the sidebar. */}
+          <button type="button" onClick={() => setTab("Listings")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{live.length}</p><p>Live listings on the public site</p></button>
+          <button type="button" onClick={() => setTab("Listings")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{pending.length}</p><p>Waiting for approval</p></button>
+          <button type="button" onClick={() => setTab("Listings")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{hidden.length}</p><p>Hidden listings</p></button>
+          <button type="button" onClick={() => setTab("Enquiries")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{enquiries.length}</p><p>Enquiries ({newEnq} new)</p></button>
+          <button type="button" onClick={() => setTab("Projects")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{projects.length}</p><p>Projects</p></button>
+          <button type="button" onClick={() => setTab("Blogs")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{blogs.length}</p><p>Blogs</p></button>
+          <button type="button" onClick={() => setTab("Agencies")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{agencies.length}</p><p>Agencies</p></button>
             </>
           )}
           <div className="border rounded p-4 sm:col-span-2">
@@ -617,9 +691,9 @@ export default function AdminPage() {
             <p className="text-sm text-gray-600 mt-1">Change these here and they show on the live site straight away. Every photo field has an upload button: pick a real photo from your computer or phone.</p>
             <div className="grid gap-2 mt-3 sm:grid-cols-2 lg:grid-cols-4">
               <div className="border rounded p-3 flex flex-col justify-between">
-                <p className="font-semibold text-sm">Hero</p>
+                <p className="font-semibold text-sm">Top photos</p>
                 <p className="text-sm text-gray-600 mt-1">Home hero photos, title and tagline.</p>
-                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Hero")}>Edit hero</button>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Hero")}>Edit top photos</button>
               </div>
               <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">About</p>
@@ -637,14 +711,14 @@ export default function AdminPage() {
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Agencies")}>Edit agencies</button>
               </div>
               <div className="border rounded p-3 flex flex-col justify-between">
-                <p className="font-semibold text-sm">Header</p>
+                <p className="font-semibold text-sm">Top bar and footer</p>
                 <p className="text-sm text-gray-600 mt-1">Social links, footer text and copyright.</p>
-                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Header")}>Edit header</button>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Header")}>Edit top bar and footer</button>
               </div>
               <div className="border rounded p-3 flex flex-col justify-between">
-                <p className="font-semibold text-sm">Home</p>
+                <p className="font-semibold text-sm">Home sections</p>
                 <p className="text-sm text-gray-600 mt-1">Section headings, city cards and societies strip.</p>
-                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Home")}>Edit home</button>
+                <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Home")}>Edit home sections</button>
               </div>
               <div className="border rounded p-3 flex flex-col justify-between">
                 <p className="font-semibold text-sm">Societies and companies</p>
@@ -658,6 +732,7 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       )}
 
@@ -697,7 +772,7 @@ export default function AdminPage() {
               listings are missing" while Firestore is still loading. */}
           {missing.length > 0 && !loadingData ? (
             <div className="bg-amber-100 text-amber-900 text-sm rounded p-3 mt-3">
-              <p className="font-semibold">{missing.length} real listing{missing.length > 1 ? "s are" : " is"} missing from Firestore: {missing.map((l) => l.title + " (" + l.id + ")").join("; ")}.</p>
+              <p className="font-semibold">{missing.length} real listing{missing.length > 1 ? "s are" : " is"} missing from the office records: {missing.map((l) => l.title + " (" + l.id + ")").join("; ")}.</p>
               <p className="mt-1">This is a data gap, not a filter. Nothing was duplicated.</p>
               {canEdit ? (
                 <button
@@ -823,16 +898,16 @@ export default function AdminPage() {
                     {STAGES.map((s) => <option key={s}>{s}</option>)}
                   </select>
                   <input
-                    value={e.next}
+                    defaultValue={e.next}
                     disabled={!canEdit}
                     placeholder="Next step and date"
+                    aria-label="Next step"
                     onBlur={async (ev) => {
                       if (ev.target.value !== e.next) {
                         await updateEnquiryStage(e.id, e.stage, ev.target.value);
                         await reload();
                       }
                     }}
-                    onChange={() => {}}
                     className="border border-gray-300 rounded px-2 py-1 text-sm flex-1 min-w-0 max-w-full"
                   />
                   {canEdit ? (
@@ -904,8 +979,8 @@ export default function AdminPage() {
                 <label className="text-sm font-semibold">Status
                   <select
                     value={draft.status}
-                    disabled={!canEdit}
-                    onChange={(e) => setProjectDrafts((prev) => ({ ...prev, [p.id]: { ...draft, status: e.target.value as ProjectStatus } }))}
+                    disabled={!canEdit || savingProjectId === p.id}
+                    onChange={(e) => { const s = e.target.value as ProjectStatus; setProjectDrafts((prev) => ({ ...prev, [p.id]: { ...draft, status: s } })); saveProjectStatus(p, s); }}
                     aria-label={"Status for " + p.name}
                     className={inputCls + " mt-1 font-normal"}
                   >
@@ -920,6 +995,13 @@ export default function AdminPage() {
                     label={"Card photo for " + p.name}
                     disabled={!canEdit}
                   />
+                  {/* DASHBOARD EASY, 28 Nov 2026: the status above
+                      saves at once, but the photo still needs the
+                      Save project button. Say so plainly when the
+                      photo changed, so the office never loses it. */}
+                  {draft.cardImg !== (p.cardImg || "") ? (
+                    <p className="text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-2">Photo changed. Press Save project below to put it on the site.</p>
+                  ) : null}
                 </div>
               </div>
               {canEdit ? (
@@ -1139,8 +1221,8 @@ export default function AdminPage() {
 
       {tab === "Hero" && (
         <div className="mt-4">
-          <h2 className="font-bold text-lg">Hero</h2>
-          <p className="text-sm text-gray-600">Changes here show on the home page straight away, no code change, no redeploy. Hero photos: upload a real photo or paste a photo link, remove, or move up and down. Uploaded photos go to Cloudinary.</p>
+          <h2 className="font-bold text-lg">Top photos</h2>
+          <p className="text-sm text-gray-600">Changes here show on the home page straight away. Top photos: upload a real photo or paste a photo link, remove, or move up and down.</p>
           <HeroForm
             initial={siteContent}
             canEdit={canEdit}
@@ -1189,7 +1271,7 @@ export default function AdminPage() {
 
       {tab === "Header" && (
         <div className="mt-4">
-          <h2 className="font-bold text-lg">Header</h2>
+          <h2 className="font-bold text-lg">Top bar and footer</h2>
           <p className="text-sm text-gray-600">Social links, footer text and copyright, shown on every page. The logo is not editable here, it stays the full original logo.</p>
           <HeaderFooterForm
             initial={siteContent}
@@ -1202,7 +1284,7 @@ export default function AdminPage() {
 
       {tab === "Home" && (
         <div className="mt-4">
-          <h2 className="font-bold text-lg">Home</h2>
+          <h2 className="font-bold text-lg">Home sections</h2>
           <p className="text-sm text-gray-600">Section headings, the MGH spotlight text, the Browse by city cards and the Societies strip on home. City card photos are real famous-landmark photos only, never stock or AI.</p>
           <HomePageForm
             initial={siteContent}
@@ -1259,7 +1341,7 @@ export default function AdminPage() {
           onSave={async (s) => {
             await saveSettings(s);
             setSettings(s);
-            setMsg("Settings saved" + (firebaseOn() ? " to Firestore." : " in this browser (local test mode)."));
+            setMsg("Office details saved" + (firebaseOn() ? "." : " in this browser only."));
           }}
         />
       )}
@@ -1457,16 +1539,24 @@ function ProjectForm({ initial, onCancel, onSave }: { initial?: Project; onCance
       <label className="text-sm font-semibold">Office text, shown on the project page under From the office
         <textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={4} placeholder="Long text the office wants on this project page, blank line starts a new paragraph" className={inputCls + " mt-1 font-normal"} />
       </label>
-      <label className="text-sm font-semibold">Meta title, optional
-        <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder="The title Google shows for this page" aria-label="Meta title, optional" className={inputCls + " mt-1 font-normal"} />
-      </label>
-      <label className="text-sm font-semibold">Meta description, optional
-        <input value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} placeholder="The short text Google shows under the title" aria-label="Meta description, optional" className={inputCls + " mt-1 font-normal"} />
-      </label>
-      <label className="text-sm font-semibold">Page address (slug), optional
-        <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="For example mgh-pakistan-mangla" aria-label="Page address, optional" className={inputCls + " mt-1 font-normal"} />
-      </label>
-      <p className="text-sm text-gray-600">Leave these empty to use the project name and short note. A slug uses letters, numbers and - only. The old page address still works after you set a slug.</p>
+      {/* DASHBOARD EASY, 28 Nov 2026: the Google-only fields sit behind
+          a closed toggle, so the main form is shorter. Same fields,
+          same values, same save. */}
+      <details className="border border-gray-200 rounded-lg p-3">
+        <summary className="cursor-pointer text-sm font-semibold text-navy">More options, for Google (optional)</summary>
+        <div className="grid gap-3 mt-3">
+          <label className="text-sm font-semibold">Meta title, optional
+            <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder="The title Google shows for this page" aria-label="Meta title, optional" className={inputCls + " mt-1 font-normal"} />
+          </label>
+          <label className="text-sm font-semibold">Meta description, optional
+            <input value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} placeholder="The short text Google shows under the title" aria-label="Meta description, optional" className={inputCls + " mt-1 font-normal"} />
+          </label>
+          <label className="text-sm font-semibold">Page address, optional
+            <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="For example mgh-pakistan-mangla" aria-label="Page address, optional" className={inputCls + " mt-1 font-normal"} />
+          </label>
+          <p className="text-sm text-gray-600">Leave these empty to use the project name and short note. The page address uses letters, numbers and - only. The old page address still works after you set a slug.</p>
+        </div>
+      </details>
       <div className="flex gap-2 flex-wrap">
         <button type="submit" disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : initial ? "Save project" : "Add project"}</button>
         <button type="button" onClick={onCancel} className={btnLine}>Cancel</button>
@@ -1604,6 +1694,10 @@ function HeroForm({ initial, canEdit, isDemo, onSave }: { initial: SiteContent; 
       <label className="text-sm font-semibold">Hero tagline
         <input value={tagline} disabled={!canEdit} onChange={(e) => setTagline(e.target.value)} className={fieldCls + " mt-1 font-normal"} />
       </label>
+      {/* DASHBOARD EASY, 28 Nov 2026: a second Save button at the top,
+          so the office does not have to scroll past all the photos to
+          save. Same save as the button at the bottom. */}
+      {canEdit ? <button disabled={saving} className={btnRed + " w-fit disabled:opacity-50"}>{saving ? "Saving..." : "Save hero and banners"}</button> : null}
       {slideRows(slides, setSlides, "Hero photos, in order")}
       <p className="text-sm text-gray-600">Hero photos change every 10 seconds with a slow zoom.</p>
       {slideRows(banners, setBanners, "Banner photos, behind the search panel")}
@@ -1773,7 +1867,7 @@ function HeaderFooterForm({ initial, canEdit, isDemo, onSave }: { initial: SiteC
   return (
     <form onSubmit={submit} className="mt-4 grid gap-4 w-full min-w-0">
       <div>
-        <p className="font-semibold text-sm">Top navbar sections</p>
+        <p className="font-semibold text-sm">Top menu sections</p>
         <p className="text-sm text-gray-600 mt-1">Show or hide a section in the red top navbar. HOME is always shown, so navigation can never be broken from here. BLOGS is off until you turn it on.</p>
         <div className="grid gap-2 mt-2 sm:grid-cols-2">
           {NAV_TOGGLE_LABELS.map((label) => {
@@ -2165,16 +2259,24 @@ function BlogForm({ initial, onCancel, onSave }: { initial?: Blog; onCancel: () 
       <label className="text-sm font-semibold">Link, optional
         <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Link to the full story, optional, for example https://example.com/story" className={inputCls + " mt-1 font-normal"} />
       </label>
-      <label className="text-sm font-semibold">Meta title, optional
-        <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder="The title Google shows for this page" aria-label="Meta title, optional" className={inputCls + " mt-1 font-normal"} />
-      </label>
-      <label className="text-sm font-semibold">Meta description, optional
-        <input value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} placeholder="The short text Google shows under the title" aria-label="Meta description, optional" className={inputCls + " mt-1 font-normal"} />
-      </label>
-      <label className="text-sm font-semibold">Page address (slug), optional
-        <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="For example lahore-rates-this-month" aria-label="Page address, optional" className={inputCls + " mt-1 font-normal"} />
-      </label>
-      <p className="text-sm text-gray-600">Leave these empty to use the title and body text. A slug uses letters, numbers and - only. The old page address still works after you set a slug.</p>
+      {/* DASHBOARD EASY, 28 Nov 2026: the Google-only fields sit behind
+          a closed toggle, so the main form is shorter. Same fields,
+          same values, same save. */}
+      <details className="border border-gray-200 rounded-lg p-3">
+        <summary className="cursor-pointer text-sm font-semibold text-navy">More options, for Google (optional)</summary>
+        <div className="grid gap-3 mt-3">
+          <label className="text-sm font-semibold">Meta title, optional
+            <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder="The title Google shows for this page" aria-label="Meta title, optional" className={inputCls + " mt-1 font-normal"} />
+          </label>
+          <label className="text-sm font-semibold">Meta description, optional
+            <input value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} placeholder="The short text Google shows under the title" aria-label="Meta description, optional" className={inputCls + " mt-1 font-normal"} />
+          </label>
+          <label className="text-sm font-semibold">Page address, optional
+            <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="For example lahore-rates-this-month" aria-label="Page address, optional" className={inputCls + " mt-1 font-normal"} />
+          </label>
+          <p className="text-sm text-gray-600">Leave these empty to use the title and body text. The page address uses letters, numbers and - only. The old page address still works after you set a slug.</p>
+        </div>
+      </details>
       <div className="flex gap-2 flex-wrap">
         <button type="submit" disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : initial ? "Save blog post" : "Add blog post"}</button>
         <button type="button" onClick={onCancel} className={btnLine}>Cancel</button>
@@ -2265,7 +2367,7 @@ function ServiceForm({ initial, onCancel, onSave }: { initial?: Service; onCance
       <label className="text-sm font-semibold">Short note, shown on the services list
         <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="One short line" className={inputCls + " mt-1 font-normal"} />
       </label>
-      <label className="text-sm font-semibold">Page id, the short slug in the page link
+      <label className="text-sm font-semibold">Page id, the short name in the page link
         <input value={page} onChange={(e) => setPage(e.target.value)} placeholder="For example web-design, leave empty to make one from the name" className={inputCls + " mt-1 font-normal"} />
       </label>
       <label className="text-sm font-semibold">Office text, shown on the service page under From the office
@@ -2323,6 +2425,13 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
     "lst-bahria8-rent.jpg",
     "lst-kuri-rent.jpg",
   ];
+
+  // DASHBOARD EASY, 28 Nov 2026: show plain names in the photo list
+  // ("Karachi Shamsi") instead of file names
+  // ("lst-karachi-shamsi.jpg"). The value stays the file name.
+  function photoLabel(f: string): string {
+    return f.replace(/^lst-/, "").replace(/\.jpg$/, "").split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -2417,7 +2526,7 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
       <label className="text-sm font-semibold">Photo
         <select value={REAL_PHOTOS.includes(photo) ? photo : ""} onChange={(e) => setPhoto(e.target.value)} aria-label="Photo" className={inputCls + " mt-1 font-normal"}>
           <option value="">No photo, or paste a photo link below</option>
-          {REAL_PHOTOS.filter(Boolean).map((p) => <option key={p} value={p}>{p}</option>)}
+          {REAL_PHOTOS.filter(Boolean).map((p) => <option key={p} value={p}>{photoLabel(p)}</option>)}
         </select>
       </label>
       <div>
@@ -2429,16 +2538,24 @@ function ListingForm({ initial, onCancel, onSave }: { initial?: Listing; onCance
         <ImageUploadField value={photo} onChange={setPhoto} folder="listings" label="Photo upload or link, optional" />
       </div>
       <p className="text-sm text-gray-600">Pick a real photo from the site above, upload a new photo, or paste a photo link. Uploaded photos go to Cloudinary and show on the site once you save.</p>
-      <label className="text-sm font-semibold">Meta title, optional
-        <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder="The title Google shows for this page" aria-label="Meta title, optional" className={inputCls + " mt-1 font-normal"} />
-      </label>
-      <label className="text-sm font-semibold">Meta description, optional
-        <input value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} placeholder="The short text Google shows under the title" aria-label="Meta description, optional" className={inputCls + " mt-1 font-normal"} />
-      </label>
-      <label className="text-sm font-semibold">Page address (slug), optional
-        <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="For example dha-1-kanal-house" aria-label="Page address, optional" className={inputCls + " mt-1 font-normal"} />
-      </label>
-      <p className="text-sm text-gray-600">Leave these empty to use the title and normal text. A slug uses letters, numbers and - only. The old page address still works after you set a slug.</p>
+      {/* DASHBOARD EASY, 28 Nov 2026: the Google-only fields sit behind
+          a closed toggle, so the main form is shorter. Same fields,
+          same values, same save. */}
+      <details className="border border-gray-200 rounded-lg p-3">
+        <summary className="cursor-pointer text-sm font-semibold text-navy">More options, for Google (optional)</summary>
+        <div className="grid gap-3 mt-3">
+          <label className="text-sm font-semibold">Meta title, optional
+            <input value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder="The title Google shows for this page" aria-label="Meta title, optional" className={inputCls + " mt-1 font-normal"} />
+          </label>
+          <label className="text-sm font-semibold">Meta description, optional
+            <input value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} placeholder="The short text Google shows under the title" aria-label="Meta description, optional" className={inputCls + " mt-1 font-normal"} />
+          </label>
+          <label className="text-sm font-semibold">Page address, optional
+            <input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="For example dha-1-kanal-house" aria-label="Page address, optional" className={inputCls + " mt-1 font-normal"} />
+          </label>
+          <p className="text-sm text-gray-600">Leave these empty to use the title and normal text. The page address uses letters, numbers and - only. The old page address still works after you set a slug.</p>
+        </div>
+      </details>
       <div className="flex gap-2">
         <button disabled={saving} className={btnRed + " disabled:opacity-50"}>{saving ? "Saving..." : "Save listing"}</button>
         <button type="button" disabled={saving} className={btnLine + " disabled:opacity-50"} onClick={onCancel}>Cancel</button>
@@ -2530,7 +2647,7 @@ function SettingsForm({ initial, canEdit, onSave }: { initial: OfficeSettings; c
         onSave({ ...initial, phone, whatsapp, email, address, ceo });
       }}
     >
-      <h2 className="font-bold text-lg">Office settings</h2>
+      <h2 className="font-bold text-lg">Office details</h2>
       <label className="text-sm">Phone<input disabled={!canEdit} value={phone} onChange={(e) => setPhone(e.target.value)} className={fieldCls} /></label>
       <label className="text-sm">WhatsApp number, digits only, for example 923041111698<input disabled={!canEdit} value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className={fieldCls} /></label>
       <p className="text-sm text-gray-600">Phone shows on the header, the contact page and every Call button. WhatsApp number is the number every WhatsApp button opens. Change them here and the whole site follows.</p>
