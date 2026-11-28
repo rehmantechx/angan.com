@@ -622,22 +622,26 @@ export default function AdminPage() {
             <p className="font-bold text-lg">What do you want to do?</p>
             <div className="grid gap-2 mt-2 sm:grid-cols-2">
               {canEdit ? (
-                <button type="button" onClick={() => { setEdit(null); setShowAdd(true); setTab("Listings"); }} className="border border-navy bg-navy text-white rounded-xl p-4 text-left min-h-[64px]">
-                  <span className="font-bold block">Add a listing</span>
-                  <span className="text-sm text-white/80 block mt-0.5">Put a new house or flat on the site</span>
+                <button type="button" onClick={() => { setEdit(null); setShowAdd(true); setTab("Listings"); }} className="border border-navy bg-navy text-white rounded-xl p-4 text-left min-h-[64px] shadow-sm hover:shadow-md flex items-center gap-3">
+                  <span className="shrink-0 w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg></span>
+                  <span className="min-w-0"><span className="font-bold block">Add a listing</span>
+                  <span className="text-sm text-white/80 block mt-0.5">Put a new house or flat on the site</span></span>
                 </button>
               ) : null}
-              <button type="button" onClick={() => setTab("Enquiries")} className="border border-gray-300 bg-white rounded-xl p-4 text-left min-h-[64px]">
-                <span className="font-bold block text-navy">See enquiries{newEnq > 0 ? " (" + newEnq + " new)" : ""}</span>
-                <span className="text-sm text-gray-600 block mt-0.5">People who asked about a property</span>
+              <button type="button" onClick={() => setTab("Enquiries")} className="border border-slate-200 bg-white rounded-xl p-4 text-left min-h-[64px] shadow-sm hover:shadow-md hover:border-navy flex items-center gap-3">
+                <span className="shrink-0 w-10 h-10 rounded-lg bg-navy/10 text-navy flex items-center justify-center" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v11H8l-4 4V5z" /></svg></span>
+                <span className="min-w-0"><span className="font-bold block text-navy">See enquiries{newEnq > 0 ? " (" + newEnq + " new)" : ""}</span>
+                <span className="text-sm text-gray-600 block mt-0.5">People who asked about a property</span></span>
               </button>
-              <button type="button" onClick={() => setTab("Hero")} className="border border-gray-300 bg-white rounded-xl p-4 text-left min-h-[64px]">
-                <span className="font-bold block text-navy">Change home photos</span>
-                <span className="text-sm text-gray-600 block mt-0.5">The big photos at the top of the home page</span>
+              <button type="button" onClick={() => setTab("Hero")} className="border border-slate-200 bg-white rounded-xl p-4 text-left min-h-[64px] shadow-sm hover:shadow-md hover:border-navy flex items-center gap-3">
+                <span className="shrink-0 w-10 h-10 rounded-lg bg-navy/10 text-navy flex items-center justify-center" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="12" rx="1" /><path d="M3 16l5-5 4 4 3-3 6 6" /></svg></span>
+                <span className="min-w-0"><span className="font-bold block text-navy">Change home photos</span>
+                <span className="text-sm text-gray-600 block mt-0.5">The big photos at the top of the home page</span></span>
               </button>
-              <button type="button" onClick={() => setTab("Projects")} className="border border-gray-300 bg-white rounded-xl p-4 text-left min-h-[64px]">
-                <span className="font-bold block text-navy">Change a project</span>
-                <span className="text-sm text-gray-600 block mt-0.5">Project photo or status, like Sold Out</span>
+              <button type="button" onClick={() => setTab("Projects")} className="border border-slate-200 bg-white rounded-xl p-4 text-left min-h-[64px] shadow-sm hover:shadow-md hover:border-navy flex items-center gap-3">
+                <span className="shrink-0 w-10 h-10 rounded-lg bg-navy/10 text-navy flex items-center justify-center" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 11 12 3l8 8" /><path d="M6 10v10h12V10" /></svg></span>
+                <span className="min-w-0"><span className="font-bold block text-navy">Change a project</span>
+                <span className="text-sm text-gray-600 block mt-0.5">Project photo or status, like Sold Out</span></span>
               </button>
             </div>
           </div>
@@ -659,20 +663,20 @@ export default function AdminPage() {
           {/* DASHBOARD EASY, 28 Nov 2026: the number cards are buttons.
               Tap one to open that section, instead of finding the tab
               in the sidebar. */}
-          <button type="button" onClick={() => setTab("Listings")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{live.length}</p><p>Live listings on the public site</p></button>
-          <button type="button" onClick={() => setTab("Listings")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{pending.length}</p><p>Waiting for approval</p></button>
-          <button type="button" onClick={() => setTab("Listings")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{hidden.length}</p><p>Hidden listings</p></button>
-          <button type="button" onClick={() => setTab("Enquiries")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{enquiries.length}</p><p>Enquiries ({newEnq} new)</p></button>
-          <button type="button" onClick={() => setTab("Projects")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{projects.length}</p><p>Projects</p></button>
-          <button type="button" onClick={() => setTab("Blogs")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{blogs.length}</p><p>Blogs</p></button>
-          <button type="button" onClick={() => setTab("Agencies")} className="border rounded p-4 text-left hover:border-navy"><p className="text-2xl font-bold">{agencies.length}</p><p>Agencies</p></button>
+          <button type="button" onClick={() => setTab("Listings")} className="border border-slate-200 rounded-lg p-4 text-left bg-white shadow-sm hover:border-navy hover:shadow"><p className="text-2xl font-bold text-navy">{live.length}</p><p>Live listings on the public site</p></button>
+          <button type="button" onClick={() => setTab("Listings")} className="border border-slate-200 rounded-lg p-4 text-left bg-white shadow-sm hover:border-navy hover:shadow"><p className="text-2xl font-bold text-navy">{pending.length}</p><p>Waiting for approval</p></button>
+          <button type="button" onClick={() => setTab("Listings")} className="border border-slate-200 rounded-lg p-4 text-left bg-white shadow-sm hover:border-navy hover:shadow"><p className="text-2xl font-bold text-navy">{hidden.length}</p><p>Hidden listings</p></button>
+          <button type="button" onClick={() => setTab("Enquiries")} className="border border-slate-200 rounded-lg p-4 text-left bg-white shadow-sm hover:border-navy hover:shadow"><p className="text-2xl font-bold text-navy">{enquiries.length}</p><p>Enquiries ({newEnq} new)</p></button>
+          <button type="button" onClick={() => setTab("Projects")} className="border border-slate-200 rounded-lg p-4 text-left bg-white shadow-sm hover:border-navy hover:shadow"><p className="text-2xl font-bold text-navy">{projects.length}</p><p>Projects</p></button>
+          <button type="button" onClick={() => setTab("Blogs")} className="border border-slate-200 rounded-lg p-4 text-left bg-white shadow-sm hover:border-navy hover:shadow"><p className="text-2xl font-bold text-navy">{blogs.length}</p><p>Blogs</p></button>
+          <button type="button" onClick={() => setTab("Agencies")} className="border border-slate-200 rounded-lg p-4 text-left bg-white shadow-sm hover:border-navy hover:shadow lg:col-span-2"><p className="text-2xl font-bold text-navy">{agencies.length}</p><p>Agencies</p></button>
             </>
           )}
-          <div className="border rounded p-4 sm:col-span-2">
+          <div className="border border-slate-200 rounded-lg p-4 sm:col-span-2 bg-white shadow-sm">
             <p className="font-bold">Enquiries by stage</p>
             <p className="text-sm mt-1">{loadingData ? "Loading..." : STAGES.map((s) => `${s}: ${enquiries.filter((e) => e.stage === s).length}`).join(" | ")}</p>
           </div>
-          <div className="border rounded p-4 sm:col-span-2">
+          <div className="border border-slate-200 rounded-lg p-4 sm:col-span-2 bg-white shadow-sm">
             <p className="font-bold">All listings by city ({listings.length})</p>
             <p className="text-sm mt-1">
               {loadingData ? "Loading..." : ["Lahore", "Rawalpindi", "Multan", "Islamabad", "Karachi"].map((c) => `${c}: ${listings.filter((l) => l.city === c).length}`).join(" | ")}
@@ -686,46 +690,46 @@ export default function AdminPage() {
               </button>
             ) : null}
           </div>
-          <div className="border rounded p-4 sm:col-span-2 lg:col-span-4">
+          <div className="border border-slate-200 rounded-lg p-4 sm:col-span-2 lg:col-span-4 bg-white shadow-sm">
             <p className="font-bold">Website content, no code needed</p>
             <p className="text-sm text-gray-600 mt-1">Change these here and they show on the live site straight away. Every photo field has an upload button: pick a real photo from your computer or phone.</p>
             <div className="grid gap-2 mt-3 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="border rounded p-3 flex flex-col justify-between">
+              <div className="border border-slate-200 rounded-lg p-3 flex flex-col justify-between bg-white shadow-sm">
                 <p className="font-semibold text-sm">Top photos</p>
                 <p className="text-sm text-gray-600 mt-1">Home hero photos, title and tagline.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Hero")}>Edit top photos</button>
               </div>
-              <div className="border rounded p-3 flex flex-col justify-between">
+              <div className="border border-slate-200 rounded-lg p-3 flex flex-col justify-between bg-white shadow-sm">
                 <p className="font-semibold text-sm">About</p>
                 <p className="text-sm text-gray-600 mt-1">Our Story text and Our Team members.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("About")}>Edit About</button>
               </div>
-              <div className="border rounded p-3 flex flex-col justify-between">
+              <div className="border border-slate-200 rounded-lg p-3 flex flex-col justify-between bg-white shadow-sm">
                 <p className="font-semibold text-sm">Projects</p>
                 <p className="text-sm text-gray-600 mt-1">Project status and card photo.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Projects")}>Edit projects</button>
               </div>
-              <div className="border rounded p-3 flex flex-col justify-between">
+              <div className="border border-slate-200 rounded-lg p-3 flex flex-col justify-between bg-white shadow-sm">
                 <p className="font-semibold text-sm">Partner agencies</p>
                 <p className="text-sm text-gray-600 mt-1">Agency name, logo and website link.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Agencies")}>Edit agencies</button>
               </div>
-              <div className="border rounded p-3 flex flex-col justify-between">
+              <div className="border border-slate-200 rounded-lg p-3 flex flex-col justify-between bg-white shadow-sm">
                 <p className="font-semibold text-sm">Top bar and footer</p>
                 <p className="text-sm text-gray-600 mt-1">Social links, footer text and copyright.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Header")}>Edit top bar and footer</button>
               </div>
-              <div className="border rounded p-3 flex flex-col justify-between">
+              <div className="border border-slate-200 rounded-lg p-3 flex flex-col justify-between bg-white shadow-sm">
                 <p className="font-semibold text-sm">Home sections</p>
                 <p className="text-sm text-gray-600 mt-1">Section headings, city cards and societies strip.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Home")}>Edit home sections</button>
               </div>
-              <div className="border rounded p-3 flex flex-col justify-between">
+              <div className="border border-slate-200 rounded-lg p-3 flex flex-col justify-between bg-white shadow-sm">
                 <p className="font-semibold text-sm">Societies and companies</p>
                 <p className="text-sm text-gray-600 mt-1">Societies guide and group companies.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Societies")}>Edit societies</button>
               </div>
-              <div className="border rounded p-3 flex flex-col justify-between">
+              <div className="border border-slate-200 rounded-lg p-3 flex flex-col justify-between bg-white shadow-sm">
                 <p className="font-semibold text-sm">Services</p>
                 <p className="text-sm text-gray-600 mt-1">Service names and notes.</p>
                 <button className={btnNavy + " mt-auto self-start"} onClick={() => setTab("Services")}>Edit services</button>
@@ -826,7 +830,7 @@ export default function AdminPage() {
             {shown.map((l) => (
               <div key={l.id} className="border rounded p-3 flex gap-2 items-center flex-wrap w-full max-w-full min-w-0">
                 <span className="flex-1 min-w-0 break-words">
-                  <button type="button" onClick={() => setDetail(l)} className="font-semibold text-left text-navy underline underline-offset-2">{l.title}</button>
+                  <button type="button" onClick={() => setDetail(l)} className="font-semibold text-left text-navy hover:underline">{l.title}</button>
                   <span className="text-sm text-gray-600 block">{l.price} | {l.city} | {l.size} | {l.status === "sale" ? "Sale" : "Rent"} | {l.liveStatus === "live" && l.visible !== false ? "Live" : l.liveStatus === "pending" ? "Pending" : "Hidden"}</span>
                 </span>
                 <button className={btnLine} onClick={() => setDetail(l)}>Details</button>
@@ -934,7 +938,7 @@ export default function AdminPage() {
       {tab === "Projects" && (
         <div className="mt-4">
           <h2 className="font-bold text-lg">Projects ({projects.length})</h2>
-          <p className="text-sm text-gray-600">Status and card photo are editable here and show on the live site straight away: the status badge appears on the home project card, on /projects and on the project page. Sold Out shows a red SOLD OUT badge, Coming Soon an amber COMING SOON badge, Available shows no badge. Card photo: a file already on the site, for example global-zamzam-house-wide-v4.jpg, or a full photo link. Add a project, or delete one, the same way: it shows on the home page, /projects and its project page straight away, no code change.</p>
+          <p className="text-sm text-gray-600 bg-slate-50 border border-slate-200 border-l-4 border-l-navy rounded-lg px-3 py-2">Status and card photo are editable here and show on the live site straight away: the status badge appears on the home project card, on /projects and on the project page. Sold Out shows a red SOLD OUT badge, Coming Soon an amber COMING SOON badge, Available shows no badge. Card photo: a file already on the site, for example global-zamzam-house-wide-v4.jpg, or a full photo link. Add a project, or delete one, the same way: it shows on the home page, /projects and its project page straight away, no code change.</p>
           {!canEdit ? <p className="text-sm text-gray-600 mt-1">Your role is View only. You can see projects but not change them.</p> : null}
           {canEdit && !showProjectAdd ? (
             <button className={btnRed + " mt-3"} onClick={() => setShowProjectAdd(true)}>Add project</button>

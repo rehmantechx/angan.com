@@ -68,15 +68,26 @@ export function ImageUploadField({
         <img src={previewSrc} alt="" className={widePreview ? "w-full max-w-sm aspect-video object-cover rounded-lg bg-gray-100 border border-gray-200" : "w-40 h-24 object-cover rounded-lg bg-gray-100 border border-gray-200"} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
       ) : null}
       <div className="flex gap-2 items-center flex-wrap">
+        {/* POLISH 28 Nov 2026: the plain browser "Choose File" button
+            looks old and cheap, so the picker opens from a proper navy
+            button instead. Same picker, same upload, same helper text. */}
         <input
           ref={fileRef}
           type="file"
           accept="image/*"
           disabled={disabled || uploading}
           aria-label={label + ", choose a photo to upload"}
-          className="text-sm"
+          className="hidden"
           onChange={(e) => onPick(e.target.files?.[0])}
         />
+        <button
+          type="button"
+          disabled={disabled || uploading}
+          onClick={() => fileRef.current?.click()}
+          className="btn btn-navy"
+        >
+          Choose a photo
+        </button>
         <span className="text-sm text-gray-600">{uploading ? "Uploading photo..." : "Choose a photo from your computer or phone."}</span>
       </div>
       {error ? (

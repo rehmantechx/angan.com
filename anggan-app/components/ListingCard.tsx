@@ -19,7 +19,7 @@ export function ListingCard({ l }: { l: Listing }) {
   const pill = l.status === "rent" ? "FOR RENT" : "FOR SALE";
   const pillCls = l.status === "rent" ? "bg-[#005F90]" : "bg-anngan";
   return (
-    <article className="card border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm flex flex-col h-full">
+    <article className="card border border-slate-200 rounded-lg overflow-hidden bg-white shadow-[0_2px_14px_rgba(0,66,116,0.10)] flex flex-col h-full">
       {l.img ? (
         <Link href={`/properties/${l.id}`} aria-label={l.title} className="relative block">
           <Image

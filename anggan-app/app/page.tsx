@@ -397,12 +397,12 @@ export default function Home() {
           right after the search panel, before Our projects, so it is
           the first thing a visitor sees after the hero and search. */}
       <section className="mt-6" aria-label="Browse by city">
-        <h2 className="text-xl font-bold text-navy text-center">{content.homeHeadings.browseCities}</h2>
+        <h2 className="text-2xl font-bold text-navy">{content.homeHeadings.browseCities}</h2>
         <div className="grid gap-4 mt-3 grid-cols-2 lg:grid-cols-4">
           {content.cityCards.map((c) => {
             const n = c.kind === "listings" ? cityCount(c.name) : c.kind === "all" ? LISTINGS.filter((l) => l.liveStatus === "live").length : 0;
             return (
-              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.landmark}, ${c.sub}, ${c.sub === "Kashmir Modern City" ? "view project" : "open project"}` : c.landmark ? `${c.name}, ${c.landmark}, ${n} ${n === 1 ? "home" : "homes"}, see listings` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
+              <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-[0_2px_14px_rgba(0,66,116,0.10)] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[4/3] bg-navy" aria-label={c.kind === "project" ? `${c.name}, ${c.landmark}, ${c.sub}, ${c.sub === "Kashmir Modern City" ? "view project" : "open project"}` : c.landmark ? `${c.name}, ${c.landmark}, ${n} ${n === 1 ? "home" : "homes"}, see listings` : `${c.name}, ${n} ${n === 1 ? "home" : "homes"}, see listings`}>
                 {/* FAMOUS PLACES 25 Nov 2026 (user order 00:34 PKT):
                     the landmark must FILL the card, large, clear and
                     well-lit, not a tiny dark silhouette. Lahore and
@@ -506,7 +506,7 @@ export default function Home() {
         <h2 className="text-2xl font-bold text-navy">{content.homeHeadings.societies}</h2>
         <div className="grid gap-4 mt-4 grid-cols-2 lg:grid-cols-4">
           {content.homeSocieties.map((c) => (
-            <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-sm aspect-[4/3] bg-navy">
+            <Link key={c.name} href={c.href} className="relative block rounded-lg overflow-hidden shadow-[0_2px_14px_rgba(0,66,116,0.10)] aspect-[4/3] bg-navy">
               <Image src={cityCardSrc(c.img)} alt={c.name} fill quality={90} sizes="(max-width: 768px) 50vw, 25vw" loading="lazy" className="object-cover object-top" />
               <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
               <span className="absolute bottom-0 left-0 right-0 p-3 text-white font-extrabold text-lg leading-tight">{c.name} &rarr;</span>
@@ -536,7 +536,7 @@ export default function Home() {
                 {agencies.map((a) => {
                   const src = a.logoUrl || (a.logo ? `/img/${a.logo}` : "");
                   return (
-                    <Link key={a.id + "-" + copy} href={a.link || "/contact"} aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm flex flex-col items-center gap-1 w-[150px] sm:w-[168px] shrink-0">
+                    <Link key={a.id + "-" + copy} href={a.link || "/contact"} aria-label={a.name + ", partner agency, contact the office"} className="bg-white border border-slate-200 rounded-lg p-2 shadow-[0_2px_14px_rgba(0,66,116,0.10)] flex flex-col items-center gap-1 w-[150px] sm:w-[168px] shrink-0">
                       <span className="relative block w-full aspect-[5/4]">
                         {src ? (
                           // Plain img, not next/image: an admin-set
@@ -588,7 +588,7 @@ export default function Home() {
             the left. */}
         <div className="flex flex-wrap justify-center gap-4 mt-4">
           {projects.map((p) => (
-            <Link key={p.id} href={`/projects/${p.id}`} className="relative block rounded-lg overflow-hidden shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[16/10] bg-navy w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]" aria-label={`${p.name}, ${p.status === "Sold Out" ? "view project" : "open project"}`}>
+            <Link key={p.id} href={`/projects/${p.id}`} className="relative block rounded-lg overflow-hidden shadow-[0_2px_14px_rgba(0,66,116,0.10)] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-anngan aspect-[16/10] bg-navy w-[calc(50%-8px)] lg:w-[calc(33.333%-11px)]" aria-label={`${p.name}, ${p.status === "Sold Out" ? "view project" : "open project"}`}>
               {p.img || p.cardImg ? (
                 <>
                   {/* LIVE-FAIL FIX 24 Nov 2026: the Global Homes
@@ -680,7 +680,13 @@ export default function Home() {
             no claim invented. The secondary phone is NOT added here:
             +92 320 5966 664 is still unconfirmed with the client. */}
         <div className="mt-6 grid gap-4 lg:grid-cols-2 items-center max-w-5xl mx-auto">
-          <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-sm bg-navy">
+          {/* POLISH 28 Nov 2026: a real photo sits behind the video
+              (Mangla Lake, first photo of the MGH gallery), so this area
+              never shows as an empty navy box while YouTube loads. The
+              video covers it once it is ready. Same real photo, no new
+              image. */}
+          <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-[0_2px_14px_rgba(0,66,116,0.10)] bg-navy">
+            <Image src="/img/mgh-lake-aerial.jpg" alt="" aria-hidden="true" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
             <iframe
               src="https://www.youtube-nocookie.com/embed/UxOpwyG6YJA"
               title="MGH Pakistan, Zamindar File walkthrough"
@@ -722,9 +728,9 @@ export default function Home() {
             <p className="font-bold text-navy mt-2">Muhammad Mahmood Cheema</p>
             <p className="text-sm text-gray-600">Chairman and Chief Executive Officer</p>
             <div className="flex gap-3 mt-4 flex-wrap">
-              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><BuildingIcon size={20} /> {projects.length} Projects</span>
-              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><HomeIcon size={20} /> {LISTINGS.filter((l) => l.liveStatus === "live").length} Properties</span>
-              <span className="border border-gray-200 rounded-lg px-3 py-2 bg-white inline-flex items-center gap-2 font-bold text-navy"><UsersIcon size={20} /> {agencies.length} Partner agencies</span>
+              <span className="border border-slate-200 rounded-lg px-3 py-2 bg-[#F4F7FA] shadow-sm inline-flex items-center gap-2 font-bold text-navy"><BuildingIcon size={20} /> {projects.length} Projects</span>
+              <span className="border border-slate-200 rounded-lg px-3 py-2 bg-[#F4F7FA] shadow-sm inline-flex items-center gap-2 font-bold text-navy"><HomeIcon size={20} /> {LISTINGS.filter((l) => l.liveStatus === "live").length} Properties</span>
+              <span className="border border-slate-200 rounded-lg px-3 py-2 bg-[#F4F7FA] shadow-sm inline-flex items-center gap-2 font-bold text-navy"><UsersIcon size={20} /> {agencies.length} Partner agencies</span>
             </div>
             <div className="flex gap-2 mt-4 flex-wrap">
               <Link href="/about" className="btn btn-red">Read our story</Link>
